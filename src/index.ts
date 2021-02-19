@@ -260,7 +260,6 @@ function createLibrary(m: LibraryModule) {
       options1.errorHandlerPayload = lastCallbackId;
 
       const duelPtr = m._malloc(4);
-      console.log(duelPtr, options1.__ptr);
       const res = ocgapiCreateDuel(duelPtr, options1.__ptr);
       if (res != 0) {
         m._free(duelPtr);
@@ -294,7 +293,7 @@ function createLibrary(m: LibraryModule) {
     duelProcess(duelHandle: OcgDuelHandle): OcgProcessResult {
       return ocgapiDuelProcess(duelHandle[DuelHandleSymbol]);
     },
-    duelGetMessage() {},
+    duelGetMessage(duelHandle) {},
     duelSetResponse() {},
     loadScript() {},
     duelQueryCount() {},
@@ -339,8 +338,8 @@ function structProxy(
             }
           };
         }
-        if (prop.startsWith("__")) {
-          return layout[prop.substr(2)];
+        if (prop == "__ptr") {
+          return ptr;
         }
         const f = layout[prop];
         if (f === undefined || ptr === undefined) {
@@ -445,7 +444,6 @@ function getTypeAlign(type: StructRecord[1]) {
     case "double":
       return 8;
   }
-  console.log(type);
 }
 
 function getTypeSize(type: Emscripten.CType | "string") {
