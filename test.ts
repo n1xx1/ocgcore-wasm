@@ -40,5 +40,6 @@ import { OcgDuelMode } from "./src/type_core";
       console.warn(type, text);
     },
   });
+  lib.startDuel(handle);
   console.log(handle);
 })();

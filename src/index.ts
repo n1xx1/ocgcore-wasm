@@ -1,5 +1,8 @@
+import { betterCwrap } from "./internal/cwrap";
+import { CStruct } from "./internal/struct";
 import { OcgCardData, OcgDuelOptions, OcgNewCardInfo } from "./types";
 import { OcgProcessResult } from "./type_core";
+import { OcgMessage } from "./type_message";
 
 const DuelHandleSymbol = Symbol("duel-handle");
 
@@ -70,11 +73,10 @@ function createLibrary(m: LibraryModule) {
   ] as const);
 
   //void* ocgapiDuelGetMessage(OCG_Duel duel, uint32_t* length)
-  const ocgapiDuelGetMessage = cwrap(
-    "ocgapiDuelGetMessage",
-    "void",
-    [] as const
-  );
+  const ocgapiDuelGetMessage = cwrap("ocgapiDuelGetMessage", "number", [
+    "number",
+    "number",
+  ] as const);
 
   //void ocgapiDuelSetResponse(OCG_Duel duel, const void* buffer, uint32_t length)
   const ocgapiDuelSetResponse = cwrap(
@@ -84,7 +86,12 @@ function createLibrary(m: LibraryModule) {
   );
 
   //int ocgapiLoadScript(OCG_Duel duel, const char* buffer, uint32_t length, const char* name)
-  const ocgapiLoadScript = cwrap("ocgapiLoadScript", "void", [] as const);
+  const ocgapiLoadScript = cwrap("ocgapiLoadScript", "number", [
+    "number",
+    "number",
+    "number",
+    "number",
+  ] as const);
 
   //uint32_t ocgapiDuelQueryCount(OCG_Duel duel, uint8_t team, uint32_t loc)
   const ocgapiDuelQueryCount = cwrap(
@@ -110,7 +117,7 @@ function createLibrary(m: LibraryModule) {
     [] as const
   );
 
-  const OCG_DuelOptions = defineStruct(m, [
+  const OCG_DuelOptions = CStruct(m, [
     ["seed", "i32"],
     ["flags", "i64"],
     [
@@ -139,7 +146,7 @@ function createLibrary(m: LibraryModule) {
     ["cardReaderDonePayload", "*"],
   ] as const);
 
-  const OCG_CardData = defineStruct(m, [
+  const OCG_CardData = CStruct(m, [
     ["code", "i32"],
     ["alias", "i32"],
     ["setcodes", "i16*"],
@@ -154,7 +161,7 @@ function createLibrary(m: LibraryModule) {
     ["link_marker", "i32"],
   ] as const);
 
-  const OCG_NewCardInfo = defineStruct(m, [
+  const OCG_NewCardInfo = CStruct(m, [
     ["team", "i8"],
     ["duelist", "i8"],
     ["code", "i32"],
@@ -293,255 +300,32 @@ function createLibrary(m: LibraryModule) {
     duelProcess(duelHandle: OcgDuelHandle): OcgProcessResult {
       return ocgapiDuelProcess(duelHandle[DuelHandleSymbol]);
     },
-    duelGetMessage(duelHandle) {},
+    duelGetMessage(duelHandle: OcgDuelHandle): OcgMessage[] {
+      const lenPtr = m._malloc(4);
+      const buffer = ocgapiDuelGetMessage(duelHandle[DuelHandleSymbol], lenPtr);
+      console.log(buffer, m.getValue(lenPtr, "i32"));
+      return [];
+    },
     duelSetResponse() {},
-    loadScript() {},
+    loadScript(duelHandle: OcgDuelHandle, name: string, content: string) {
+      const contentLength = m.lengthBytesUTF8(content) + 1;
+      const contentPtr = m._malloc(contentLength);
+      m.stringToUTF8(content, contentPtr);
+      const nameLength = m.lengthBytesUTF8(name) + 1;
+      const namePtr = m._malloc(nameLength);
+      m.stringToUTF8(name, namePtr);
+      return (
+        ocgapiLoadScript(
+          duelHandle[DuelHandleSymbol],
+          contentPtr,
+          contentLength,
+          namePtr
+        ) == 1
+      );
+    },
     duelQueryCount() {},
     duelQuery() {},
     duelQueryLocation() {},
     duelQueryField() {},
-  };
-}
-
-function defineStruct<T extends readonly StructRecord[]>(
-  m: LibraryModule,
-  structure: T
-) {
-  const layout = produceStructure(structure);
-  return {
-    new(): StructDeclaration<T> {
-      const ptr = m._malloc(layout.__size);
-      return structProxy(m, ptr, layout, true);
-    },
-    from(ptr: number): StructDeclaration<T> {
-      return structProxy(m, ptr, layout, false);
-    },
-  };
-}
-
-function structProxy(
-  m: LibraryModule,
-  ptr: number,
-  layout: StructDefinition,
-  owned: boolean
-) {
-  return new Proxy(
-    {},
-    {
-      get(target, prop: string) {
-        if (prop === "free") {
-          return () => {
-            if (owned) {
-              m._free(ptr);
-              ptr = undefined;
-              owned = false;
-            }
-          };
-        }
-        if (prop == "__ptr") {
-          return ptr;
-        }
-        const f = layout[prop];
-        if (f === undefined || ptr === undefined) {
-          return undefined;
-        }
-        const { type, offset } = f;
-        if (typeof type === "object") {
-          return structProxy(m, ptr, type, owned);
-        }
-        if (type === "string") {
-          const sptr = m.getValue(ptr + offset, "*");
-          return m.UTF8ToString(sptr);
-        }
-        if (type === "i64") {
-          const low = m.getValue(ptr + offset, "i32");
-          const high = m.getValue(ptr + offset + 4, "i32");
-          return BigInt(low) | (BigInt(high) << 32n);
-        }
-        return m.getValue(ptr + offset, type);
-      },
-      set(target, prop: string, value) {
-        const f = layout[prop];
-        if (f === undefined || ptr === undefined) {
-          return false;
-        }
-        const { type, offset } = f;
-        if (typeof type === "object") {
-          return false;
-        }
-        if (type === "string") {
-          const s = m.lengthBytesUTF8(value);
-          // TODO: cleanup
-          const p = m._malloc(s);
-          m.stringToUTF8(value, p);
-          m.setValue(ptr + offset, p, "*");
-          return true;
-        }
-        if (type === "i64") {
-          const vb = value as bigint;
-          m.setValue(ptr + offset, Number(vb & 4294967295n), "i32");
-          m.setValue(ptr + offset + 4, Number(vb >> 32n), "i32");
-          return true;
-        }
-        m.setValue(ptr + offset, value, type);
-        return true;
-      },
-    }
-  );
-}
-
-function produceStructure(
-  s: readonly StructRecord[],
-  offset = 0
-): StructDefinition {
-  const def = {} as StructDefinition;
-  let size = 0;
-  for (const [f, t] of s) {
-    const align = getTypeAlign(t);
-    const padding = (align - ((offset + size) % align)) % align;
-    const aligned = offset + size + padding;
-
-    if (Array.isArray(t)) {
-      const subStructure = produceStructure(t, aligned);
-      def[f] = {
-        offset: aligned,
-        type: subStructure,
-      };
-      size += subStructure.__size;
-      continue;
-    }
-
-    const type = t as Exclude<StructRecord[1], readonly StructRecord[]>;
-    def[f] = {
-      offset: aligned,
-      type,
-    };
-    size += padding + getTypeSize(type);
-  }
-  def.__size = size;
-  return def;
-}
-
-function getTypeAlign(type: StructRecord[1]) {
-  while (Array.isArray(type)) {
-    type = type[0][1];
-  }
-  // @ts-ignore
-  if (type.endsWith("*")) {
-    return 4;
-  }
-  switch (type) {
-    case "i8":
-      return 1;
-    case "i16":
-      return 2;
-    case "i32":
-      return 4;
-    case "i64":
-      return 8;
-    case "float":
-      return 4;
-    case "double":
-      return 8;
-  }
-}
-
-function getTypeSize(type: Emscripten.CType | "string") {
-  if (type.endsWith("*")) {
-    return 4;
-  }
-  switch (type) {
-    case "i8":
-      return 1;
-    case "i16":
-      return 2;
-    case "i32":
-      return 4;
-    case "i64":
-      return 8;
-    case "float":
-      return 4;
-    case "double":
-      return 8;
-  }
-}
-
-type StructDefinition = {
-  [id: string]: {
-    offset: number;
-    type: "string" | Emscripten.CType | StructDefinition;
-  };
-} & { __size: number };
-
-type StructRecord = readonly [
-  string,
-  Emscripten.CType | "string" | readonly StructRecord[]
-];
-
-type Cast<X, Y> = X extends Y ? X : Y;
-
-type implStructDeclaration<T> = T extends readonly (readonly [
-  infer Key,
-  unknown
-])[]
-  ? {
-      [K in Cast<Key, string>]: ConvertC<
-        Extract<T[number], readonly [K, unknown]>[1]
-      >;
-    }
-  : never;
-
-type StructDeclaration<T> = implStructDeclaration<T> & {
-  __ptr: number;
-  __layout: StructDefinition;
-  __owned: boolean;
-  free(): void;
-};
-
-type ConvertC<T> = T extends "string"
-  ? string
-  : "i64" extends T
-  ? bigint
-  : T extends Emscripten.CType
-  ? number
-  : T extends readonly StructRecord[]
-  ? StructDeclaration<T>
-  : never;
-
-type TEST = [
-  ["test", "i8"],
-  ["test1", "string"],
-  ["sub", [["test", "i8"], ["test1", "string"]]]
-];
-type XD = StructDeclaration<TEST>;
-
-type JSType = "number" | "string" | "array" | "boolean";
-
-type Convert<T> = T extends "void"
-  ? void
-  : "number" extends T
-  ? number
-  : "string" extends T
-  ? string
-  : "array" extends T
-  ? number
-  : "boolean" extends T
-  ? boolean
-  : never;
-
-type ConvertArgs<Args extends readonly any[]> = Args extends readonly [
-  infer T,
-  ...infer Rest
-]
-  ? [Convert<T>, ...ConvertArgs<Rest>]
-  : [];
-
-function betterCwrap(m: { cwrap: typeof cwrap }) {
-  return function <Ret extends JSType | "void", Args extends readonly JSType[]>(
-    name: string,
-    ret: Ret,
-    args: Args
-  ): (...args: ConvertArgs<Args>) => Convert<Ret> {
-    return m.cwrap.apply(m, [name, ret === "void" ? null : ret, args]);
   };
 }
