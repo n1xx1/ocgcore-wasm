@@ -1,4 +1,4 @@
-/lib/*
-/node_modules/*
-/.vscode/*
-!/**/.gitkeep
+/lib
+/dist
+/node_modules
+/.vscode

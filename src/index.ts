@@ -1,5 +1,7 @@
+import { BufferReader } from "./internal/buffer";
 import { betterCwrap } from "./internal/cwrap";
 import { CStruct } from "./internal/struct";
+import { readMessage } from "./messages";
 import { OcgCardData, OcgDuelOptions, OcgNewCardInfo } from "./types";
 import { OcgProcessResult } from "./type_core";
 import { OcgMessage } from "./type_message";
@@ -20,10 +22,18 @@ interface LibraryModule extends EmscriptenModule {
   addFunction: typeof addFunction;
   removeFunction: typeof removeFunction;
   lengthBytesUTF8: typeof lengthBytesUTF8;
+  Asyncify: {
+    handleAsync(f: () => PromiseLike<any>): any;
+    handleSleep(wakeUp: () => void): void;
+  };
 }
 
-export default async function initialize() {
-  const factory: EmscriptenModuleFactory<LibraryModule> = require("../lib/output.js");
+type Initializer = Partial<
+  Pick<EmscriptenModule, "locateFile" | "wasmBinary" | "print" | "printErr">
+>;
+
+export default async function initialize(module: Initializer) {
+  const factory: EmscriptenModuleFactory<LibraryModule> = require("../lib/ocgcore.js");
   return createLibrary(
     await factory({
       print(str) {
@@ -32,6 +42,7 @@ export default async function initialize() {
       printErr(str) {
         console.error(str);
       },
+      ...module,
     })
   );
 }
@@ -48,10 +59,12 @@ function createLibrary(m: LibraryModule) {
   ] as const);
 
   //int ocgapiCreateDuel(OCG_Duel* duel, OCG_DuelOptions* options)
-  const ocgapiCreateDuel = cwrap("ocgapiCreateDuel", "number", [
+  const ocgapiCreateDuel = cwrap(
+    "ocgapiCreateDuel",
     "number",
-    "number",
-  ] as const);
+    ["number", "number"] as const,
+    { async: true }
+  );
 
   //void ocgapiDestroyDuel(OCG_Duel duel)
   const ocgapiDestroyDuel = cwrap("ocgapiDestroyDuel", "void", [
@@ -59,18 +72,28 @@ function createLibrary(m: LibraryModule) {
   ] as const);
 
   //void ocgapiDuelNewCard(OCG_Duel duel, OCG_NewCardInfo* info)
-  const ocgapiDuelNewCard = cwrap("ocgapiDuelNewCard", "void", [
-    "number",
-    "number",
-  ] as const);
+  const ocgapiDuelNewCard = cwrap(
+    "ocgapiDuelNewCard",
+    "void",
+    ["number", "number"] as const,
+    { async: true }
+  );
 
   //void ocgapiStartDuel(OCG_Duel duel)
-  const ocgapiStartDuel = cwrap("ocgapiStartDuel", "void", ["number"] as const);
+  const ocgapiStartDuel = cwrap(
+    "ocgapiStartDuel",
+    "void",
+    ["number"] as const,
+    { async: true }
+  );
 
   //int ocgapiDuelProcess(OCG_Duel duel)
-  const ocgapiDuelProcess = cwrap("ocgapiDuelProcess", "number", [
+  const ocgapiDuelProcess = cwrap(
+    "ocgapiDuelProcess",
     "number",
-  ] as const);
+    ["number"] as const,
+    { async: true }
+  );
 
   //void* ocgapiDuelGetMessage(OCG_Duel duel, uint32_t* length)
   const ocgapiDuelGetMessage = cwrap("ocgapiDuelGetMessage", "number", [
@@ -86,12 +109,12 @@ function createLibrary(m: LibraryModule) {
   );
 
   //int ocgapiLoadScript(OCG_Duel duel, const char* buffer, uint32_t length, const char* name)
-  const ocgapiLoadScript = cwrap("ocgapiLoadScript", "number", [
+  const ocgapiLoadScript = cwrap(
+    "ocgapiLoadScript",
     "number",
-    "number",
-    "number",
-    "number",
-  ] as const);
+    ["number", "number", "number", "number"] as const,
+    { async: true }
+  );
 
   //uint32_t ocgapiDuelQueryCount(OCG_Duel duel, uint8_t team, uint32_t loc)
   const ocgapiDuelQueryCount = cwrap(
@@ -175,9 +198,9 @@ function createLibrary(m: LibraryModule) {
   const callbacks = new Map<
     number,
     {
-      cardReader(id: number): OcgCardData;
-      scriptReader(path: string): boolean;
-      errorHandler(type: number, message: string): void;
+      cardReader: OcgDuelOptions["cardReader"];
+      scriptReader: OcgDuelOptions["scriptReader"];
+      errorHandler: OcgDuelOptions["errorHandler"];
     }
   >();
 
@@ -185,26 +208,28 @@ function createLibrary(m: LibraryModule) {
     (payload: number, code: number, data: number) => {
       const { cardReader } = callbacks.get(payload);
       const card = OCG_CardData.from(data);
-      const cardData = cardReader(code);
+      m.Asyncify.handleAsync(async () => {
+        const cardData = await cardReader(code);
 
-      card.code = cardData.code;
-      card.alias = cardData.alias;
-      card.type = cardData.type;
-      card.level = cardData.level;
-      card.attribute = cardData.attribute;
-      card.race = cardData.race;
-      card.attack = cardData.attack;
-      card.defense = cardData.defense;
-      card.lscale = cardData.lscale;
-      card.rscale = cardData.rscale;
-      card.link_marker = cardData.link_marker;
+        card.code = cardData.code;
+        card.alias = cardData.alias;
+        card.type = cardData.type;
+        card.level = cardData.level;
+        card.attribute = cardData.attribute;
+        card.race = cardData.race;
+        card.attack = cardData.attack;
+        card.defense = cardData.defense;
+        card.lscale = cardData.lscale;
+        card.rscale = cardData.rscale;
+        card.link_marker = cardData.link_marker;
 
-      const setCodes = m._malloc((cardData.setcodes.length + 1) * 2);
-      for (let i = 0; i < cardData.setcodes.length; i++) {
-        m.setValue(setCodes + i * 2, cardData.setcodes[i], "i16");
-      }
-      m.setValue(setCodes + cardData.setcodes.length * 2, 0, "i16");
-      card.setcodes = setCodes;
+        const setCodes = m._malloc((cardData.setcodes.length + 1) * 2);
+        for (let i = 0; i < cardData.setcodes.length; i++) {
+          m.setValue(setCodes + i * 2, cardData.setcodes[i], "i16");
+        }
+        m.setValue(setCodes + cardData.setcodes.length * 2, 0, "i16");
+        card.setcodes = setCodes;
+      });
     },
     "viii"
   );
@@ -216,11 +241,24 @@ function createLibrary(m: LibraryModule) {
     "vii"
   );
   const callbackScriptReader = m.addFunction(
-    (payload: number, duel: number, name: number): number => {
+    (payload: number, duel: number, name: number, res: number): number => {
       const { scriptReader } = callbacks.get(payload);
-      return scriptReader(m.UTF8ToString(name)) ? 1 : 0;
+      return m.Asyncify.handleAsync(async () => {
+        const contents = await scriptReader(m.UTF8ToString(name));
+        if (contents) {
+          const contentLength = m.lengthBytesUTF8(contents);
+          const contentPtr = m._malloc(contentLength + 1);
+          m.stringToUTF8(contents, contentPtr, contentLength + 1);
+          m.setValue(res, contentPtr, "i32");
+          m.setValue(res + 4, contentLength, "i32");
+        } else {
+          m.setValue(res, 0, "i32");
+          m.setValue(res + 4, 0, "i32");
+        }
+        return;
+      });
     },
-    "iiii"
+    "viiii"
   );
   const callbackErrorHandler = m.addFunction(
     (payload: number, message: number, type: number) => {
@@ -240,7 +278,7 @@ function createLibrary(m: LibraryModule) {
         m.getValue(minorPtr, "i32"),
       ] as const;
     },
-    createDuel(options: OcgDuelOptions): OcgDuelHandle | null {
+    async createDuel(options: OcgDuelOptions): Promise<OcgDuelHandle | null> {
       const options1 = OCG_DuelOptions.new();
       options1.seed = options.seed;
       options1.flags = options.flags;
@@ -267,7 +305,7 @@ function createLibrary(m: LibraryModule) {
       options1.errorHandlerPayload = lastCallbackId;
 
       const duelPtr = m._malloc(4);
-      const res = ocgapiCreateDuel(duelPtr, options1.__ptr);
+      const res = await ocgapiCreateDuel(duelPtr, options1.__ptr);
       if (res != 0) {
         m._free(duelPtr);
         return null;
@@ -282,7 +320,7 @@ function createLibrary(m: LibraryModule) {
     destroyDuel(duelHandle: OcgDuelHandle) {
       ocgapiDestroyDuel(duelHandle[DuelHandleSymbol]);
     },
-    duelNewCard(duelHandle: OcgDuelHandle, cardInfo: OcgNewCardInfo) {
+    async duelNewCard(duelHandle: OcgDuelHandle, cardInfo: OcgNewCardInfo) {
       const newCard = OCG_NewCardInfo.new();
       newCard.team = cardInfo.team;
       newCard.duelist = cardInfo.duelist;
@@ -291,23 +329,33 @@ function createLibrary(m: LibraryModule) {
       newCard.loc = cardInfo.loc;
       newCard.seq = cardInfo.seq;
       newCard.pos = cardInfo.pos;
-      ocgapiDuelNewCard(duelHandle[DuelHandleSymbol], newCard.__ptr);
+      await ocgapiDuelNewCard(duelHandle[DuelHandleSymbol], newCard.__ptr);
       newCard.free();
     },
-    startDuel(duelHandle: OcgDuelHandle) {
-      ocgapiDuelProcess(duelHandle[DuelHandleSymbol]);
+    async startDuel(duelHandle: OcgDuelHandle) {
+      await ocgapiStartDuel(duelHandle[DuelHandleSymbol]);
     },
-    duelProcess(duelHandle: OcgDuelHandle): OcgProcessResult {
-      return ocgapiDuelProcess(duelHandle[DuelHandleSymbol]);
+    async duelProcess(duelHandle: OcgDuelHandle): Promise<OcgProcessResult> {
+      return await ocgapiDuelProcess(duelHandle[DuelHandleSymbol]);
     },
-    duelGetMessage(duelHandle: OcgDuelHandle): OcgMessage[] {
+    duelGetMessage(duelHandle: OcgDuelHandle) {
       const lenPtr = m._malloc(4);
       const buffer = ocgapiDuelGetMessage(duelHandle[DuelHandleSymbol], lenPtr);
-      console.log(buffer, m.getValue(lenPtr, "i32"));
-      return [];
+      const bufferLength = m.getValue(lenPtr, "i32");
+      const reader = BufferReader.create(m, buffer, bufferLength);
+
+      const messages: OcgMessage[] = [];
+
+      while (reader.avail > 0) {
+        const length = reader.i32();
+        const subReader = reader.sub(length);
+        messages.push(readMessage(subReader));
+      }
+
+      return messages;
     },
     duelSetResponse() {},
-    loadScript(duelHandle: OcgDuelHandle, name: string, content: string) {
+    async loadScript(duelHandle: OcgDuelHandle, name: string, content: string) {
       const contentLength = m.lengthBytesUTF8(content);
       const contentPtr = m._malloc(contentLength + 1);
       m.stringToUTF8(content, contentPtr, contentLength + 1);
@@ -316,12 +364,12 @@ function createLibrary(m: LibraryModule) {
       m.stringToUTF8(name, namePtr, nameLength + 1);
 
       return (
-        ocgapiLoadScript(
+        (await ocgapiLoadScript(
           duelHandle[DuelHandleSymbol],
           contentPtr,
           contentLength,
           namePtr
-        ) == 1
+        )) == 1
       );
     },
     duelQueryCount() {},

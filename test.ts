@@ -1,16 +1,23 @@
 import initialize, { OcgDuelHandle } from "./src/index";
-import { OcgDuelMode, OcgLocation, OcgPosition } from "./src/type_core";
+import {
+  OcgDuelMode,
+  OcgLocation,
+  OcgPosition,
+  OcgProcessResult,
+} from "./src/type_core";
 import path from "path";
 import { readFile } from "fs/promises";
+import { messageTypeStrings } from "./src/types";
 
-const scriptPath =
-  "C:\\Users\\n1xx1\\DEV\\n1xx1\\yugioh\\ygo-test\\bin\\script";
+const scriptPath = "../ygo-data/scripts";
 
-let loadingCards = 0;
 (async () => {
-  const lib = await initialize();
+  const lib = await initialize({
+    wasmBinary: await readFile("./dist/ocgcore.wasm"),
+  });
+
   console.log(lib.getVersion());
-  const handle = lib.createDuel({
+  const handle = await lib.createDuel({
     flags: OcgDuelMode.MODE_MR5,
     seed: 0,
     team1: {
@@ -39,48 +46,41 @@ let loadingCards = 0;
         link_marker: 0,
       };
     },
-    scriptReader: (script) => {
-      loadingCards++;
+    scriptReader: async (script) => {
       const filePath = script.match(/c\d+\.lua/)
         ? path.join(scriptPath, "official", script)
         : path.join(scriptPath, script);
 
-      readFile(filePath, "utf-8")
-        .then((content) => {
-          lib.loadScript(handle, script, content);
-          loadingCards--;
-        })
-        .catch((e) => {
-          console.log(`error reading script "${script}", ${e}`);
-          loadingCards--;
-        });
-      return true;
+      try {
+        return await readFile(filePath, "utf-8");
+      } catch (e) {
+        console.log(`error reading script "${script}", ${e}`);
+        return null;
+      }
     },
     errorHandler: (type, text) => {
       console.warn(type, text);
     },
   });
 
-  console.log("test loadScript");
-  lib.loadScript(
+  await lib.loadScript(
     handle,
     "constant.lua",
     await readFile(path.join(scriptPath, "constant.lua"), "utf8")
   );
-  lib.loadScript(
+  await lib.loadScript(
     handle,
     "utility.lua",
     await readFile(path.join(scriptPath, "utility.lua"), "utf8")
   );
 
-  console.log("test addCard");
-  const addCard = (
+  const addCard = async (
     team: number,
     code: number,
     loc: OcgLocation,
     pos: OcgPosition
   ) =>
-    lib.duelNewCard(handle, {
+    await lib.duelNewCard(handle, {
       code,
       duelist: 0,
       team,
@@ -91,22 +91,40 @@ let loadingCards = 0;
     });
 
   for (const card of deck.mainDeck) {
-    addCard(0, card, OcgLocation.DECK, OcgPosition.FACEDOWN_DEFENSE);
+    await addCard(0, card, OcgLocation.DECK, OcgPosition.FACEDOWN_DEFENSE);
   }
   for (const card of deck.extraDeck) {
-    addCard(0, card, OcgLocation.EXTRA, OcgPosition.FACEDOWN_DEFENSE);
+    await addCard(0, card, OcgLocation.EXTRA, OcgPosition.FACEDOWN_DEFENSE);
   }
   for (const card of deck.mainDeck) {
-    addCard(1, card, OcgLocation.DECK, OcgPosition.FACEDOWN_DEFENSE);
+    await addCard(1, card, OcgLocation.DECK, OcgPosition.FACEDOWN_DEFENSE);
   }
   for (const card of deck.extraDeck) {
-    addCard(1, card, OcgLocation.EXTRA, OcgPosition.FACEDOWN_DEFENSE);
+    await addCard(1, card, OcgLocation.EXTRA, OcgPosition.FACEDOWN_DEFENSE);
   }
 
   console.log("test startDuel");
-  lib.startDuel(handle);
+  await lib.startDuel(handle);
+  while (true) {
+    const status = await lib.duelProcess(handle);
+
+    const data = lib.duelGetMessage(handle);
+    data
+      .filter((d) => d)
+      .map((d) => ({ ...d, type: messageTypeStrings[d.type] }))
+      .forEach((d) => console.log(d));
+
+    if (status == OcgProcessResult.END) {
+      break;
+    }
+    if (status != OcgProcessResult.CONTINUE) {
+      console.log("waiting response");
+      break;
+    }
+  }
+  console.log(await lib.duelProcess(handle));
   console.log(handle);
-})();
+})().catch((e) => console.log(e));
 
 const deck = {
   mainDeck: [

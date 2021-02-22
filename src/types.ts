@@ -50,7 +50,7 @@ export interface OcgDuelOptions {
     startingDrawCount: number;
     drawCountPerTurn: number;
   };
-  cardReader: (card: number) => OcgCardData;
-  scriptReader: (name: string) => boolean;
+  cardReader: (card: number) => Promise<OcgCardData> | OcgCardData;
+  scriptReader: (name: string) => Promise<string> | string;
   errorHandler?: (type: OcgLogType, text: string) => void;
 }

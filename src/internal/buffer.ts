@@ -1,78 +1,103 @@
 import { LibraryModule } from "./struct";
 
-class BufferReader {
-  m: LibraryModule;
-  ptr: number;
-  len: number;
+export class BufferReader {
+  view: DataView;
   off: number;
 
-  constructor(m: LibraryModule, ptr: number, len: number) {
-    this.m = m;
-    this.ptr = ptr;
-    this.len = len;
-    this.off = 0;
+  static create(m: LibraryModule, ptr: number, len: number) {
+    return new BufferReader(new DataView(m.HEAP8.buffer, ptr, len));
   }
-  readU8(): number {
-    if (this.off + 1 > this.len) {
+
+  constructor(view: DataView, off?: number) {
+    this.view = view;
+    this.off = off ?? 0;
+  }
+  get avail(): number {
+    return this.view.byteLength - this.off;
+  }
+  sub(length: number): BufferReader {
+    if (this.avail < length) {
       throw new Error("eof");
     }
-    const value = this.m.getValue(this.ptr + this.off, "i8");
+    const b = new BufferReader(
+      new DataView(this.view.buffer, this.view.byteOffset + this.off, length),
+      0
+    );
+    this.off += length;
+    return b;
+  }
+  bytes(length: number): number[] {
+    if (this.avail < length) {
+      throw new Error("eof");
+    }
+    const bytes = this.view.buffer.slice(
+      this.view.byteOffset + this.off,
+      this.view.byteOffset + this.off + length
+    );
+    return Array.from(new Uint8Array(bytes));
+  }
+  u8(): number {
+    if (this.avail < 1) {
+      throw new Error("eof");
+    }
+    const value = this.view.getUint8(this.off);
     this.off += 1;
-    return value < 0 ? 0xff - value : value;
+    return value;
   }
-  readI8(): number {
-    if (this.off + 1 > this.len) {
+  i8(): number {
+    if (this.avail < 1) {
       throw new Error("eof");
     }
-    const value = this.m.getValue(this.ptr + this.off, "i8");
+    const value = this.view.getInt8(this.off);
     this.off += 1;
     return value;
   }
-  readU16(): number {
-    if (this.off + 2 > this.len) {
+  u16(): number {
+    if (this.avail < 2) {
       throw new Error("eof");
     }
-    const value = this.m.getValue(this.ptr + this.off, "i16");
-    this.off += 2;
-    return value < 0 ? 0xffff - value : value;
-  }
-  readI16(): number {
-    if (this.off + 2 > this.len) {
-      throw new Error("eof");
-    }
-    const value = this.m.getValue(this.ptr + this.off, "i16");
+    const value = this.view.getUint16(this.off, true);
     this.off += 2;
     return value;
   }
-  readU32(): number {
-    if (this.off + 4 > this.len) {
+  i16(): number {
+    if (this.avail < 2) {
       throw new Error("eof");
     }
-    const value = this.m.getValue(this.ptr + this.off, "i32");
-    this.off += 4;
-    return value < 0 ? 0xffffffff - value : value;
+    const value = this.view.getInt16(this.off, true);
+    this.off += 2;
+    return value;
   }
-  readI32(): number {
-    if (this.off + 4 > this.len) {
+  u32(): number {
+    if (this.avail < 4) {
       throw new Error("eof");
     }
-    const value = this.m.getValue(this.ptr + this.off, "i32");
+    const value = this.view.getUint32(this.off, true);
     this.off += 4;
     return value;
   }
-  readU64(): bigint {
-    if (this.off + 8 > this.len) {
+  i32(): number {
+    if (this.avail < 4) {
       throw new Error("eof");
     }
-    const low = this.readU32();
-    const high = this.readU32();
-    return BigInt(low) | (BigInt(high) << 32n);
+    const value = this.view.getInt32(this.off, true);
+    this.off += 4;
+    return value;
   }
-  readI64(): bigint {
-    if (this.off + 8 > this.len) {
+  u64(): bigint {
+    if (this.avail < 8) {
       throw new Error("eof");
     }
-    // TODO: fix
-    return this.readU64();
+    const value = this.view.getBigUint64(this.off, true);
+    this.off += 8;
+    return value;
+  }
+  i64(): bigint {
+    if (this.avail < 8) {
+      throw new Error("eof");
+    }
+    const value = this.view.getBigInt64(this.off, true);
+    this.off += 8;
+    return value;
   }
 }
