@@ -227,7 +227,7 @@ function createLibrary(m: LibraryModule) {
       const { errorHandler } = callbacks.get(payload);
       errorHandler(type, m.UTF8ToString(message));
     },
-    "iiii"
+    "viii"
   );
 
   return {
@@ -308,12 +308,13 @@ function createLibrary(m: LibraryModule) {
     },
     duelSetResponse() {},
     loadScript(duelHandle: OcgDuelHandle, name: string, content: string) {
-      const contentLength = m.lengthBytesUTF8(content) + 1;
-      const contentPtr = m._malloc(contentLength);
-      m.stringToUTF8(content, contentPtr);
-      const nameLength = m.lengthBytesUTF8(name) + 1;
-      const namePtr = m._malloc(nameLength);
-      m.stringToUTF8(name, namePtr);
+      const contentLength = m.lengthBytesUTF8(content);
+      const contentPtr = m._malloc(contentLength + 1);
+      m.stringToUTF8(content, contentPtr, contentLength + 1);
+      const nameLength = m.lengthBytesUTF8(name);
+      const namePtr = m._malloc(nameLength + 1);
+      m.stringToUTF8(name, namePtr, nameLength + 1);
+
       return (
         ocgapiLoadScript(
           duelHandle[DuelHandleSymbol],

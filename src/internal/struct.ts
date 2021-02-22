@@ -83,7 +83,7 @@ function structProxy(
           }
           const s = m.lengthBytesUTF8(value) + 1;
           const p = m._malloc(s);
-          m.stringToUTF8(value, p);
+          m.stringToUTF8(value, p, s);
           m.setValue(ptr + offset, p, "*");
           ownedStrings.push(p);
           return true;

@@ -2,12 +2,14 @@ em++ \
     -s "EXPORTED_FUNCTIONS=['_free']" \
     -s "EXTRA_EXPORTED_RUNTIME_METHODS=['ccall', 'cwrap', 'getValue', 'setValue', 'UTF8ToString', 'stringToUTF8', 'stackTrace', 'lengthBytesUTF8', 'addFunction', 'removeFunction']" \
     -s WASM_BIGINT=1 \
+    -s DISABLE_EXCEPTION_CATCHING=0 \
     -s NO_EXIT_RUNTIME=1 \
     -s RESERVED_FUNCTION_POINTERS=10 \
     -s MODULARIZE=1 \
+    -s ASSERTIONS=1 \
     -s ALLOW_MEMORY_GROWTH=1 \
     -s MALLOC=emmalloc \
-    -I./cpp/lua -Os \
+    -I./cpp/lua -O0 \
     ./cpp/wasm.cpp \
     ./cpp/lua/lapi.c \
     ./cpp/lua/lauxlib.c \
