@@ -2,9 +2,11 @@ import { BufferReader } from "./internal/buffer";
 import { betterCwrap } from "./internal/cwrap";
 import { CStruct } from "./internal/struct";
 import { readMessage } from "./messages";
+import { createResponse } from "./responses";
 import { OcgCardData, OcgDuelOptions, OcgNewCardInfo } from "./types";
 import { OcgProcessResult } from "./type_core";
 import { OcgMessage } from "./type_message";
+import { OcgResponse } from "./type_response";
 
 const DuelHandleSymbol = Symbol("duel-handle");
 
@@ -102,11 +104,11 @@ function createLibrary(m: LibraryModule) {
   ] as const);
 
   //void ocgapiDuelSetResponse(OCG_Duel duel, const void* buffer, uint32_t length)
-  const ocgapiDuelSetResponse = cwrap(
-    "ocgapiDuelSetResponse",
-    "void",
-    [] as const
-  );
+  const ocgapiDuelSetResponse = cwrap("ocgapiDuelSetResponse", "void", [
+    "number",
+    "number",
+    "number",
+  ] as const);
 
   //int ocgapiLoadScript(OCG_Duel duel, const char* buffer, uint32_t length, const char* name)
   const ocgapiLoadScript = cwrap(
@@ -354,7 +356,18 @@ function createLibrary(m: LibraryModule) {
 
       return messages;
     },
-    duelSetResponse() {},
+    duelSetResponse(duelHandle: OcgDuelHandle, response: OcgResponse) {
+      const buffer = createResponse(response);
+      const bufferPtr = m._malloc(buffer.length);
+      m.HEAPU8.set(buffer, bufferPtr);
+
+      ocgapiDuelSetResponse(
+        duelHandle[DuelHandleSymbol],
+        bufferPtr,
+        buffer.length
+      );
+      m._free(bufferPtr);
+    },
     async loadScript(duelHandle: OcgDuelHandle, name: string, content: string) {
       const contentLength = m.lengthBytesUTF8(content);
       const contentPtr = m._malloc(contentLength + 1);

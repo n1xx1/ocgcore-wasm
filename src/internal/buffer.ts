@@ -101,3 +101,76 @@ export class BufferReader {
     return value;
   }
 }
+
+export class BufferWriter {
+  buffer: Uint8Array;
+  view: DataView;
+  off: number;
+
+  constructor(length = 64) {
+    this.buffer = new Uint8Array(length);
+    this.view = new DataView(this.buffer);
+    this.off = 0;
+  }
+
+  grow(toAdd: number) {
+    if (this.off + toAdd <= this.buffer.byteLength) {
+      return;
+    }
+    const newBuffer = new Uint8Array(this.buffer.byteLength * 2);
+    newBuffer.set(this.buffer, 0);
+    this.buffer = newBuffer;
+    this.view = new DataView(this.buffer);
+  }
+  bytes(bytes: ArrayLike<number> | ArrayBuffer) {
+    if (bytes instanceof ArrayBuffer) {
+      this.grow(bytes.byteLength);
+      this.buffer.set(new Uint8Array(bytes), this.off);
+      this.off += bytes.byteLength;
+    } else {
+      this.grow(bytes.length);
+      this.buffer.set(bytes, this.off);
+      this.off += bytes.length;
+    }
+  }
+  u8(value: number) {
+    this.grow(1);
+    this.view.setUint8(this.off, value);
+    this.off += 1;
+  }
+  i8(value: number) {
+    this.grow(1);
+    this.view.setInt8(this.off, value);
+    this.off += 1;
+  }
+  u16(value: number) {
+    this.grow(2);
+    this.view.setUint16(this.off, value, true);
+    this.off += 2;
+  }
+  i16(value: number) {
+    this.grow(2);
+    this.view.setInt16(this.off, value, true);
+    this.off += 2;
+  }
+  u32(value: number) {
+    this.grow(4);
+    this.view.setUint32(this.off, value, true);
+    this.off += 4;
+  }
+  i32(value: number) {
+    this.grow(4);
+    this.view.setInt32(this.off, value, true);
+    this.off += 4;
+  }
+  u64(value: bigint) {
+    this.grow(8);
+    this.view.setBigUint64(this.off, value, true);
+    this.off += 8;
+  }
+  i64(value: bigint) {
+    this.grow(8);
+    this.view.setBigInt64(this.off, value, true);
+    this.off += 8;
+  }
+}

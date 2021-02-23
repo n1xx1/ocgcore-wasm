@@ -30,7 +30,7 @@ const scriptPath = "../ygo-data/scripts";
       startingDrawCount: 5,
       startingLP: 8000,
     },
-    cardReader: (code) => {
+    cardReader: async (code) => {
       return {
         code,
         alias: 0,
