@@ -1,5 +1,4 @@
 import { BufferReader } from "./internal/buffer";
-import { messageTypeStrings } from "./types";
 import { OcgFieldPlayer, OcgMessage, OcgMessageType } from "./type_message";
 
 export function readMessage(reader: BufferReader): OcgMessage {

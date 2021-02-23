@@ -3,10 +3,16 @@ import { betterCwrap } from "./internal/cwrap";
 import { CStruct } from "./internal/struct";
 import { readMessage } from "./messages";
 import { createResponse } from "./responses";
-import { OcgCardData, OcgDuelOptions, OcgNewCardInfo } from "./types";
+import { OcgDuelOptions, OcgNewCardInfo } from "./types";
 import { OcgProcessResult } from "./type_core";
 import { OcgMessage } from "./type_message";
 import { OcgResponse } from "./type_response";
+
+export * from "./types";
+export * from "./type_core";
+export * from "./type_response";
+export * from "./type_message";
+export * from "./opcodes";
 
 const DuelHandleSymbol = Symbol("duel-handle");
 
@@ -30,9 +36,12 @@ interface LibraryModule extends EmscriptenModule {
   };
 }
 
-type Initializer = Partial<
-  Pick<EmscriptenModule, "locateFile" | "wasmBinary" | "print" | "printErr">
->;
+interface Initializer {
+  print(str: string): void;
+  printErr(str: string): void;
+  locateFile(url: string, scriptDirectory: string): string;
+  wasmBinary: ArrayBuffer;
+}
 
 export default async function initialize(module: Initializer) {
   const factory: EmscriptenModuleFactory<LibraryModule> = require("../lib/ocgcore.js");

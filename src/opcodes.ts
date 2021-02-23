@@ -31,7 +31,7 @@ export const OcgOpCode = {
   GETATTRIBUTE: 0x4000010900000000n,
 };
 
-export function cardMatches(card: OcgCardData, opcodes: OcgOpCode[]) {
+export function cardMatchesOpcode(card: OcgCardData, opcodes: OcgOpCode[]) {
   const stack: bigint[] = [];
   let alias = false;
   let token = false;
