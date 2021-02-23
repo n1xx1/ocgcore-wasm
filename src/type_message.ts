@@ -497,7 +497,7 @@ export interface OcgMessageCardSelected {
 export interface OcgMessageRandomSelected {
   type: OcgMessageType.RANDOM_SELECTED;
   player: number;
-  cards: OcgCardLoc[];
+  cards: OcgLocPos[];
 }
 export interface OcgMessageBecomeTarget {
   type: OcgMessageType.BECOME_TARGET;

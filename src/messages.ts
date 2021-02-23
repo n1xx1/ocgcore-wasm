@@ -177,7 +177,7 @@ export function readMessage(reader: BufferReader): OcgMessage {
       return {
         type,
         player: reader.u8(),
-        cards: Array.from({ length: reader.u() }, () => ({
+        cards: Array.from({ length: reader.u32() }, () => ({
           code: reader.u32(),
           controller: reader.u8(),
           location: reader.u32(),
@@ -306,56 +306,37 @@ export function readMessage(reader: BufferReader): OcgMessage {
         player: reader.u8(),
         deck_size: (deck_size = reader.u32()),
         returned_to_extra: (() => {
+          // TODO: check
+          const ret: number[] = [];
           const bytes = reader.bytes(reader.u32());
           for (let i = 0; i < deck_size; i++) {
-            const value = buffer[i / 8] & (1 << i % 8);
+            const value = bytes[Math.floor(i / 8)] & (1 << i % 8);
+            if (value) {
+              ret.push(i);
+            }
           }
+          return ret;
         })(),
       };
-    //
-    //
-    // READ_VALUE(bufferLength, uint32);
-    // uint8* buffer = reader.read(bufferLength, eof);
-    // if (*eof) {
-    //   return {};
-    //       }
-    // Array returnedToExtra = Array::New(env);
-    //  uint32 returnedToExtraSize = 0;
-    // deck_si: Array.from({ length: reader.u() }, () => ({
-    //   uint32 value = uint32(buffer[i / 8]) & (1 << (i % 8));
-    //  if (value) {
-    //     returnedToExtra.Set(returnedToExtraSize, i);
-    //   returnedToExtraSize++;
-    //       }
-    //       }
-    // message.Set("returned_to_extra", returnedToExtra);
     case OcgMessageType.SHUFFLE_SET_CARD:
       return {
         type,
+        location: reader.u8(),
+        cards: Array.from({ length: reader.u32() }, () => ({
+          from: {
+            controller: reader.u8(),
+            location: reader.u8(),
+            sequence: reader.u32(),
+            position: reader.u32(),
+          },
+          to: {
+            controller: reader.u8(),
+            location: reader.u8(),
+            sequence: reader.u32(),
+            position: reader.u32(),
+          },
+        })),
       };
-    // location: reader.u8(),
-    // READ_VALUE(cardsLength, uint32);
-
-    // Array cards = Array::New(env, cardsLength);
-    // cardsLe: Array.from({ length: reader.u() }, () => ({
-    // Object value = Object::New(env);
-    // Object valueFrom = Object::New(env);
-    // controller: reader.u8(),
-    // location: reader.u8(),
-    // sequence: reader.u32(),
-    // position: reader.u32(),
-    // value.Set("from", valueFrom);
-    // cards.Set(i, value);
-    //       }
-    // cardsLe: Array.from({ length: reader.u() }, () => ({
-    // Object valueTo = Object::New(env);
-    // controller: reader.u8(),
-    // location: reader.u8(),
-    // sequence: reader.u32(),
-    // position: reader.u32(),
-    // cards.Get(i).As<Object>().Set("to", valueTo);
-    //       }
-    // message.Set("cards", cards);
     case OcgMessageType.REVERSE_DECK:
       return {
         type,
@@ -363,119 +344,106 @@ export function readMessage(reader: BufferReader): OcgMessage {
     case OcgMessageType.DECK_TOP:
       return {
         type,
+        player: reader.u8(),
+        count: reader.u32(),
+        code: reader.u32(),
+        position: reader.u32(),
       };
-    // player: reader.u8(),
-    // count: reader.u32(),
-    // code: reader.u32(),
-    // position: reader.u32(),
     case OcgMessageType.SHUFFLE_EXTRA:
       return {
         type,
+        player: reader.u8(),
+        cards: Array.from({ length: reader.u32() }, () => reader.u32()),
       };
-    // player: reader.u8(),
-    // READ_VALUE(cardsLength, uint32);
-    // Array cards = Array::New(env, cardsLength);
-    // cardsLe: Array.from({ length: reader.u() }, () => ({
-    // READ_VALUE(code, uint32);
-    // cards.Set(i, Number::New(env, code));
-    //       }
     case OcgMessageType.NEW_TURN:
       return {
         type,
+        player: reader.u8(),
       };
-    // player: reader.u8(),
     case OcgMessageType.NEW_PHASE:
       return {
         type,
+        phase: reader.u16(),
       };
-    // phase: reader.u16(),
     case OcgMessageType.CONFIRM_EXTRATOP:
       return {
         type,
+        player: reader.u8(),
+        cards: Array.from({ length: reader.u32() }, () => ({
+          code: reader.u32(),
+          controller: reader.u8(),
+          location: reader.u8(),
+          sequence: reader.u32(),
+        })),
       };
-    // player: reader.u8(),
-    // READ_VALUE(cardsLength, uint32);
-    // Array cards = Array::New(env, cardsLength);
-    // cardsLe: Array.from({ length: reader.u() }, () => ({
-    // Object value = Object::New(env);
-    // code: reader.u32(),
-    // controller: reader.u8(),
-    // location: reader.u8(),
-    // sequence: reader.u32(),
-    // cards.Set(i, value);
-    // message.Set("cards", cards);
     case OcgMessageType.MOVE:
       return {
         type,
+        card: reader.u32(),
+        from: {
+          controller: reader.u8(),
+          location: reader.u8(),
+          sequence: reader.u32(),
+          position: reader.u32(),
+        },
+        to: {
+          controller: reader.u8(),
+          location: reader.u8(),
+          sequence: reader.u32(),
+          position: reader.u32(),
+        },
       };
-    // code: reader.u32(),
-    // Object valueFrom = Object::New(env);
-    // controller: reader.u8(),
-    // location: reader.u8(),
-    // sequence: reader.u32(),
-    // position: reader.u32(),
-    // message.Set("from", valueFrom);
-    // Object valueTo = Object::New(env);
-    // controller: reader.u8(),
-    // location: reader.u8(),
-    // sequence: reader.u32(),
-    // position: reader.u32(),
-    // message.Set("to", valueTo);
     case OcgMessageType.POS_CHANGE:
       return {
         type,
+        code: reader.u32(),
+        controller: reader.u8(),
+        location: reader.u8(),
+        sequence: reader.u8(),
+        prev_position: reader.u8(),
+        position: reader.u8(),
       };
-    // code: reader.u32(),
-    // controller: reader.u8(),
-    // location: reader.u8(),
-    // sequence: reader.u8(),
-    // prev_position: reader.u8(),
-    // position: reader.u8(),
     case OcgMessageType.SET:
       return {
         type,
+        code: reader.u32(),
+        controller: reader.u8(),
+        location: reader.u8(),
+        sequence: reader.u32(),
+        position: reader.u32(),
       };
-    // code: reader.u32(),
-    // controller: reader.u8(),
-    // location: reader.u8(),
-    // sequence: reader.u32(),
-    // position: reader.u32(),
     case OcgMessageType.SWAP:
       return {
         type,
+        card1: {
+          code: reader.u32(),
+          controller: reader.u8(),
+          location: reader.u8(),
+          sequence: reader.u32(),
+          position: reader.u32(),
+        },
+        card2: {
+          code: reader.u32(),
+          controller: reader.u8(),
+          location: reader.u8(),
+          sequence: reader.u32(),
+          position: reader.u32(),
+        },
       };
-    // {
-    // Object valueCard1 = Object::New(env);
-    // code: reader.u32(),
-    // controller: reader.u8(),
-    // location: reader.u8(),
-    // sequence: reader.u32(),
-    // position: reader.u32(),
-    // message.Set("card1", valueCard1);
-    //       }
-    // {
-    // Object valueCard2 = Object::New(env);
-    // code: reader.u32(),
-    // controller: reader.u8(),
-    // location: reader.u8(),
-    // sequence: reader.u32(),
-    // position: reader.u32(),
-    // message.Set("card2", valueCard2);
-    //       }
     case OcgMessageType.FIELD_DISABLED:
       return {
         type,
+        field_mask: reader.u32(),
       };
-    // field_mask: reader.u32(),
     case OcgMessageType.SUMMONING:
       return {
         type,
+        code: reader.u32(),
+        controller: reader.u8(),
+        location: reader.u8(),
+        sequence: reader.u32(),
+        position: reader.u32(),
       };
-    // code: reader.u32(),
-    // controller: reader.u8(),
-    // location: reader.u8(),
-    // sequence: reader.u32(),
-    // position: reader.u32(),
     case OcgMessageType.SUMMONED:
       return {
         type,
@@ -483,12 +451,12 @@ export function readMessage(reader: BufferReader): OcgMessage {
     case OcgMessageType.SPSUMMONING:
       return {
         type,
+        code: reader.u32(),
+        controller: reader.u8(),
+        location: reader.u8(),
+        sequence: reader.u32(),
+        position: reader.u32(),
       };
-    // code: reader.u32(),
-    // controller: reader.u8(),
-    // location: reader.u8(),
-    // sequence: reader.u32(),
-    // position: reader.u32(),
     case OcgMessageType.SPSUMMONED:
       return {
         type,
@@ -496,12 +464,12 @@ export function readMessage(reader: BufferReader): OcgMessage {
     case OcgMessageType.FLIPSUMMONING:
       return {
         type,
+        code: reader.u32(),
+        controller: reader.u8(),
+        location: reader.u8(),
+        sequence: reader.u32(),
+        position: reader.u32(),
       };
-    // code: reader.u32(),
-    // controller: reader.u8(),
-    // location: reader.u8(),
-    // sequence: reader.u32(),
-    // position: reader.u32(),
     case OcgMessageType.FLIPSUMMONED:
       return {
         type,
@@ -509,32 +477,32 @@ export function readMessage(reader: BufferReader): OcgMessage {
     case OcgMessageType.CHAINING:
       return {
         type,
+        code: reader.u32(),
+        controller: reader.u8(),
+        location: reader.u8(),
+        sequence: reader.u32(),
+        position: reader.u32(),
+        triggering_controller: reader.u8(),
+        triggering_location: reader.u8(),
+        triggering_sequence: reader.u32(),
+        description: reader.u64(),
+        chain_size: reader.u32(),
       };
-    // code: reader.u32(),
-    // controller: reader.u8(),
-    // location: reader.u8(),
-    // sequence: reader.u32(),
-    // position: reader.u32(),
-    // triggering_controller: reader.u8(),
-    // triggering_location: reader.u8(),
-    // triggering_sequence: reader.u32(),
-    // description: reader.u64(),
-    // chain_size: reader.u32(),
     case OcgMessageType.CHAINED:
       return {
         type,
+        chain_size: reader.u32(),
       };
-    // chain_size: reader.u32(),
     case OcgMessageType.CHAIN_SOLVING:
       return {
         type,
+        chain_size: reader.u32(),
       };
-    // chain_size: reader.u32(),
     case OcgMessageType.CHAIN_SOLVED:
       return {
         type,
+        chain_size: reader.u32(),
       };
-    // chain_size: reader.u32(),
     case OcgMessageType.CHAIN_END:
       return {
         type,
@@ -542,41 +510,37 @@ export function readMessage(reader: BufferReader): OcgMessage {
     case OcgMessageType.CHAIN_NEGATED:
       return {
         type,
+        chain_size: reader.u32(),
       };
-    // chain_size: reader.u32(),
     case OcgMessageType.CHAIN_DISABLED:
       return {
         type,
+        chain_size: reader.u32(),
       };
-    // chain_size: reader.u32(),
     case OcgMessageType.CARD_SELECTED:
       return {
         type,
+        cards: Array.from({ length: reader.u32() }, () => ({
+          controller: reader.u8(),
+          location: reader.u8(),
+          sequence: reader.u32(),
+          position: reader.u32(),
+        })),
       };
-    // READ_VALUE(cardsLength, uint32);
-    // Array cards = Array::New(env, cardsLength);
-    // cardsLe: Array.from({ length: reader.u() }, () => ({
-    // Object value = Object::New(env);
-    // controller: reader.u8(),
-    // location: reader.u8(),
-    // sequence: reader.u32(),
-    // position: reader.u32(),
-    // cards.Set(i, value);
-    //       }
-    // message.Set("cards", cards);
     case OcgMessageType.RANDOM_SELECTED:
       return {
         type,
+        player: reader.u8(),
+        cards: Array.from({ length: reader.u32() }, () => ({
+          controller: reader.u8(),
+          location: reader.u8(),
+          sequence: reader.u32(),
+          position: reader.u32(),
+        })),
       };
-    // player: reader.u8(),
-    // READ_VALUE(cardsLength, uint32);
-    // Array cards = Array::New(env, cardsLength);
-    // cardsLe: Array.from({ length: reader.u() }, () => ({
+    // READ_VALUE(cardsngth, uint32);
+    // Array cards = Array::New(env, cardsngth);
     // Object value = Object::New(env);
-    // controller: reader.u8(),
-    // location: reader.u8(),
-    // sequence: reader.u32(),
-    // position: reader.u32(),
     // cards.Set(i, value);
     //       }
     // message.Set("cards", cards);
@@ -584,9 +548,9 @@ export function readMessage(reader: BufferReader): OcgMessage {
       return {
         type,
       };
-    // READ_VALUE(cardsLength, uint32);
-    // Array cards = Array::New(env, cardsLength);
-    // cardsLe: Array.from({ length: reader.u() }, () => ({
+    // READ_VALUE(cardsngth, uint32);
+    // Array cards = Array::New(env, cardsngth);
+    // cards: Array.from({ length: reader.u() }, () => ({
     // Object value = Object::New(env);
     // controller: reader.u8(),
     // location: reader.u8(),
@@ -1022,9 +986,9 @@ export function readMessage(reader: BufferReader): OcgMessage {
       return {
         type,
       };
-    // READ_VALUE(cardsLength, uint32);
-    // Array cards = Array::New(env, cardsLength);
-    // cardsLe: Array.from({ length: reader.u() }, () => ({
+    // READ_VALUE(cardsngth, uint32);
+    // Array cards = Array::New(env, cardsngth);
+    // cards: Array.from({ length: reader.u() }, () => ({
     // Object value = Object::New(env);
     // controller: reader.u8(),
     // location: reader.u8(),
