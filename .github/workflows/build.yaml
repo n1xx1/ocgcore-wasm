@@ -1,0 +1,68 @@
+name: "Build"
+on:
+  push:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: "true"
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8.1.0
+          run_install: |
+            - recursive: true
+              args: [--frozen-lockfile, --strict-peer-dependencies]
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Get ocgcore revision
+        shell: bash
+        run: |
+          echo "OCGCORE_REV=$(git -C cpp/ygo rev-parse HEAD)" >> $GITHUB_ENV
+
+      - name: Cache wasm build
+        id: cache-wasm
+        uses: actions/cache@v3
+        with:
+          path: dist/ocgcore.wasm
+          key: ocgcore-build-${{ env.OCGCORE_REV }}
+          restore-keys: |
+            ocgcore-build-
+
+      - name: Set up Docker
+        if: ${{ steps.cache-wasm.outputs.cache-hit != 'true' }}
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build wasm
+        if: ${{ steps.cache-wasm.outputs.cache-hit != 'true' }}
+        run: pnpm run build:emscripten
+
+      - name: Build Library
+        run: build:lib
+
+      - name: Build Types
+        run: build:types
