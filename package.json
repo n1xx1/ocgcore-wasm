@@ -6,12 +6,13 @@
   "browser": {
     "path": false,
     "child_process": false,
-    "fs": false
+    "fs": false,
+    "perf_hooks": false
   },
   "license": "MIT",
   "scripts": {
     "build:emscripten": "cross-env-shell docker run --rm -v $INIT_CWD:/src emscripten/emsdk ./build.sh",
-    "build:lib": "esbuild ./src/index.ts --bundle --external:path --external:fs --external:child_process --format=cjs --minify --sourcemap --outfile=dist/index.js",
+    "build:lib": "esbuild ./src/index.ts --bundle --external:path --external:fs --external:child_process --external:perf_hooks --format=esm --target=es2020 --minify --sourcemap --outfile=dist/index.js",
     "build:types": "tsc --project tsconfig.types.json",
     "build": "npm run build:emscripten && npm run build:lib && npm run build:types"
   },

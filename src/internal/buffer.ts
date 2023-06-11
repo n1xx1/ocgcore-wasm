@@ -109,7 +109,7 @@ export class BufferWriter {
 
   constructor(length = 64) {
     this.buffer = new Uint8Array(length);
-    this.view = new DataView(this.buffer);
+    this.view = new DataView(this.buffer.buffer);
     this.off = 0;
   }
 
@@ -120,7 +120,7 @@ export class BufferWriter {
     const newBuffer = new Uint8Array(this.buffer.byteLength * 2);
     newBuffer.set(this.buffer, 0);
     this.buffer = newBuffer;
-    this.view = new DataView(this.buffer);
+    this.view = new DataView(this.buffer.buffer);
   }
   bytes(bytes: ArrayLike<number> | ArrayBuffer) {
     if (bytes instanceof ArrayBuffer) {
