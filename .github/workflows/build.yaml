@@ -57,6 +57,10 @@ jobs:
         if: ${{ steps.cache-wasm.outputs.cache-hit != 'true' }}
         uses: docker/setup-buildx-action@v2
 
+      - name: Change Permissions
+        if: ${{ steps.cache-wasm.outputs.cache-hit != 'true' }}
+        run: chmod a+x ./build.sh
+
       - name: Build wasm
         if: ${{ steps.cache-wasm.outputs.cache-hit != 'true' }}
         run: pnpm run build:emscripten
