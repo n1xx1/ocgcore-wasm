@@ -1,25 +1,27 @@
-import initialize, { OcgDuelHandle } from "./src/index";
+import { readFile } from "fs/promises";
+import path from "path";
+import initialize from "./src/index";
 import {
   OcgDuelMode,
   OcgLocation,
   OcgPosition,
   OcgProcessResult,
 } from "./src/type_core";
-import path from "path";
-import { readFile } from "fs/promises";
 import { messageTypeStrings } from "./src/types";
 
-const scriptPath = "../ygo-data/scripts";
+const scriptPath = "C:\\ProjectIgnis\\script";
 
-(async () => {
+async function main() {
   const lib = await initialize({
-    wasmBinary: await readFile("./dist/ocgcore.wasm"),
+    wasmBinary: await readFile("./lib/ocgcore.wasm"),
   });
 
-  console.log(lib.getVersion());
+  const [verMaj, verMin] = lib.getVersion();
+  console.log(`OCGCORE: ${verMaj}.${verMin}`);
+
   const handle = await lib.createDuel({
     flags: OcgDuelMode.MODE_MR5,
-    seed: 0,
+    seed: [0n, 0n, 0n, 0n],
     team1: {
       drawCountPerTurn: 1,
       startingDrawCount: 5,
@@ -51,6 +53,8 @@ const scriptPath = "../ygo-data/scripts";
         ? path.join(scriptPath, "official", script)
         : path.join(scriptPath, script);
 
+      console.log(`loading script: ${script}`);
+
       try {
         return await readFile(filePath, "utf-8");
       } catch (e) {
@@ -63,11 +67,16 @@ const scriptPath = "../ygo-data/scripts";
     },
   });
 
+  if (!handle) {
+    throw new Error("failed to create");
+  }
+
   await lib.loadScript(
     handle,
     "constant.lua",
     await readFile(path.join(scriptPath, "constant.lua"), "utf8")
   );
+
   await lib.loadScript(
     handle,
     "utility.lua",
@@ -105,6 +114,7 @@ const scriptPath = "../ygo-data/scripts";
 
   console.log("test startDuel");
   await lib.startDuel(handle);
+
   while (true) {
     const status = await lib.duelProcess(handle);
 
@@ -124,86 +134,25 @@ const scriptPath = "../ygo-data/scripts";
   }
   console.log(await lib.duelProcess(handle));
   console.log(handle);
-})().catch((e) => console.log(e));
-
+  return;
+}
 const deck = {
   mainDeck: [
-    96005454,
-    55878038,
-    88774734,
-    67748760,
-    61901281,
-    26655293,
-    15381421,
-    99234526,
-    68464358,
-    5969957,
-    57143342,
-    80250185,
-    30227494,
-    30227494,
-    81035362,
-    45894482,
-    62957424,
-    99745551,
-    35272499,
-    35272499,
-    35272499,
-    81275020,
-    20758643,
-    61677004,
-    10802915,
-    10802915,
-    56410040,
-    56410040,
-    15981690,
-    15981690,
-    53932291,
-    43694650,
-    48686504,
-    48686504,
-    48686504,
-    19353570,
-    19353570,
-    19353570,
-    8972398,
-    1845204,
-    47325505,
-    47325505,
-    47325505,
-    54693926,
-    54693926,
-    54693926,
-    81439173,
-    99266988,
-    99266988,
-    99266988,
-    24224830,
-    24224830,
-    24224830,
-    31443476,
-    31443476,
-    31443476,
-    67723438,
-    36668118,
-    62265044,
-    61740673,
+    96005454, 55878038, 88774734, 67748760, 61901281, 26655293, 15381421,
+    99234526, 68464358, 5969957, 57143342, 80250185, 30227494, 30227494,
+    81035362, 45894482, 62957424, 99745551, 35272499, 35272499, 35272499,
+    81275020, 20758643, 61677004, 10802915, 10802915, 56410040, 56410040,
+    15981690, 15981690, 53932291, 43694650, 48686504, 48686504, 48686504,
+    19353570, 19353570, 19353570, 8972398, 1845204, 47325505, 47325505,
+    47325505, 54693926, 54693926, 54693926, 81439173, 99266988, 99266988,
+    99266988, 24224830, 24224830, 24224830, 31443476, 31443476, 31443476,
+    67723438, 36668118, 62265044, 61740673,
   ],
   extraDeck: [
-    17881964,
-    27548199,
-    63767246,
-    85289965,
-    65330383,
-    4280258,
-    23935886,
-    98095162,
-    38342335,
-    2857636,
-    11969228,
-    58699500,
-    13143275,
-    73539069,
+    17881964, 27548199, 63767246, 85289965, 65330383, 4280258, 23935886,
+    98095162, 38342335, 2857636, 11969228, 58699500, 13143275, 73539069,
     86148577,
   ],
 };
+
+main().catch((e) => console.log(e));

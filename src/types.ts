@@ -39,7 +39,7 @@ export interface OcgNewCardInfo {
 
 export interface OcgDuelOptions {
   flags: OcgDuelMode;
-  seed: number;
+  seed: [bigint, bigint, bigint, bigint];
   team1: {
     startingLP: number;
     startingDrawCount: number;
@@ -51,6 +51,6 @@ export interface OcgDuelOptions {
     drawCountPerTurn: number;
   };
   cardReader: (card: number) => Promise<OcgCardData> | OcgCardData;
-  scriptReader: (name: string) => Promise<string> | string;
+  scriptReader: (name: string) => Promise<string | null> | string | null;
   errorHandler?: (type: OcgLogType, text: string) => void;
 }

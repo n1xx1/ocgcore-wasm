@@ -70,3 +70,6 @@ jobs:
 
       - name: Build Types
         run: build:types
+
+      - name: Copy wasm files
+        run: cp lib/ocgcore.wasm dist/ocgcore.wasm

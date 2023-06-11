@@ -7,7 +7,7 @@ export type Convert<T> = T extends "void"
   : "string" extends T
   ? string
   : "array" extends T
-  ? number
+  ? ArrayLike<number>
   : "boolean" extends T
   ? boolean
   : never;

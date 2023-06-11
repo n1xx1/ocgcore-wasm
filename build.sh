@@ -14,14 +14,10 @@ em++ \
     -s DISABLE_EXCEPTION_CATCHING=0 \
     -s NO_EXIT_RUNTIME=1 \
     -s "ASYNCIFY_IMPORTS=['invokeFunction']" \
-    -s "EXPORTED_FUNCTIONS=['_free', '_ocgapiGetVersion', '_ocgapiCreateDuel', '_ocgapiDestroyDuel', '_ocgapiDuelNewCard', '_ocgapiStartDuel', '_ocgapiDuelProcess', '_ocgapiDuelGetMessage', '_ocgapiDuelSetResponse', '_ocgapiLoadScript', '_ocgapiDuelQueryCount', '_ocgapiDuelQuery', '_ocgapiDuelQueryLocation', '_ocgapiDuelQueryField']" \
-    -s "EXTRA_EXPORTED_RUNTIME_METHODS=['Asyncify', 'ccall', 'cwrap', 'getValue', 'setValue', 'UTF8ToString', 'stringToUTF8', 'stackTrace', 'lengthBytesUTF8', 'addFunction', 'removeFunction']" \
+    -s "EXPORTED_FUNCTIONS=['_malloc', '_free', '_OCG_GetVersion', '_OCG_CreateDuel', '_OCG_DestroyDuel', '_OCG_DuelNewCard', '_OCG_StartDuel', '_OCG_DuelProcess', '_OCG_DuelGetMessage', '_OCG_DuelSetResponse', '_OCG_LoadScript', '_OCG_DuelQueryCount', '_OCG_DuelQuery', '_OCG_DuelQueryLocation', '_OCG_DuelQueryField']" \
+    -s "EXPORTED_RUNTIME_METHODS=['Asyncify', 'ccall', 'cwrap', 'stackSave', 'stackRestore', 'stackAlloc', 'getValue', 'setValue', 'UTF8ToString', 'stringToUTF8', 'stackTrace', 'lengthBytesUTF8', 'addFunction', 'removeFunction']" \
     -I./cpp/lua \
     -Os \
-    ./cpp/wasm.cpp \
     $FILES_LUA \
     $FILES_YGO \
     -o lib/ocgcore.js
-
-mkdir -p dist
-cp lib/ocgcore.wasm dist/ocgcore.wasm
