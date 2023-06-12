@@ -65,3 +65,50 @@ export type OcgQuery = {
 };
 
 export type OcgQueryLocation = Omit<OcgQuery, "sequence" | "overlaySequence">;
+
+export type OcgCardQueryInfo = {
+  code?: number;
+  position?: OcgPosition;
+  alias?: number;
+  type?: OcgType;
+  level?: number;
+  rank?: number;
+  attribute?: OcgAttribute;
+  race?: OcgRace;
+  attack?: number;
+  defense?: number;
+  baseAttack?: number;
+  baseDefense?: number;
+  reason?: number;
+  cover?: number;
+  reasonCard?: {
+    controller: number;
+    location: OcgLocation;
+    sequence: number;
+    position: OcgPosition;
+  } | null;
+  equipCard?: {
+    controller: number;
+    location: OcgLocation;
+    sequence: number;
+    position: OcgPosition;
+  } | null;
+  targetCards?: {
+    controller: number;
+    location: OcgLocation;
+    sequence: number;
+    position: OcgPosition;
+  }[];
+  overlayCards?: number[];
+  counters?: Record<number, number>;
+  owner?: number;
+  status?: number;
+  isPublic?: boolean;
+  leftScale?: number;
+  rightScale?: number;
+  link?: {
+    rating: number;
+    marker: OcgLinkMarker;
+  };
+  isHidden?: boolean;
+};

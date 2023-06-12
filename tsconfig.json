@@ -5,10 +5,8 @@
     "esModuleInterop": true,
     "sourceMap": true,
     "baseUrl": ".",
-    "strict": true,
-    "paths": {
-      "@ocgcore": ["lib/ocgcore.js"]
-    }
+    "typeRoots": [],
+    "strict": true
   },
   "include": ["./src/**/*"]
 }

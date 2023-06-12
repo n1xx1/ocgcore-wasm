@@ -1,4 +1,4 @@
-import { LibraryModule } from "@ocgcore";
+import type { LibraryModule, LibraryModuleFactory } from "./wasm";
 import { BufferReader, BufferWriter } from "./internal/buffer";
 import { betterCwrap } from "./internal/cwrap";
 import { readMessage } from "./messages";
@@ -34,7 +34,9 @@ interface Initializer {
 }
 
 export default async function initialize(module: Initializer) {
-  const factory = await import("@ocgcore").then((m) => m.default);
+  const factory = await import("../lib/ocgcore.mjs" as any).then(
+    (m) => m.default as LibraryModuleFactory
+  );
   return createLibrary(
     await factory({
       print(str) {

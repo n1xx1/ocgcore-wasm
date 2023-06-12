@@ -10,54 +10,12 @@ import {
   OcgRace,
   OcgType,
 } from "./type_core";
-import { OcgChain, OcgFieldPlayer, OcgFieldState } from "./types";
-
-type OcgCardQueryInfo = {
-  code?: number;
-  position?: OcgPosition;
-  alias?: number;
-  type?: OcgType;
-  level?: number;
-  rank?: number;
-  attribute?: OcgAttribute;
-  race?: OcgRace;
-  attack?: number;
-  defense?: number;
-  baseAttack?: number;
-  baseDefense?: number;
-  reason?: number;
-  cover?: number;
-  reasonCard?: {
-    controller: number;
-    location: OcgLocation;
-    sequence: number;
-    position: OcgPosition;
-  } | null;
-  equipCard?: {
-    controller: number;
-    location: OcgLocation;
-    sequence: number;
-    position: OcgPosition;
-  } | null;
-  targetCards?: {
-    controller: number;
-    location: OcgLocation;
-    sequence: number;
-    position: OcgPosition;
-  }[];
-  overlayCards?: number[];
-  counters?: Record<number, number>;
-  owner?: number;
-  status?: number;
-  isPublic?: boolean;
-  leftScale?: number;
-  rightScale?: number;
-  link?: {
-    rating: number;
-    marker: OcgLinkMarker;
-  };
-  isHidden?: boolean;
-};
+import {
+  OcgCardQueryInfo,
+  OcgChain,
+  OcgFieldPlayer,
+  OcgFieldState,
+} from "./types";
 
 function readSingleCard(reader: BufferReader) {
   const controller = reader.u8();

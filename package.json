@@ -12,11 +12,12 @@
   "license": "MIT",
   "scripts": {
     "build:emscripten": "cross-env-shell docker run --rm -v $INIT_CWD:/src emscripten/emsdk ./build.sh",
-    "build:lib": "esbuild ./src/index.ts --analyze --bundle --external:./lib/ocgcore.js --external:path --external:fs --external:child_process --external:perf_hooks --format=esm --target=es2020 --minify --sourcemap --outfile=dist/index.js",
+    "build:lib": "esbuild ./src/index.ts --analyze --bundle --external:../lib/ocgcore.mjs --external:path --external:fs --external:child_process --external:perf_hooks --format=esm --target=es2020 --minify --sourcemap --outfile=dist/index.js",
     "build:types": "tsc --project tsconfig.types.json",
     "build": "npm run build:emscripten && npm run build:lib && npm run build:types"
   },
   "devDependencies": {
+    "@microsoft/api-extractor": "^7.35.2",
     "@types/emscripten": "^1.39.6",
     "@types/node": "^20.3.0",
     "cross-env": "^7.0.3",

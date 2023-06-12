@@ -1,3 +1,5 @@
+import { LibraryModule } from "../wasm";
+
 export type JSType = "number" | "string" | "array" | "boolean";
 
 export type Convert<T> = T extends "void"
@@ -20,7 +22,7 @@ export type ConvertArgs<Args extends readonly any[]> = Args extends readonly [
   : [];
 
 export function betterCwrap(m: {
-  cwrap: typeof cwrap;
+  cwrap: LibraryModule["cwrap"];
 }): typeof betterCwrapImpl {
   return function (name: string, ret: any, args: any, opts: any) {
     return m.cwrap.call(m, name, ret === "void" ? null : ret, args, opts);
