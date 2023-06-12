@@ -39,17 +39,18 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
-      - name: Get ocgcore revision
+      - name: Get subrepo revisions
         shell: bash
         run: |
           echo "OCGCORE_REV=$(git -C cpp/ygo rev-parse HEAD)" >> $GITHUB_ENV
+          echo "LUA_REV=$(git -C cpp/lua rev-parse HEAD)" >> $GITHUB_ENV
 
       - name: Cache wasm build
         id: cache-wasm
         uses: actions/cache@v3
         with:
           path: dist/ocgcore.wasm
-          key: ocgcore-build-${{ env.OCGCORE_REV }}
+          key: ocgcore-build-${{ hashFiles('build.sh') }}-${{ env.OCGCORE_REV }}-${{ env.LUA_REV }}
           restore-keys: |
             ocgcore-build-
 
