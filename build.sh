@@ -16,7 +16,7 @@ em++ \
     -s "ASYNCIFY_IMPORTS=['invokeFunction']" \
     -s "EXPORTED_FUNCTIONS=['_malloc', '_free', '_OCG_GetVersion', '_OCG_CreateDuel', '_OCG_DestroyDuel', '_OCG_DuelNewCard', '_OCG_StartDuel', '_OCG_DuelProcess', '_OCG_DuelGetMessage', '_OCG_DuelSetResponse', '_OCG_LoadScript', '_OCG_DuelQueryCount', '_OCG_DuelQuery', '_OCG_DuelQueryLocation', '_OCG_DuelQueryField']" \
     -s "EXPORTED_RUNTIME_METHODS=['Asyncify', 'ccall', 'cwrap', 'stackSave', 'stackRestore', 'stackAlloc', 'getValue', 'setValue', 'UTF8ToString', 'stringToUTF8', 'stackTrace', 'lengthBytesUTF8', 'addFunction', 'removeFunction']" \
-    -Os -g0 --closure 1
+    -Os -g0 --closure 1 \
     -I./cpp/lua \
     $FILES_LUA \
     $FILES_YGO \
