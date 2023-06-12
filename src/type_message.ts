@@ -121,10 +121,12 @@ export enum OcgMessageType {
   CUSTOM_MSG = 180,
   REMOVE_CARDS = 190,
 }
+
 export interface OcgCardPos {
   code: number;
   position: OcgPosition;
 }
+
 export interface OcgLocPos {
   controller: number;
   location: OcgLocation;
@@ -132,41 +134,51 @@ export interface OcgLocPos {
   // if location & OcgCardLocation.OVERLAY, then this is actually xyz material sequence
   position: number;
 }
+
 export interface OcgCardLoc {
   code: number;
   controller: number;
   location: OcgLocation;
   sequence: number;
 }
+
 export interface OcgCardLocPos extends OcgCardLoc {
   // if location & OcgCardLocation.OVERLAY, then this is actually xyz material sequence
   position: number;
 }
+
 export interface OcgCardLocBattle extends OcgLocPos {
   attack: number;
   defense: number;
   destroyed: boolean;
 }
+
 export interface OcgCardLocActive extends OcgCardLoc {
   description: bigint;
   client_mode: OcgEffectClientMode;
 }
+
 export interface OcgCardLocTribute extends OcgCardLoc {
   release_param: number;
 }
+
 export interface OcgCardLocPosActive extends OcgCardLocPos {
   description: bigint;
   client_mode: OcgEffectClientMode;
 }
+
 export interface OcgCardLocAttack extends OcgCardLoc {
   can_direct: boolean;
 }
+
 export interface OcgCardLocCounter extends OcgCardLoc {
   count: number;
 }
+
 export interface OcgCardLocSum extends OcgCardLoc {
   amount: number;
 }
+
 export interface OcgChain extends OcgCardLocPos {
   triggering_controller: number;
   triggering_location: OcgLocation;
@@ -177,32 +189,40 @@ export interface OcgChain extends OcgCardLocPos {
 export interface OcgMessageRetry {
   type: OcgMessageType.RETRY;
 }
+
 export interface OcgMessageHint {
   type: OcgMessageType.HINT;
   hint_type: number;
   player: number;
   hint: bigint;
 }
+
 export interface OcgMessageWaiting {
   type: OcgMessageType.WAITING;
 }
+
 export interface OcgMessageStart {
   type: OcgMessageType.START;
 }
+
 export interface OcgMessageWin {
   type: OcgMessageType.WIN;
   player: number;
   reason: number;
 }
+
 export interface OcgMessageUpdateData {
   type: OcgMessageType.UPDATE_DATA;
 }
+
 export interface OcgMessageUpdateCard {
   type: OcgMessageType.UPDATE_CARD;
 }
+
 export interface OcgMessageRequestDeck {
   type: OcgMessageType.REQUEST_DECK;
 }
+
 export interface OcgMessageSelectBattleCMD {
   type: OcgMessageType.SELECT_BATTLECMD;
   player: number;
@@ -211,6 +231,7 @@ export interface OcgMessageSelectBattleCMD {
   to_m2: boolean;
   to_ep: boolean;
 }
+
 export interface OcgMessageSelectIdlecmd {
   type: OcgMessageType.SELECT_IDLECMD;
   player: number;
@@ -224,6 +245,7 @@ export interface OcgMessageSelectIdlecmd {
   to_ep: boolean;
   shuffle: boolean;
 }
+
 export interface OcgMessageSelectEffectYN {
   type: OcgMessageType.SELECT_EFFECTYN;
   player: number;
@@ -234,16 +256,19 @@ export interface OcgMessageSelectEffectYN {
   position: OcgPosition;
   description: bigint;
 }
+
 export interface OcgMessageSelectYesno {
   type: OcgMessageType.SELECT_YESNO;
   player: number;
   description: bigint;
 }
+
 export interface OcgMessageSelectOption {
   type: OcgMessageType.SELECT_OPTION;
   player: number;
   options: bigint[];
 }
+
 export interface OcgMessageSelectCard {
   type: OcgMessageType.SELECT_CARD;
   player: number;
@@ -252,6 +277,7 @@ export interface OcgMessageSelectCard {
   max: number;
   selects: OcgCardLocPos[];
 }
+
 export interface OcgMessageSelectChain {
   type: OcgMessageType.SELECT_CHAIN;
   player: number;
@@ -261,18 +287,21 @@ export interface OcgMessageSelectChain {
   hint_timing_other: number;
   selects: OcgCardLocPosActive[];
 }
+
 export interface OcgMessageSelectPlace {
   type: OcgMessageType.SELECT_PLACE;
   player: number;
   count: number;
   field_mask: number;
 }
+
 export interface OcgMessageSelectPosition {
   type: OcgMessageType.SELECT_POSITION;
   player: number;
   code: number;
   positions: OcgPosition;
 }
+
 export interface OcgMessageSelectTribute {
   type: OcgMessageType.SELECT_TRIBUTE;
   player: number;
@@ -281,11 +310,13 @@ export interface OcgMessageSelectTribute {
   max: number;
   selects: OcgCardLocTribute[];
 }
+
 export interface OcgMessageSortChain {
   type: OcgMessageType.SORT_CHAIN;
   player: number;
   cards: OcgCardLoc[];
 }
+
 export interface OcgMessageSelectCounter {
   type: OcgMessageType.SELECT_COUNTER;
   player: number;
@@ -293,6 +324,7 @@ export interface OcgMessageSelectCounter {
   count: number;
   cards: OcgCardLocCounter[];
 }
+
 export interface OcgMessageSelectSum {
   type: OcgMessageType.SELECT_SUM;
   player: number;
@@ -303,17 +335,20 @@ export interface OcgMessageSelectSum {
   selects_must: OcgCardLocSum[];
   selects: OcgCardLocSum[];
 }
+
 export interface OcgMessageSelectDisfield {
   type: OcgMessageType.SELECT_DISFIELD;
   player: number;
   count: number;
   field_mask: number;
 }
+
 export interface OcgMessageSortCard {
   type: OcgMessageType.SORT_CARD;
   player: number;
   cards: OcgCardLoc[];
 }
+
 export interface OcgMessageSelectUnselectCard {
   type: OcgMessageType.SELECT_UNSELECT_CARD;
   player: number;
@@ -324,34 +359,41 @@ export interface OcgMessageSelectUnselectCard {
   select_cards: OcgCardLocPos[];
   unselect_cards: OcgCardLocPos[];
 }
+
 export interface OcgMessageConfirmDeckTop {
   type: OcgMessageType.CONFIRM_DECKTOP;
   player: number;
   cards: OcgCardLoc[];
 }
+
 export interface OcgMessageConfirmCards {
   type: OcgMessageType.CONFIRM_CARDS;
   player: number;
   cards: OcgCardLoc[];
 }
+
 export interface OcgMessageShuffleDeck {
   type: OcgMessageType.SHUFFLE_DECK;
   player: number;
 }
+
 export interface OcgMessageShuffleHand {
   type: OcgMessageType.SHUFFLE_HAND;
   player: number;
   cards: number[];
 }
+
 export interface OcgMessageRefreshDeck {
   type: OcgMessageType.REFRESH_DECK;
 }
+
 export interface OcgMessageSwapGraveDeck {
   type: OcgMessageType.SWAP_GRAVE_DECK;
   player: number;
   deck_size: number;
   returned_to_extra: number[];
 }
+
 export interface OcgMessageShuffleSetCard {
   type: OcgMessageType.SHUFFLE_SET_CARD;
   location: OcgLocation;
@@ -360,9 +402,11 @@ export interface OcgMessageShuffleSetCard {
     to: OcgLocPos;
   }[];
 }
+
 export interface OcgMessageReverseDeck {
   type: OcgMessageType.REVERSE_DECK;
 }
+
 export interface OcgMessageDeckTop {
   type: OcgMessageType.DECK_TOP;
   player: number;
@@ -370,30 +414,36 @@ export interface OcgMessageDeckTop {
   code: number;
   position: OcgPosition;
 }
+
 export interface OcgMessageShuffleExtra {
   type: OcgMessageType.SHUFFLE_EXTRA;
   player: number;
   cards: number[];
 }
+
 export interface OcgMessageNewTurn {
   type: OcgMessageType.NEW_TURN;
   player: number;
 }
+
 export interface OcgMessageNewPhase {
   type: OcgMessageType.NEW_PHASE;
   phase: number;
 }
+
 export interface OcgMessageConfirmExtratop {
   type: OcgMessageType.CONFIRM_EXTRATOP;
   player: number;
   cards: OcgCardLoc[];
 }
+
 export interface OcgMessageMove {
   type: OcgMessageType.MOVE;
   card: number;
   from: OcgLocPos;
   to: OcgLocPos;
 }
+
 export interface OcgMessagePosChange {
   type: OcgMessageType.POS_CHANGE;
   code: number;
@@ -403,6 +453,7 @@ export interface OcgMessagePosChange {
   prev_position: OcgPosition;
   position: OcgPosition;
 }
+
 export interface OcgMessageSet {
   type: OcgMessageType.SET;
   code: number;
@@ -411,15 +462,18 @@ export interface OcgMessageSet {
   sequence: number;
   position: OcgPosition;
 }
+
 export interface OcgMessageSwap {
   type: OcgMessageType.SWAP;
   card1: OcgCardLocPos;
   card2: OcgCardLocPos;
 }
+
 export interface OcgMessageFieldDisabled {
   type: OcgMessageType.FIELD_DISABLED;
   field_mask: number;
 }
+
 export interface OcgMessageSummoning {
   type: OcgMessageType.SUMMONING;
   code: number;
@@ -428,9 +482,11 @@ export interface OcgMessageSummoning {
   sequence: number;
   position: OcgPosition;
 }
+
 export interface OcgMessageSummoned {
   type: OcgMessageType.SUMMONED;
 }
+
 export interface OcgMessageSpsummoning {
   type: OcgMessageType.SPSUMMONING;
   code: number;
@@ -439,9 +495,11 @@ export interface OcgMessageSpsummoning {
   sequence: number;
   position: OcgPosition;
 }
+
 export interface OcgMessageSpsummoned {
   type: OcgMessageType.SPSUMMONED;
 }
+
 export interface OcgMessageFlipsummoning {
   type: OcgMessageType.FLIPSUMMONING;
   code: number;
@@ -450,9 +508,11 @@ export interface OcgMessageFlipsummoning {
   sequence: number;
   position: OcgPosition;
 }
+
 export interface OcgMessageFlipsummoned {
   type: OcgMessageType.FLIPSUMMONED;
 }
+
 export interface OcgMessageChaining {
   type: OcgMessageType.CHAINING;
   code: number;
@@ -466,42 +526,52 @@ export interface OcgMessageChaining {
   description: bigint;
   chain_size: number;
 }
+
 export interface OcgMessageChained {
   type: OcgMessageType.CHAINED;
   chain_size: number;
 }
+
 export interface OcgMessageChainSolving {
   type: OcgMessageType.CHAIN_SOLVING;
   chain_size: number;
 }
+
 export interface OcgMessageChainSolved {
   type: OcgMessageType.CHAIN_SOLVED;
   chain_size: number;
 }
+
 export interface OcgMessageChainEnd {
   type: OcgMessageType.CHAIN_END;
 }
+
 export interface OcgMessageChainNegated {
   type: OcgMessageType.CHAIN_NEGATED;
   chain_size: number;
 }
+
 export interface OcgMessageChainDisabled {
   type: OcgMessageType.CHAIN_DISABLED;
   chain_size: number;
 }
+
 export interface OcgMessageCardSelected {
   type: OcgMessageType.CARD_SELECTED;
   cards: OcgLocPos[];
 }
+
 export interface OcgMessageRandomSelected {
   type: OcgMessageType.RANDOM_SELECTED;
   player: number;
   cards: OcgLocPos[];
 }
+
 export interface OcgMessageBecomeTarget {
   type: OcgMessageType.BECOME_TARGET;
   cards: OcgLocPos[];
 }
+
 export interface OcgMessageDraw {
   type: OcgMessageType.DRAW;
   player: number;
@@ -510,44 +580,53 @@ export interface OcgMessageDraw {
     position: OcgPosition;
   }[];
 }
+
 export interface OcgMessageDamage {
   type: OcgMessageType.DAMAGE;
   player: number;
   amount: number;
 }
+
 export interface OcgMessageRecover {
   type: OcgMessageType.RECOVER;
   player: number;
   amount: number;
 }
+
 export interface OcgMessageEquip {
   type: OcgMessageType.EQUIP;
   card: OcgLocPos;
   target: OcgLocPos;
 }
+
 export interface OcgMessageLPUpdate {
   type: OcgMessageType.LPUPDATE;
   player: number;
   lp: number;
 }
+
 export interface OcgMessageUnequip {
   type: OcgMessageType.UNEQUIP;
 }
+
 export interface OcgMessageCardTarget {
   type: OcgMessageType.CARD_TARGET;
   card: OcgLocPos;
   target: OcgLocPos;
 }
+
 export interface OcgMessageCancelTarget {
   type: OcgMessageType.CANCEL_TARGET;
   card: OcgLocPos;
   target: OcgLocPos;
 }
+
 export interface OcgMessagePayLPCost {
   type: OcgMessageType.PAY_LPCOST;
   player: number;
   amount: number;
 }
+
 export interface OcgMessageAddCounter {
   type: OcgMessageType.ADD_COUNTER;
   counter_type: number;
@@ -556,6 +635,7 @@ export interface OcgMessageAddCounter {
   sequence: number;
   count: number;
 }
+
 export interface OcgMessageRemoveCounter {
   type: OcgMessageType.REMOVE_COUNTER;
   counter_type: number;
@@ -564,25 +644,31 @@ export interface OcgMessageRemoveCounter {
   sequence: number;
   count: number;
 }
+
 export interface OcgMessageAttack {
   type: OcgMessageType.ATTACK;
   card: OcgLocPos;
   target: OcgLocPos | null;
 }
+
 export interface OcgMessageBattle {
   type: OcgMessageType.BATTLE;
   card: OcgCardLocBattle;
   target: OcgCardLocBattle | null;
 }
+
 export interface OcgMessageAttackDisabled {
   type: OcgMessageType.ATTACK_DISABLED;
 }
+
 export interface OcgMessageDamageStepStart {
   type: OcgMessageType.DAMAGE_STEP_START;
 }
+
 export interface OcgMessageDamageStepEnd {
   type: OcgMessageType.DAMAGE_STEP_END;
 }
+
 export interface OcgMessageMissedEffect {
   type: OcgMessageType.MISSED_EFFECT;
   code: number;
@@ -591,55 +677,67 @@ export interface OcgMessageMissedEffect {
   sequence: number;
   position: number;
 }
+
 export interface OcgMessageBeChainTarget {
   type: OcgMessageType.BE_CHAIN_TARGET;
 }
+
 export interface OcgMessageCreateRelation {
   type: OcgMessageType.CREATE_RELATION;
 }
+
 export interface OcgMessageReleaseRelation {
   type: OcgMessageType.RELEASE_RELATION;
 }
+
 export interface OcgMessageTossCoin {
   type: OcgMessageType.TOSS_COIN;
   player: number;
   results: boolean[];
 }
+
 export interface OcgMessageTossDice {
   type: OcgMessageType.TOSS_DICE;
   player: number;
   results: number[];
 }
+
 export interface OcgMessageRockPaperScissors {
   type: OcgMessageType.ROCK_PAPER_SCISSORS;
   player: number;
 }
+
 export interface OcgMessageHandRes {
   type: OcgMessageType.HAND_RES;
   results: readonly [OcgRPS, OcgRPS];
 }
+
 export interface OcgMessageAnnounceRace {
   type: OcgMessageType.ANNOUNCE_RACE;
   player: number;
   count: number;
   available: OcgRace;
 }
+
 export interface OcgMessageAnnounceAttrib {
   type: OcgMessageType.ANNOUNCE_ATTRIB;
   player: number;
   count: number;
   available: OcgAttribute;
 }
+
 export interface OcgMessageAnnounceCard {
   type: OcgMessageType.ANNOUNCE_CARD;
   player: number;
   opcodes: OcgOpCode[];
 }
+
 export interface OcgMessageAnnounceNumber {
   type: OcgMessageType.ANNOUNCE_NUMBER;
   player: number;
   options: bigint[];
 }
+
 export interface OcgMessageCardHint {
   type: OcgMessageType.CARD_HINT;
   controller: number;
@@ -649,6 +747,7 @@ export interface OcgMessageCardHint {
   card_hint: OcgMessageCardHintType;
   description: bigint;
 }
+
 export interface OcgMessageTagSwap {
   type: OcgMessageType.TAG_SWAP;
   player: number;
@@ -658,10 +757,12 @@ export interface OcgMessageTagSwap {
   hand: OcgCardPos[];
   extra: OcgCardPos[];
 }
+
 export interface OcgFieldCard {
   position: OcgPosition;
   materials: number;
 }
+
 export interface OcgFieldPlayer {
   monsters: [
     OcgFieldCard,
@@ -689,31 +790,41 @@ export interface OcgFieldPlayer {
   extra_size: number;
   extra_faceup_count: number;
 }
-export interface OcgMessageReloadField {
-  type: OcgMessageType.RELOAD_FIELD;
+
+export type OcgFieldState = {
   flags: OcgDuelMode;
   players: [OcgFieldPlayer, OcgFieldPlayer];
   chain: OcgChain[];
+};
+
+export interface OcgMessageReloadField extends OcgFieldState {
+  type: OcgMessageType.RELOAD_FIELD;
 }
+
 export interface OcgMessageAiName {
   type: OcgMessageType.AI_NAME;
 }
+
 export interface OcgMessageShowHint {
   type: OcgMessageType.SHOW_HINT;
 }
+
 export interface OcgMessagePlayerHint {
   type: OcgMessageType.PLAYER_HINT;
   player: number;
   player_hint: number;
   description: bigint;
 }
+
 export interface OcgMessageMatchKill {
   type: OcgMessageType.MATCH_KILL;
   card: number;
 }
+
 export interface OcgMessageCustomMsg {
   type: OcgMessageType.CUSTOM_MSG;
 }
+
 export interface OcgMessageRemoveCards {
   type: OcgMessageType.REMOVE_CARDS;
   cards: OcgLocPos[];

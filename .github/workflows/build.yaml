@@ -71,5 +71,12 @@ jobs:
       - name: Build Types
         run: pnpm run build:types
 
-      - name: Copy wasm files
-        run: cp lib/ocgcore.wasm dist/ocgcore.wasm
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: package
+          path: |
+            src
+            lib
+            dist
+            package.json

@@ -5,6 +5,7 @@ import {
   OcgLocation,
   OcgLogType,
   OcgPosition,
+  OcgQueryFlags,
   OcgRace,
   OcgType,
 } from "./type_core";
@@ -31,10 +32,10 @@ export interface OcgNewCardInfo {
   team: number;
   duelist: number;
   code: number;
-  con: number;
-  loc: OcgLocation;
-  seq: number;
-  pos: OcgPosition;
+  controller: number;
+  location: OcgLocation;
+  sequence: number;
+  position: OcgPosition;
 }
 
 export interface OcgDuelOptions {
@@ -54,3 +55,13 @@ export interface OcgDuelOptions {
   scriptReader: (name: string) => Promise<string | null> | string | null;
   errorHandler?: (type: OcgLogType, text: string) => void;
 }
+
+export type OcgQuery = {
+  flags: OcgQueryFlags;
+  controller: number;
+  location: OcgLocation;
+  sequence: number;
+  overlaySequence: number;
+};
+
+export type OcgQueryLocation = Omit<OcgQuery, "sequence" | "overlaySequence">;

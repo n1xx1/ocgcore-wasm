@@ -1,39 +1,29 @@
-import { BufferReader } from "./internal/buffer";
+import { LibraryModule } from "@ocgcore";
+import { BufferReader, BufferWriter } from "./internal/buffer";
 import { betterCwrap } from "./internal/cwrap";
-import { CStruct } from "./internal/struct";
 import { readMessage } from "./messages";
+import { readField, readQuery, readQueryLocation } from "./queries";
 import { createResponse } from "./responses";
-import { OcgDuelOptions, OcgNewCardInfo } from "./types";
-import { OcgProcessResult } from "./type_core";
+import { OcgLocation, OcgProcessResult } from "./type_core";
 import { OcgMessage } from "./type_message";
 import { OcgResponse } from "./type_response";
+import {
+  OcgDuelOptions,
+  OcgNewCardInfo,
+  OcgQuery,
+  OcgQueryLocation,
+} from "./types";
 
-export * from "./types";
-export * from "./type_core";
-export * from "./type_response";
-export * from "./type_message";
 export * from "./opcodes";
+export * from "./type_core";
+export * from "./type_message";
+export * from "./type_response";
+export * from "./types";
 
 const DuelHandleSymbol = Symbol("duel-handle");
 
 export interface OcgDuelHandle {
   [DuelHandleSymbol]: number;
-}
-
-interface LibraryModule extends EmscriptenModule {
-  ccall: typeof ccall;
-  cwrap: typeof cwrap;
-  setValue: typeof setValue;
-  getValue: typeof getValue;
-  UTF8ToString: typeof UTF8ToString;
-  stringToUTF8: typeof stringToUTF8;
-  addFunction: typeof addFunction;
-  removeFunction: typeof removeFunction;
-  lengthBytesUTF8: typeof lengthBytesUTF8;
-  Asyncify: {
-    handleAsync(f: () => PromiseLike<any>): any;
-    handleSleep(wakeUp: () => void): void;
-  };
 }
 
 interface Initializer {
@@ -44,7 +34,7 @@ interface Initializer {
 }
 
 export default async function initialize(module: Initializer) {
-  const factory: EmscriptenModuleFactory<LibraryModule> = require("../lib/ocgcore.js");
+  const factory = await import("@ocgcore").then((m) => m.default);
   return createLibrary(
     await factory({
       print(str) {
@@ -58,10 +48,40 @@ export default async function initialize(module: Initializer) {
   );
 }
 
-type OcgCore = ReturnType<typeof createLibrary>;
+export type OcgCore = ReturnType<typeof createLibrary>;
+
+function copyArray(
+  view: DataView,
+  x:
+    | Uint16Array
+    | Uint32Array
+    | BigUint64Array
+    | Int16Array
+    | Int32Array
+    | BigInt64Array,
+  off: number
+) {
+  if (x instanceof Uint16Array) {
+    x.forEach((v, i) => view.setUint16(off + i * 2, v, true));
+  } else if (x instanceof Uint32Array) {
+    x.forEach((v, i) => view.setUint32(off + i * 4, v, true));
+  } else if (x instanceof BigUint64Array) {
+    x.forEach((v, i) => view.setBigUint64(off + i * 4, v, true));
+  } else if (x instanceof Int16Array) {
+    x.forEach((v, i) => view.setInt16(off + i * 2, v, true));
+  } else if (x instanceof Int32Array) {
+    x.forEach((v, i) => view.setInt32(off + i * 4, v, true));
+  } else if (x instanceof BigInt64Array) {
+    x.forEach((v, i) => view.setBigInt64(off + i * 4, v, true));
+  }
+}
 
 function createLibrary(m: LibraryModule) {
   const cwrap = betterCwrap(m);
+
+  const heap = () => {
+    return new DataView(m.HEAP8.buffer, m.HEAP8.byteOffset, m.HEAP8.length);
+  };
 
   //void OCG_GetVersion(int* major, int* minor)
   const OCG_GetVersion = cwrap("OCG_GetVersion", "void", [
@@ -123,17 +143,21 @@ function createLibrary(m: LibraryModule) {
   );
 
   //uint32_t OCG_DuelQueryCount(OCG_Duel duel, uint8_t team, uint32_t loc)
-  const OCG_DuelQueryCount = cwrap("OCG_DuelQueryCount", "void", [] as const);
+  const OCG_DuelQueryCount = cwrap("OCG_DuelQueryCount", "number", [
+    "number",
+    "number",
+    "number",
+  ] as const);
 
   //void* OCG_DuelQuery(OCG_Duel duel, uint32_t* length, OCG_QueryInfo info)
-  const OCG_DuelQuery = cwrap("OCG_DuelQuery", "void", [
+  const OCG_DuelQuery = cwrap("OCG_DuelQuery", "number", [
     "number",
     "number",
     "array",
   ] as const);
 
   //void* OCG_DuelQueryLocation(OCG_Duel duel, uint32_t* length, OCG_QueryInfo info)
-  const OCG_DuelQueryLocation = cwrap("OCG_DuelQueryLocation", "void", [
+  const OCG_DuelQueryLocation = cwrap("OCG_DuelQueryLocation", "number", [
     "number",
     "number",
     "array",
@@ -143,31 +167,6 @@ function createLibrary(m: LibraryModule) {
   const OCG_DuelQueryField = cwrap("OCG_DuelQueryField", "number", [
     "number",
     "number",
-  ] as const);
-
-  const OCG_CardData = CStruct(m, [
-    ["code", "i32"],
-    ["alias", "i32"],
-    ["setcodes", "i16*"],
-    ["type", "i32"],
-    ["level", "i32"],
-    ["attribute", "i32"],
-    ["race", "i32"],
-    ["attack", "i32"],
-    ["defense", "i32"],
-    ["lscale", "i32"],
-    ["rscale", "i32"],
-    ["link_marker", "i32"],
-  ] as const);
-
-  const OCG_NewCardInfo = CStruct(m, [
-    ["team", "i8"],
-    ["duelist", "i8"],
-    ["code", "i32"],
-    ["con", "i8"],
-    ["loc", "i32"],
-    ["seq", "i32"],
-    ["pos", "i32"],
   ] as const);
 
   let lastCallbackId = 0;
@@ -182,43 +181,57 @@ function createLibrary(m: LibraryModule) {
 
   const callbackCardReader = m.addFunction(
     (payload: number, code: number, data: number) => {
-      const { cardReader } = callbacks.get(payload);
-      const card = OCG_CardData.from(data);
+      const { cardReader } = callbacks.get(payload)!;
       m.Asyncify.handleAsync(async () => {
         const cardData = await cardReader(code);
 
-        card.code = cardData.code;
-        card.alias = cardData.alias;
-        card.type = cardData.type;
-        card.level = cardData.level;
-        card.attribute = cardData.attribute;
-        card.race = cardData.race;
-        card.attack = cardData.attack;
-        card.defense = cardData.defense;
-        card.lscale = cardData.lscale;
-        card.rscale = cardData.rscale;
-        card.link_marker = cardData.link_marker;
+        const setCodesArr = new Uint16Array([...cardData.setcodes, 0]);
+        const setCodes = m._malloc(setCodesArr.byteLength);
 
-        const setCodes = m._malloc((cardData.setcodes.length + 1) * 2);
-        for (let i = 0; i < cardData.setcodes.length; i++) {
-          m.setValue(setCodes + i * 2, cardData.setcodes[i], "i16");
-        }
-        m.setValue(setCodes + cardData.setcodes.length * 2, 0, "i16");
-        card.setcodes = setCodes;
+        const view = heap();
+        copyArray(view, setCodesArr, setCodes);
+
+        // uint32_t code;
+        view.setUint32(data + 0, cardData.code, true);
+        // uint32_t alias;
+        view.setUint32(data + 4, cardData.alias, true);
+        // uint16_t* setcodes;
+        view.setUint32(data + 8, setCodes, true);
+        // uint32_t type;
+        view.setUint32(data + 12, cardData.type, true);
+        // uint32_t level;
+        view.setUint32(data + 16, cardData.level, true);
+        // uint32_t attribute;
+        view.setUint32(data + 20, cardData.attribute, true);
+        // uint64_t race;
+        view.setBigUint64(data + 28, BigInt(cardData.race), true);
+        // int32_t attack;
+        view.setInt32(data + 32, cardData.attack, true);
+        // int32_t defense;
+        view.setInt32(data + 36, cardData.defense, true);
+        // uint32_t lscale;
+        view.setUint32(data + 40, cardData.lscale, true);
+        // uint32_t rscale;
+        view.setUint32(data + 48, cardData.rscale, true);
+        // uint32_t link_marker;
+        view.setUint32(data + 52, cardData.link_marker, true);
       });
     },
     "viii"
   );
   const callbackCardReaderDone = m.addFunction(
     (payload: number, data: number) => {
-      const card = OCG_CardData.from(data);
-      m._free(card.setcodes);
+      const view = heap();
+      const setCodes = view.getUint32(data + 8, true);
+      if (setCodes != 0) {
+        m._free(setCodes);
+      }
     },
     "vii"
   );
   const callbackScriptReader = m.addFunction(
     (payload: number, duel: number, name: number): number => {
-      const { scriptReader } = callbacks.get(payload);
+      const { scriptReader } = callbacks.get(payload)!;
       return m.Asyncify.handleAsync(async () => {
         const nameString = m.UTF8ToString(name);
         const contents = await scriptReader(nameString);
@@ -243,14 +256,13 @@ function createLibrary(m: LibraryModule) {
   );
   const callbackErrorHandler = m.addFunction(
     (payload: number, message: number, type: number) => {
-      const { errorHandler } = callbacks.get(payload);
-      errorHandler(type, m.UTF8ToString(message));
+      const { errorHandler } = callbacks.get(payload)!;
+      errorHandler?.(type, m.UTF8ToString(message));
     },
     "viii"
   );
 
   return {
-    //void OCG_GetVersion(int* major, int* minor)
     getVersion() {
       const majorPtr = m._malloc(8);
       const minorPtr = majorPtr + 4;
@@ -262,7 +274,7 @@ function createLibrary(m: LibraryModule) {
     },
     async createDuel(options: OcgDuelOptions): Promise<OcgDuelHandle | null> {
       const buf = new Uint8Array(104);
-      const view = new DataView(buf.buffer);
+      const view = heap();
 
       lastCallbackId++;
       callbacks.set(lastCallbackId, {
@@ -346,13 +358,13 @@ function createLibrary(m: LibraryModule) {
       // uint32_t code;
       view.setUint32(4, cardInfo.code, true);
       // uint8_t con;
-      view.setUint8(8, cardInfo.con);
+      view.setUint8(8, cardInfo.controller);
       // uint32_t loc;
-      view.setUint32(12, cardInfo.loc, true);
+      view.setUint32(12, cardInfo.location, true);
       // uint32_t seq;
-      view.setUint32(16, cardInfo.seq, true);
+      view.setUint32(16, cardInfo.sequence, true);
       // uint32_t pos;
-      view.setUint32(20, cardInfo.pos, true);
+      view.setUint32(20, cardInfo.position, true);
 
       await OCG_DuelNewCard(handle, buf);
     },
@@ -366,16 +378,26 @@ function createLibrary(m: LibraryModule) {
     },
     duelGetMessage({ [DuelHandleSymbol]: handle }: OcgDuelHandle) {
       const lenPtr = m._malloc(4);
+
       const buffer = OCG_DuelGetMessage(handle, lenPtr);
+
       const bufferLength = m.getValue(lenPtr, "i32");
-      const reader = BufferReader.create(m, buffer, bufferLength);
+
+      const reader = BufferReader.from(
+        new Uint8Array(m.HEAP8.slice(buffer, buffer + bufferLength))
+      );
 
       const messages: OcgMessage[] = [];
 
       while (reader.avail > 0) {
         const length = reader.i32();
         const subReader = reader.sub(length);
-        messages.push(readMessage(subReader));
+        const message = readMessage(subReader);
+        if (!message) {
+          // TODO: handle parse errors?
+          continue;
+        }
+        messages.push(message);
       }
 
       return messages;
@@ -407,9 +429,75 @@ function createLibrary(m: LibraryModule) {
         (await OCG_LoadScript(handle, contentPtr, contentLength, namePtr)) == 1
       );
     },
-    duelQueryCount() {},
-    duelQuery() {},
-    duelQueryLocation() {},
-    duelQueryField() {},
+    duelQueryCount(
+      { [DuelHandleSymbol]: handle }: OcgDuelHandle,
+      team: number,
+      location: OcgLocation
+    ) {
+      return OCG_DuelQueryCount(handle, team, location);
+    },
+    duelQuery({ [DuelHandleSymbol]: handle }: OcgDuelHandle, query: OcgQuery) {
+      const buf = new BufferWriter(6 * 4, true);
+      // uint32_t flags;
+      buf.u32(query.flags);
+      // uint8_t con;
+      buf.u8(query.controller);
+      // uint32_t loc;
+      buf.u32(query.location);
+      // uint32_t seq;
+      buf.u32(query.sequence);
+      // uint32_t overlay_seq;
+      buf.u32(query.overlaySequence ?? 0);
+
+      const lenPtr = m._malloc(4);
+
+      const buffer = OCG_DuelQuery(handle, lenPtr, buf.get(4));
+
+      const bufferLength = m.getValue(lenPtr, "i32");
+
+      const reader = BufferReader.from(
+        new Uint8Array(m.HEAP8.slice(buffer, buffer + bufferLength))
+      );
+      return readQuery(reader);
+    },
+    duelQueryLocation(
+      { [DuelHandleSymbol]: handle }: OcgDuelHandle,
+      query: OcgQueryLocation
+    ) {
+      const buf = new BufferWriter(6 * 4, true);
+      // uint32_t flags;
+      buf.u32(query.flags);
+      // uint8_t con;
+      buf.u8(query.controller);
+      // uint32_t loc;
+      buf.u32(query.location);
+      // uint32_t seq;
+      buf.u32(0);
+      // uint32_t overlay_seq;
+      buf.u32(0);
+
+      const lenPtr = m._malloc(4);
+
+      const buffer = OCG_DuelQueryLocation(handle, lenPtr, buf.get(4));
+
+      const bufferLength = m.getValue(lenPtr, "i32");
+
+      const reader = BufferReader.from(
+        new Uint8Array(m.HEAP8.slice(buffer, buffer + bufferLength))
+      );
+      return readQueryLocation(reader);
+    },
+    duelQueryField({ [DuelHandleSymbol]: handle }: OcgDuelHandle) {
+      const lenPtr = m._malloc(4);
+
+      const buffer = OCG_DuelQueryField(handle, lenPtr);
+
+      const bufferLength = m.getValue(lenPtr, "i32");
+
+      const reader = BufferReader.from(
+        new Uint8Array(m.HEAP8.slice(buffer, buffer + bufferLength))
+      );
+      return readField(reader);
+    },
   };
 }

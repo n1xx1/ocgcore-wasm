@@ -4,8 +4,12 @@ export class BufferReader {
   view: DataView;
   off: number;
 
-  static create(m: LibraryModule, ptr: number, len: number) {
-    return new BufferReader(new DataView(m.HEAP8.buffer, ptr, len));
+  // static create(m: LibraryModule, ptr: number, len: number) {
+  //   return new BufferReader(new DataView(m.HEAP8.buffer, ptr, len));
+  // }
+
+  static from(b: ArrayBuffer) {
+    return new BufferReader(new DataView(b, 0, b.byteLength));
   }
 
   constructor(view: DataView, off?: number) {
@@ -26,7 +30,7 @@ export class BufferReader {
     this.off += length;
     return b;
   }
-  bytes(length: number): number[] {
+  bytes(length: number) {
     if (this.avail < length) {
       throw new Error("eof");
     }
@@ -34,7 +38,7 @@ export class BufferReader {
       this.view.byteOffset + this.off,
       this.view.byteOffset + this.off + length
     );
-    return Array.from(new Uint8Array(bytes));
+    return new Uint8Array(bytes);
   }
   u8(): number {
     if (this.avail < 1) {
@@ -106,13 +110,23 @@ export class BufferWriter {
   buffer: Uint8Array;
   view: DataView;
   off: number;
+  aligned: boolean;
 
-  constructor(length = 64) {
+  constructor(length = 64, aligned = false) {
     this.buffer = new Uint8Array(length);
     this.view = new DataView(this.buffer.buffer);
     this.off = 0;
+    this.aligned = aligned;
   }
-
+  get(alignment: number = 0) {
+    if (alignment > 0) this.align(alignment);
+    return this.buffer.slice(0, this.off);
+  }
+  align(size: number) {
+    const amount = (size - (this.off % size)) % size;
+    this.grow(amount);
+    this.off += amount;
+  }
   grow(toAdd: number) {
     if (this.off + toAdd <= this.buffer.byteLength) {
       return;
@@ -137,40 +151,54 @@ export class BufferWriter {
     this.grow(1);
     this.view.setUint8(this.off, value);
     this.off += 1;
+    return this;
   }
   i8(value: number) {
     this.grow(1);
     this.view.setInt8(this.off, value);
     this.off += 1;
+    return this;
   }
   u16(value: number) {
+    if (this.aligned) this.align(2);
     this.grow(2);
     this.view.setUint16(this.off, value, true);
     this.off += 2;
+    return this;
   }
   i16(value: number) {
+    if (this.aligned) this.align(2);
     this.grow(2);
     this.view.setInt16(this.off, value, true);
     this.off += 2;
+    return this;
   }
   u32(value: number) {
+    if (this.aligned) this.align(4);
     this.grow(4);
     this.view.setUint32(this.off, value, true);
     this.off += 4;
+    return this;
   }
   i32(value: number) {
+    if (this.aligned) this.align(4);
     this.grow(4);
     this.view.setInt32(this.off, value, true);
     this.off += 4;
+    return this;
   }
   u64(value: bigint) {
+    if (this.aligned) this.align(8);
     this.grow(8);
     this.view.setBigUint64(this.off, value, true);
     this.off += 8;
+    return this;
   }
   i64(value: bigint) {
+    if (this.aligned) this.align(8);
     this.grow(8);
     this.view.setBigInt64(this.off, value, true);
     this.off += 8;
+    return this;
   }
 }

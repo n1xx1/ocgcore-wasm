@@ -17,7 +17,7 @@ em++ \
     -s "EXPORTED_FUNCTIONS=['_malloc', '_free', '_OCG_GetVersion', '_OCG_CreateDuel', '_OCG_DestroyDuel', '_OCG_DuelNewCard', '_OCG_StartDuel', '_OCG_DuelProcess', '_OCG_DuelGetMessage', '_OCG_DuelSetResponse', '_OCG_LoadScript', '_OCG_DuelQueryCount', '_OCG_DuelQuery', '_OCG_DuelQueryLocation', '_OCG_DuelQueryField']" \
     -s "EXPORTED_RUNTIME_METHODS=['Asyncify', 'ccall', 'cwrap', 'stackSave', 'stackRestore', 'stackAlloc', 'getValue', 'setValue', 'UTF8ToString', 'stringToUTF8', 'stackTrace', 'lengthBytesUTF8', 'addFunction', 'removeFunction']" \
     -I./cpp/lua \
-    -Os \
+    -Os -g0 -gsource-map --closure 1 \
     $FILES_LUA \
     $FILES_YGO \
-    -o lib/ocgcore.js
+    -o lib/ocgcore.mjs

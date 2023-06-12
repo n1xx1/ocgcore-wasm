@@ -3,7 +3,12 @@
     "target": "ES2020",
     "module": "ESNext",
     "esModuleInterop": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "baseUrl": ".",
+    "strict": true,
+    "paths": {
+      "@ocgcore": ["lib/ocgcore.js"]
+    }
   },
   "include": ["./src/**/*"]
 }

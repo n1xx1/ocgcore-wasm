@@ -28,7 +28,7 @@ function structProxy(
   layout: StructDefinition,
   owned: boolean,
   ownedStrings: number[] = []
-) {
+): any {
   return new Proxy(
     {},
     {
@@ -40,7 +40,7 @@ function structProxy(
             }
             if (owned) {
               m._free(ptr);
-              ptr = undefined;
+              ptr = 0;
               owned = false;
             }
           };
@@ -133,12 +133,23 @@ function produceStructure(
   return def;
 }
 
+function isPointerType(
+  type: Emscripten.CType | "string"
+): type is Extract<typeof type, `${string}*`> {
+  return type.endsWith("*");
+}
+
+function isStructRecord(
+  type: StructRecord[1]
+): type is readonly StructRecord[] {
+  return Array.isArray(type);
+}
+
 function getTypeAlign(type: StructRecord[1]) {
-  while (Array.isArray(type)) {
+  while (isStructRecord(type)) {
     type = type[0][1];
   }
-  // @ts-ignore
-  if (type.endsWith("*")) {
+  if (isPointerType(type)) {
     return 4;
   }
   switch (type) {
@@ -154,11 +165,13 @@ function getTypeAlign(type: StructRecord[1]) {
       return 4;
     case "double":
       return 8;
+    case "string":
+      return 4;
   }
 }
 
 function getTypeSize(type: Emscripten.CType | "string") {
-  if (type.endsWith("*")) {
+  if (isPointerType(type)) {
     return 4;
   }
   switch (type) {
@@ -167,6 +180,8 @@ function getTypeSize(type: Emscripten.CType | "string") {
     case "i16":
       return 2;
     case "i32":
+      return 4;
+    case "string":
       return 4;
     case "i64":
       return 8;

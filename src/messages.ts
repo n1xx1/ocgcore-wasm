@@ -1,7 +1,8 @@
 import { BufferReader } from "./internal/buffer";
+import { readField } from "./queries";
 import { OcgFieldPlayer, OcgMessage, OcgMessageType } from "./type_message";
 
-export function readMessage(reader: BufferReader): OcgMessage {
+export function readMessage(reader: BufferReader): OcgMessage | null {
   const type: OcgMessageType = reader.u8();
   switch (type) {
     case OcgMessageType.HINT:
@@ -817,47 +818,7 @@ export function readMessage(reader: BufferReader): OcgMessage {
     case OcgMessageType.RELOAD_FIELD:
       return {
         type,
-        flags: BigInt(reader.u32()),
-        players: Array.from(
-          { length: 2 },
-          () =>
-            ({
-              lp: reader.u32(),
-              monsters: Array.from({ length: 7 }, () =>
-                reader.u8() != 0
-                  ? {
-                      position: reader.u8(),
-                      materials: reader.u32(),
-                    }
-                  : null
-              ) as OcgFieldPlayer["monsters"],
-              spells: Array.from({ length: 8 }, () =>
-                reader.u8() != 0
-                  ? {
-                      position: reader.u8(),
-                      materials: reader.u32(),
-                    }
-                  : null
-              ) as OcgFieldPlayer["spells"],
-              deck_size: reader.u32(),
-              hand_size: reader.u32(),
-              grave_size: reader.u32(),
-              banish_size: reader.u32(),
-              extra_size: reader.u32(),
-              extra_faceup_count: reader.u32(),
-            } as OcgFieldPlayer)
-        ) as [OcgFieldPlayer, OcgFieldPlayer],
-        chain: Array.from({ length: reader.u32() }, () => ({
-          code: reader.u32(),
-          controller: reader.u8(),
-          location: reader.u8(),
-          sequence: reader.u32(),
-          position: reader.u32(),
-          triggering_controller: reader.u8(),
-          triggering_location: reader.u8(),
-          triggering_sequence: reader.u32(),
-          description: reader.u64(),
-        })),
+        ...readField(reader),
       };
     case OcgMessageType.AI_NAME:
       return {

@@ -31,11 +31,11 @@ export enum SelectBattleCMDAction {
   TO_M2,
   TO_EP,
 }
-export interface OcgResponseSelectBattleCMD {
+export type OcgResponseSelectBattleCMD = {
   type: OcgResponseType.SELECT_BATTLECMD;
   action: SelectBattleCMDAction;
   index?: number;
-}
+};
 
 export enum SelectIdleCMDAction {
   SELECT_SUMMON,
@@ -48,90 +48,109 @@ export enum SelectIdleCMDAction {
   TO_EP,
   SHUFFLE,
 }
-export interface OcgResponseSelectIdleCMD {
+export type OcgResponseSelectIdleCMD = {
   type: OcgResponseType.SELECT_IDLECMD;
   action: SelectIdleCMDAction;
   index?: number;
-}
-export interface OcgResponseSelectEffectYN {
+};
+
+export type OcgResponseSelectEffectYN = {
   type: OcgResponseType.SELECT_EFFECTYN;
   yes: boolean;
-}
-export interface OcgResponseSelectYesNo {
+};
+
+export type OcgResponseSelectYesNo = {
   type: OcgResponseType.SELECT_YESNO;
   yes: boolean;
-}
-export interface OcgResponseSelectOption {
+};
+
+export type OcgResponseSelectOption = {
   type: OcgResponseType.SELECT_OPTION;
   index: number;
-}
-export interface OcgResponseSelectCard {
+};
+
+export type OcgResponseSelectCard = {
   type: OcgResponseType.SELECT_CARD;
   indicies?: number[];
-}
-export interface OcgResponseSelectUnselectCard {
+};
+
+export type OcgResponseSelectUnselectCard = {
   type: OcgResponseType.SELECT_UNSELECT_CARD;
   finish?: boolean;
   cancel?: boolean;
-}
-export interface SelectFieldPlace {
+};
+
+export type SelectFieldPlace = {
   player: number;
   location: OcgLocation;
   sequence: number;
-}
-export interface OcgResponseSelectChain {
+};
+
+export type OcgResponseSelectChain = {
   type: OcgResponseType.SELECT_CHAIN;
-  cancel?: boolean;
-  index?: number;
-}
-export interface OcgResponseSelectDisfield {
+} & ({ cancel: true; index?: never } | { cancel?: false; index: number });
+
+export type OcgResponseSelectDisfield = {
   type: OcgResponseType.SELECT_DISFIELD;
   places: SelectFieldPlace[];
-}
-export interface OcgResponseSelectPlace {
+};
+
+export type OcgResponseSelectPlace = {
   type: OcgResponseType.SELECT_PLACE;
   places: SelectFieldPlace[];
-}
-export interface OcgResponseSelectPosition {
+};
+
+export type OcgResponseSelectPosition = {
   type: OcgResponseType.SELECT_POSITION;
   position: OcgPosition;
-}
-export interface OcgResponseSelectTribute {
+};
+
+export type OcgResponseSelectTribute = {
   type: OcgResponseType.SELECT_TRIBUTE;
   indicies?: number[];
-}
-export interface OcgResponseSelectCounter {
+};
+
+export type OcgResponseSelectCounter = {
   type: OcgResponseType.SELECT_COUNTER;
   counters: number[];
-}
-export interface OcgResponseSelectSum {
+};
+
+export type OcgResponseSelectSum = {
   type: OcgResponseType.SELECT_SUM;
   indicies: number[];
-}
-export interface OcgResponseSelectRelease {
+};
+
+export type OcgResponseSelectRelease = {
   type: OcgResponseType.SELECT_RELEASE;
-}
-export interface OcgResponseSelectFusion {
+};
+
+export type OcgResponseSelectFusion = {
   type: OcgResponseType.SELECT_FUSION;
-}
-export interface OcgResponseSortCard {
+};
+
+export type OcgResponseSortCard = {
   type: OcgResponseType.SORT_CARD;
-}
-export interface OcgResponseAnnounceRace {
+};
+
+export type OcgResponseAnnounceRace = {
   type: OcgResponseType.ANNOUNCE_RACE;
-}
-export interface OcgResponseAnnounceAttrib {
+};
+
+export type OcgResponseAnnounceAttrib = {
   type: OcgResponseType.ANNOUNCE_ATTRIB;
-}
-export interface OcgResponseAnnounceCard {
+};
+
+export type OcgResponseAnnounceCard = {
   type: OcgResponseType.ANNOUNCE_CARD;
-}
-export interface OcgResponseAnnounceNumber {
+};
+
+export type OcgResponseAnnounceNumber = {
   type: OcgResponseType.ANNOUNCE_NUMBER;
-}
-export interface OcgResponseRockPaperScissors {
+};
+
+export type OcgResponseRockPaperScissors = {
   type: OcgResponseType.ROCK_PAPER_SCISSORS;
-}
+};
 
 export type OcgResponse =
   | OcgResponseSelectBattleCMD
