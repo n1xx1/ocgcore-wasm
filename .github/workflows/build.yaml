@@ -50,10 +50,8 @@ jobs:
         id: cache-wasm
         uses: actions/cache@v3
         with:
-          path: dist/ocgcore.wasm
+          path: lib
           key: ocgcore-build-${{ hashFiles('build.sh') }}-${{ env.OCGCORE_REV }}-${{ env.LUA_REV }}
-          restore-keys: |
-            ocgcore-build-
 
       - name: Set up Docker
         if: ${{ steps.cache-wasm.outputs.cache-hit != 'true' }}
