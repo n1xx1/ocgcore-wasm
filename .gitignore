@@ -1,5 +1,6 @@
 /lib
 /dist
+/tests/dist
 /node_modules
 /.vscode
 /yarn-error.log

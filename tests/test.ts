@@ -1,15 +1,17 @@
 import { readFile } from "fs/promises";
 import path from "path";
-import initialize from "./src/index";
+import initialize from "../src/index";
 import {
   OcgDuelMode,
   OcgLocation,
   OcgPosition,
   OcgProcessResult,
-} from "./src/type_core";
-import { messageTypeStrings } from "./src/types";
+} from "../src/type_core";
+import { messageTypeStrings } from "../src/types";
 
 const scriptPath = "C:\\ProjectIgnis\\script";
+
+Error.stackTraceLimit = Infinity;
 
 async function main() {
   const lib = await initialize({
@@ -59,7 +61,7 @@ async function main() {
         return await readFile(filePath, "utf-8");
       } catch (e) {
         console.log(`error reading script "${script}", ${e}`);
-        return null;
+        throw e;
       }
     },
     errorHandler: (type, text) => {
@@ -86,18 +88,19 @@ async function main() {
   const addCard = async (
     team: number,
     code: number,
-    loc: OcgLocation,
-    pos: OcgPosition
-  ) =>
+    location: OcgLocation,
+    position: OcgPosition
+  ) => {
     await lib.duelNewCard(handle, {
       code,
       duelist: 0,
       team,
-      con: team,
-      loc,
-      pos,
-      seq: 0,
+      controller: team,
+      location,
+      position,
+      sequence: 0,
     });
+  };
 
   for (const card of deck.mainDeck) {
     await addCard(0, card, OcgLocation.DECK, OcgPosition.FACEDOWN_DEFENSE);
@@ -112,7 +115,6 @@ async function main() {
     await addCard(1, card, OcgLocation.EXTRA, OcgPosition.FACEDOWN_DEFENSE);
   }
 
-  console.log("test startDuel");
   await lib.startDuel(handle);
 
   while (true) {

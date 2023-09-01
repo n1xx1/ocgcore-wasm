@@ -9,15 +9,16 @@ mkdir -p lib
 
 em++ \
     -s RESERVED_FUNCTION_POINTERS=10 \
-    -s ASYNCIFY=1 -s MODULARIZE=1 -s ASSERTIONS=1 \
+    -s ASYNCIFY=2 -s MODULARIZE=1 -s ASSERTIONS=1 \
     -s ALLOW_MEMORY_GROWTH=1 -s MALLOC=emmalloc \
-    -s DISABLE_EXCEPTION_CATCHING=0 \
+    -fwasm-exceptions \
     -s NO_EXIT_RUNTIME=1 \
-    -s "ASYNCIFY_IMPORTS=['invokeFunction']" \
-    -s "EXPORTED_FUNCTIONS=['_malloc', '_free', '_OCG_GetVersion', '_OCG_CreateDuel', '_OCG_DestroyDuel', '_OCG_DuelNewCard', '_OCG_StartDuel', '_OCG_DuelProcess', '_OCG_DuelGetMessage', '_OCG_DuelSetResponse', '_OCG_LoadScript', '_OCG_DuelQueryCount', '_OCG_DuelQuery', '_OCG_DuelQueryLocation', '_OCG_DuelQueryField']" \
+    -sASYNCIFY_EXPORTS=ocgapi* \
+    -s "EXPORTED_FUNCTIONS=['_malloc', '_free']" \
     -s "EXPORTED_RUNTIME_METHODS=['Asyncify', 'ccall', 'cwrap', 'stackSave', 'stackRestore', 'stackAlloc', 'getValue', 'setValue', 'UTF8ToString', 'stringToUTF8', 'stackTrace', 'lengthBytesUTF8', 'addFunction', 'removeFunction']" \
-    -Os -g0 --closure 1 \
+    -O3 -g0 \
     -I./cpp/lua \
     $FILES_LUA \
     $FILES_YGO \
+    ./cpp/wasm.cpp \
     -o lib/ocgcore.mjs

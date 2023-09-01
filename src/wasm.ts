@@ -7,8 +7,19 @@ export interface LibraryModule extends EmscriptenModule {
     returnType: R,
     argTypes: I,
     args: ArgsToType<I>,
-    opts?: Emscripten.CCallOpts
+    opts?: { async: false }
   ): ReturnToType<R>;
+  ccall<
+    I extends Array<Emscripten.JSType | null> | [],
+    R extends Emscripten.JSType | null
+  >(
+    ident: string,
+    returnType: R,
+    argTypes: I,
+    args: ArgsToType<I>,
+    opts: { async: true }
+  ): Promise<ReturnToType<R>>;
+
   cwrap<
     I extends Array<Emscripten.JSType | null> | [],
     R extends Emscripten.JSType | null
@@ -18,6 +29,10 @@ export interface LibraryModule extends EmscriptenModule {
     argTypes: I,
     opts?: Emscripten.CCallOpts
   ): (...arg: ArgsToType<I>) => ReturnToType<R>;
+
+  stackAlloc(size: number): number;
+  stackSave(): number;
+  stackRestore(stack: number): void;
 
   setValue(
     ptr: number,
@@ -30,14 +45,6 @@ export interface LibraryModule extends EmscriptenModule {
   UTF8ToString(ptr: number, maxBytesToRead?: number): string;
   stringToUTF8(str: string, outPtr: number, maxBytesToRead?: number): void;
   lengthBytesUTF8(str: string): number;
-
-  addFunction(func: (...args: any[]) => any, signature?: string): number;
-  removeFunction(funcPtr: number): void;
-
-  Asyncify: {
-    handleAsync(f: () => PromiseLike<any>): any;
-    handleSleep(wakeUp: () => void): void;
-  };
 }
 
 export type LibraryModuleFactory = EmscriptenModuleFactory<LibraryModule>;

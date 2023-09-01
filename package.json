@@ -1,8 +1,23 @@
 {
   "name": "ocgcore-wasm",
   "version": "1.0.0",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "type": "module",
+  "types": "dist/index.d.ts",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist/*",
+    "lib/*",
+    "src"
+  ],
   "browser": {
     "path": false,
     "child_process": false,
@@ -13,7 +28,8 @@
   "scripts": {
     "build:emscripten": "cross-env-shell docker run --rm -v $INIT_CWD:/src emscripten/emsdk ./build.sh",
     "build:lib": "esbuild ./src/index.ts --analyze --bundle --external:../lib/ocgcore.mjs --external:path --external:fs --external:child_process --external:perf_hooks --format=esm --target=es2020 --minify --sourcemap --outfile=dist/index.js",
-    "build:types": "tsc --project tsconfig.types.json",
+    "build:test": "esbuild ./tests/test.ts --analyze --bundle --platform=node --format=esm --target=es2020 --minify --sourcemap --outfile=tests/dist/test.js",
+    "build:types": "tsc --project tsconfig.types.json && api-extractor run",
     "build": "npm run build:emscripten && npm run build:lib && npm run build:types"
   },
   "devDependencies": {
@@ -23,7 +39,6 @@
     "cross-env": "^7.0.3",
     "esbuild": "^0.18.0",
     "esno": "^0.16.3",
-    "ts-node": "^10.9.1",
     "typescript": "^5.1.3"
   }
 }
