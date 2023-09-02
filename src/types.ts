@@ -5,10 +5,13 @@ import {
   OcgLocation,
   OcgLogType,
   OcgPosition,
+  OcgProcessResult,
   OcgQueryFlags,
   OcgRace,
   OcgType,
 } from "./type_core";
+import { OcgFieldState, OcgMessage } from "./type_message";
+import { OcgResponse } from "./type_response";
 
 export * from "./type_message";
 export * from "./type_core";
@@ -112,3 +115,42 @@ export type OcgCardQueryInfo = {
   };
   isHidden?: boolean;
 };
+
+export const DuelHandleSymbol = Symbol("duel-handle");
+
+export interface OcgDuelHandle {
+  [DuelHandleSymbol]: number;
+}
+
+export interface OcgCore {
+  getVersion: () => readonly [number, number];
+  createDuel: (options: OcgDuelOptions) => Promise<OcgDuelHandle | null>;
+  destroyDuel: (handle: OcgDuelHandle) => void;
+  duelNewCard: (
+    handle: OcgDuelHandle,
+    cardInfo: OcgNewCardInfo
+  ) => Promise<void>;
+  startDuel: (handle: OcgDuelHandle) => Promise<void>;
+  duelProcess: (handle: OcgDuelHandle) => Promise<OcgProcessResult>;
+  duelGetMessage: (handle: OcgDuelHandle) => OcgMessage[];
+  duelSetResponse: (handle: OcgDuelHandle, response: OcgResponse) => void;
+  loadScript: (
+    handle: OcgDuelHandle,
+    name: string,
+    content: string
+  ) => Promise<boolean>;
+  duelQueryCount: (
+    handle: OcgDuelHandle,
+    team: number,
+    location: OcgLocation
+  ) => number;
+  duelQuery: (
+    handle: OcgDuelHandle,
+    query: OcgQuery
+  ) => Partial<OcgCardQueryInfo> | null;
+  duelQueryLocation: (
+    handle: OcgDuelHandle,
+    query: OcgQueryLocation
+  ) => (Partial<OcgCardQueryInfo> | null)[];
+  duelQueryField: (handle: OcgDuelHandle) => OcgFieldState;
+}

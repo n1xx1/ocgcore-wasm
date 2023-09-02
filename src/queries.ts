@@ -1,21 +1,6 @@
 import { BufferReader } from "./internal/buffer";
-import { Tuple } from "./internal/utils";
-import {
-  OcgAttribute,
-  OcgDuelMode,
-  OcgLinkMarker,
-  OcgLocation,
-  OcgPosition,
-  OcgQueryFlags,
-  OcgRace,
-  OcgType,
-} from "./type_core";
-import {
-  OcgCardQueryInfo,
-  OcgChain,
-  OcgFieldPlayer,
-  OcgFieldState,
-} from "./types";
+import { OcgQueryFlags } from "./type_core";
+import { OcgCardQueryInfo, OcgFieldPlayer, OcgFieldState } from "./types";
 
 function readSingleCard(reader: BufferReader) {
   const controller = reader.u8();
@@ -59,7 +44,7 @@ export function readQuery(reader: BufferReader) {
     } else if (flag === OcgQueryFlags.ATTRIBUTE && size === 4) {
       result.attribute = reader.u32();
     } else if (flag === OcgQueryFlags.RACE && size === 8) {
-      result.race = Number(BigInt.asUintN(32, reader.u64()));
+      result.race = reader.u64();
     } else if (flag === OcgQueryFlags.ATTACK && size === 4) {
       result.attack = reader.u32();
     } else if (flag === OcgQueryFlags.DEFENSE && size === 4) {

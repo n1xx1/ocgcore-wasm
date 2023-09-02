@@ -1,4 +1,4 @@
-import { OcgLocation, OcgPosition } from "./type_core";
+import { OcgAttribute, OcgLocation, OcgPosition, OcgRace } from "./type_core";
 
 export enum OcgResponseType {
   SELECT_BATTLECMD,
@@ -7,6 +7,7 @@ export enum OcgResponseType {
   SELECT_YESNO,
   SELECT_OPTION,
   SELECT_CARD,
+  SELECT_CARD_CODES,
   SELECT_UNSELECT_CARD,
   SELECT_CHAIN,
   SELECT_DISFIELD,
@@ -71,13 +72,20 @@ export type OcgResponseSelectOption = {
 
 export type OcgResponseSelectCard = {
   type: OcgResponseType.SELECT_CARD;
-  indicies?: number[];
+  indicies: number[] | null;
+};
+
+export type OcgResponseSelectCardCodes = {
+  type: OcgResponseType.SELECT_CARD_CODES;
+  codes: number[] | null;
 };
 
 export type OcgResponseSelectUnselectCard = {
   type: OcgResponseType.SELECT_UNSELECT_CARD;
-  finish?: boolean;
-  cancel?: boolean;
+  index: number | null;
+  // null means cancel,
+  // represents select_cards[index] if index >= select_cards.length,
+  // otherwise it's unselect_cards[index - select_cards.length]
 };
 
 export type SelectFieldPlace = {
@@ -120,36 +128,34 @@ export type OcgResponseSelectSum = {
   indicies: number[];
 };
 
-export type OcgResponseSelectRelease = {
-  type: OcgResponseType.SELECT_RELEASE;
-};
-
-export type OcgResponseSelectFusion = {
-  type: OcgResponseType.SELECT_FUSION;
-};
-
 export type OcgResponseSortCard = {
   type: OcgResponseType.SORT_CARD;
+  order: number[] | null;
 };
 
 export type OcgResponseAnnounceRace = {
   type: OcgResponseType.ANNOUNCE_RACE;
+  races: OcgRace[];
 };
 
 export type OcgResponseAnnounceAttrib = {
   type: OcgResponseType.ANNOUNCE_ATTRIB;
+  attributes: OcgAttribute[];
 };
 
 export type OcgResponseAnnounceCard = {
   type: OcgResponseType.ANNOUNCE_CARD;
+  card: number;
 };
 
 export type OcgResponseAnnounceNumber = {
   type: OcgResponseType.ANNOUNCE_NUMBER;
+  value: number;
 };
 
 export type OcgResponseRockPaperScissors = {
   type: OcgResponseType.ROCK_PAPER_SCISSORS;
+  value: 1 | 2 | 3;
 };
 
 export type OcgResponse =
@@ -159,6 +165,7 @@ export type OcgResponse =
   | OcgResponseSelectYesNo
   | OcgResponseSelectOption
   | OcgResponseSelectCard
+  | OcgResponseSelectCardCodes
   | OcgResponseSelectUnselectCard
   | OcgResponseSelectChain
   | OcgResponseSelectDisfield
@@ -166,9 +173,7 @@ export type OcgResponse =
   | OcgResponseSelectPosition
   | OcgResponseSelectCounter
   | OcgResponseSelectSum
-  | OcgResponseSelectRelease
   | OcgResponseSelectTribute
-  | OcgResponseSelectFusion
   | OcgResponseSortCard
   | OcgResponseAnnounceRace
   | OcgResponseAnnounceAttrib

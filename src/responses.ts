@@ -30,12 +30,22 @@ export function createResponse(response: OcgResponse) {
         writer.i32(-1);
       }
       break;
+    case OcgResponseType.SELECT_CARD_CODES:
+      if (response.codes) {
+        writer.i32(0);
+        writer.i32(response.codes.length);
+        for (const i of response.codes) {
+          writer.i32(i);
+        }
+      } else {
+        writer.i32(-1);
+      }
+      break;
     case OcgResponseType.SELECT_UNSELECT_CARD:
-      if (response.cancel || response.finish) {
+      if (response.index === null) {
         writer.i32(-1);
       } else {
-        // TODO: figure out if we want to embed the original message for the response
-        // or rely on the user to be accurate
+        writer.i32(response.index);
       }
       break;
     case OcgResponseType.SELECT_CHAIN:
@@ -79,21 +89,38 @@ export function createResponse(response: OcgResponse) {
         writer.i32(i);
       }
       break;
-    case OcgResponseType.SELECT_RELEASE:
-      break;
-    case OcgResponseType.SELECT_FUSION:
-      break;
     case OcgResponseType.SORT_CARD:
+      if (!response.order) {
+        writer.i8(-1);
+        break;
+      }
+      writer.i8(response.order.length);
+      for (const i of response.order) {
+        writer.i8(i);
+      }
       break;
     case OcgResponseType.ANNOUNCE_RACE:
+      let race = 0n;
+      for (const r of response.races) {
+        race |= r;
+      }
+      writer.u64(race);
       break;
     case OcgResponseType.ANNOUNCE_ATTRIB:
+      let attribute = 0;
+      for (const a of response.attributes) {
+        attribute |= a;
+      }
+      writer.u32(attribute);
       break;
     case OcgResponseType.ANNOUNCE_CARD:
+      writer.i32(response.card);
       break;
     case OcgResponseType.ANNOUNCE_NUMBER:
+      writer.i32(response.value);
       break;
     case OcgResponseType.ROCK_PAPER_SCISSORS:
+      writer.i32(response.value);
       break;
   }
   return writer.buffer.subarray(0, writer.off);

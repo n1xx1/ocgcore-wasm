@@ -3,10 +3,12 @@ import { readMessage } from "./messages";
 import { readField, readQuery, readQueryLocation } from "./queries";
 import { createResponse } from "./responses";
 import { OcgLocation, OcgProcessResult } from "./type_core";
-import { OcgFieldState, OcgMessage } from "./type_message";
+import { OcgMessage } from "./type_message";
 import { OcgResponse } from "./type_response";
 import {
-  OcgCardQueryInfo,
+  DuelHandleSymbol,
+  OcgCore,
+  OcgDuelHandle,
   OcgDuelOptions,
   OcgNewCardInfo,
   OcgQuery,
@@ -18,13 +20,7 @@ export * from "./opcodes";
 export * from "./type_core";
 export * from "./type_message";
 export * from "./type_response";
-export * from "./types";
-
-const DuelHandleSymbol = Symbol("duel-handle");
-
-export interface OcgDuelHandle {
-  [DuelHandleSymbol]: number;
-}
+export type * from "./types";
 
 export interface Initializer {
   print?(str: string): void;
@@ -33,7 +29,9 @@ export interface Initializer {
   wasmBinary?: ArrayBuffer;
 }
 
-export default async function initialize(module: Initializer) {
+export default async function initialize(
+  module: Initializer
+): Promise<OcgCore> {
   const factory = await import("../lib/ocgcore.mjs" as any).then(
     (m) => m.default as EmscriptenModuleFactory<OcgCoreModule>
   );
@@ -399,43 +397,6 @@ export default async function initialize(module: Initializer) {
       }
     },
   };
-}
-
-function moduleHeap(m: EmscriptenModule) {
-  return new DataView(m.HEAP8.buffer, m.HEAP8.byteOffset, m.HEAP8.length);
-}
-
-export interface OcgCore {
-  getVersion: () => readonly [number, number];
-  createDuel: (options: OcgDuelOptions) => Promise<OcgDuelHandle | null>;
-  destroyDuel: (handle: OcgDuelHandle) => void;
-  duelNewCard: (
-    handle: OcgDuelHandle,
-    cardInfo: OcgNewCardInfo
-  ) => Promise<void>;
-  startDuel: (handle: OcgDuelHandle) => Promise<void>;
-  duelProcess: (handle: OcgDuelHandle) => Promise<OcgProcessResult>;
-  duelGetMessage: (handle: OcgDuelHandle) => OcgMessage[];
-  duelSetResponse: (handle: OcgDuelHandle, response: OcgResponse) => void;
-  loadScript: (
-    handle: OcgDuelHandle,
-    name: string,
-    content: string
-  ) => Promise<boolean>;
-  duelQueryCount: (
-    handle: OcgDuelHandle,
-    team: number,
-    location: OcgLocation
-  ) => number;
-  duelQuery: (
-    handle: OcgDuelHandle,
-    query: OcgQuery
-  ) => Partial<OcgCardQueryInfo> | null;
-  duelQueryLocation: (
-    handle: OcgDuelHandle,
-    query: OcgQueryLocation
-  ) => (Partial<OcgCardQueryInfo> | null)[];
-  duelQueryField: (handle: OcgDuelHandle) => OcgFieldState;
 }
 
 function copyArray(

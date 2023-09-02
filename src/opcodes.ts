@@ -172,7 +172,7 @@ export function cardMatchesOpcode(card: OcgCardData, opcodes: OcgOpCode[]) {
       case OcgOpCode.ISRACE:
         if (stack.length >= 1) {
           const val = stack.pop() as bigint;
-          stack.push((BigInt(card.race) & val) != 0n ? 1n : 0n);
+          stack.push((card.race & val) != 0n ? 1n : 0n);
         }
         break;
       case OcgOpCode.ISATTRIBUTE:
@@ -190,7 +190,7 @@ export function cardMatchesOpcode(card: OcgCardData, opcodes: OcgOpCode[]) {
         stack.push(BigInt(card.type));
         break;
       case OcgOpCode.GETRACE:
-        stack.push(BigInt(card.race));
+        stack.push(card.race);
         break;
       case OcgOpCode.GETATTRIBUTE:
         stack.push(BigInt(card.attribute));

@@ -761,7 +761,7 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
         type,
         player: reader.u8(),
         count: reader.u8(),
-        available: reader.u8(),
+        available: reader.u64(),
       };
     case OcgMessageType.ANNOUNCE_ATTRIB:
       return {

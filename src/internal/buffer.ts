@@ -1,5 +1,3 @@
-import { LibraryModule } from "./struct";
-
 export class BufferReader {
   view: DataView;
   off: number;
