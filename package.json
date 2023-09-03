@@ -26,15 +26,12 @@
     "src"
   ],
   "browser": {
-    "path": false,
-    "child_process": false,
-    "fs": false,
-    "perf_hooks": false
+    "module": false
   },
   "license": "MIT",
   "scripts": {
     "build:emscripten": "cross-env-shell docker run --rm -v $INIT_CWD:/src emscripten/emsdk ./build.sh",
-    "build:lib": "esbuild ./src/index.ts --analyze --bundle --external:../lib/ocgcore.mjs --external:path --external:fs --external:child_process --external:perf_hooks --format=esm --target=es2020 --minify --sourcemap --outfile=dist/index.js",
+    "build:lib": "esbuild ./src/index.ts --analyze --bundle --external:module --format=esm --target=es2020 --minify --sourcemap --outfile=dist/index.js",
     "build:test": "esbuild ./tests/test.ts --analyze --bundle --platform=node --format=esm --target=es2020 --minify --sourcemap --outfile=tests/dist/test.js",
     "build:types": "tsc --project tsconfig.types.json && api-extractor run",
     "build": "npm run build:emscripten && npm run build:lib && npm run build:types"
