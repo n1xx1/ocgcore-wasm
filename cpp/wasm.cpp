@@ -32,18 +32,6 @@ EM_JS(void, ocgapiHandleLogHandler, (void* payload, const char* string, int type
 
 extern "C" {
 
-typedef struct ocgapiDuelOptions {
-	uint64_t seed[4];
-	uint64_t flags;
-	OCG_Player team1;
-	OCG_Player team2;
-	uint32_t payload1;
-	uint32_t payload2;
-	uint32_t payload3;
-	uint32_t payload4;
-	uint8_t enableUnsafeLibraries;
-} ocgapiDuelOptions;
-
 void EMSCRIPTEN_KEEPALIVE ocgapiGetVersion(int* major, int* minor) {
     OCG_GetVersion(major, minor);
 }
