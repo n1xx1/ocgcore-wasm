@@ -14,7 +14,6 @@ import {
   OcgQuery,
   OcgQueryLocation,
 } from "./types";
-import type { LibraryModule } from "./wasm";
 
 export * from "./opcodes";
 export * from "./type_core";
@@ -425,7 +424,14 @@ function copyArray(
   }
 }
 
-interface OcgCoreModule extends LibraryModule {
+interface OcgCoreModule extends EmscriptenModule {
+  stackAlloc: typeof stackAlloc;
+  stackSave: typeof stackSave;
+  stackRestore: typeof stackRestore;
+  getValue: typeof getValue;
+  lengthBytesUTF8: typeof lengthBytesUTF8;
+  stringToUTF8: typeof stringToUTF8;
+
   //void OCG_GetVersion(int* major, int* minor)
   _ocgapiGetVersion(majorPtr: number, minorPtr: number): void;
 
@@ -487,95 +493,3 @@ interface OcgCoreModule extends LibraryModule {
 
   handleLogHandler(payload: number, message: string, type: number): void;
 }
-
-/*
-
-  //void OCG_GetVersion(int* major, int* minor)
-  const OCG_GetVersion = cwrap("ocgapiGetVersion", "void", [
-    "number",
-    "number",
-  ] as const);
-
-  //int OCG_CreateDuel(OCG_Duel* duel, OCG_DuelOptions options)
-  const OCG_CreateDuel = cwrap(
-    "ocgapiCreateDuel",
-    "number",
-    ["number", "array"] as const,
-    { async: true }
-  );
-
-  //void OCG_DestroyDuel(OCG_Duel duel)
-  const OCG_DestroyDuel = cwrap("ocgapiDestroyDuel", "void", [
-    "number",
-  ] as const);
-
-  //void OCG_DuelNewCard(OCG_Duel duel, OCG_NewCardInfo info)
-  const OCG_DuelNewCard = cwrap(
-    "ocgapiDuelNewCard",
-    "void",
-    ["number", "array"] as const,
-    { async: true }
-  );
-
-  //void OCG_StartDuel(OCG_Duel duel)
-  const OCG_StartDuel = cwrap("ocgapiStartDuel", "void", ["number"] as const, {
-    async: true,
-  });
-
-  //int OCG_DuelProcess(OCG_Duel duel)
-  const OCG_DuelProcess = cwrap(
-    "ocgapiDuelProcess",
-    "number",
-    ["number"] as const,
-    { async: true }
-  );
-
-  //void* OCG_DuelGetMessage(OCG_Duel duel, uint32_t* length)
-  const OCG_DuelGetMessage = cwrap("ocgapiDuelGetMessage", "number", [
-    "number",
-    "number",
-  ] as const);
-
-  //void OCG_DuelSetResponse(OCG_Duel duel, const void* buffer, uint32_t length)
-  const OCG_DuelSetResponse = cwrap("ocgapiDuelSetResponse", "void", [
-    "number",
-    "number",
-    "number",
-  ] as const);
-
-  //int OCG_LoadScript(OCG_Duel duel, const char* buffer, uint32_t length, const char* name)
-  const OCG_LoadScript = cwrap(
-    "ocgapiLoadScript",
-    "number",
-    ["number", "number", "number", "number"] as const,
-    { async: true }
-  );
-
-  //uint32_t OCG_DuelQueryCount(OCG_Duel duel, uint8_t team, uint32_t loc)
-  const OCG_DuelQueryCount = cwrap("ocgapiDuelQueryCount", "number", [
-    "number",
-    "number",
-    "number",
-  ] as const);
-
-  //void* OCG_DuelQuery(OCG_Duel duel, uint32_t* length, OCG_QueryInfo info)
-  const OCG_DuelQuery = cwrap("ocgapiDuelQuery", "number", [
-    "number",
-    "number",
-    "array",
-  ] as const);
-
-  //void* OCG_DuelQueryLocation(OCG_Duel duel, uint32_t* length, OCG_QueryInfo info)
-  const OCG_DuelQueryLocation = cwrap("ocgapiDuelQueryLocation", "number", [
-    "number",
-    "number",
-    "array",
-  ] as const);
-
-  //void* OCG_DuelQueryField(OCG_Duel duel, uint32_t* length)
-  const OCG_DuelQueryField = cwrap("ocgapiDuelQueryField", "number", [
-    "number",
-    "number",
-  ] as const);
-
-*/
