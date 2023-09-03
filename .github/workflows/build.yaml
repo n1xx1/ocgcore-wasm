@@ -89,6 +89,7 @@ jobs:
         with:
           name: package
           path: |
+            README.md
             src
             lib
             dist
@@ -112,6 +113,6 @@ jobs:
 
       - name: Publish on npm
         id: publish
-        uses: JS-DevTools/npm-publish@v1
+        uses: JS-DevTools/npm-publish@v2
         with:
           token: ${{ secrets.NPM_TOKEN }}
