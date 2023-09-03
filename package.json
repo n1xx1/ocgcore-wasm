@@ -1,7 +1,14 @@
 {
   "name": "ocgcore-wasm",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "type": "module",
+  "author": {
+    "name": "n1xx1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/n1xx1/ocgcore-wasm.git"
+  },
   "types": "dist/index.d.ts",
   "main": "dist/index.js",
   "module": "dist/index.js",
