@@ -80,7 +80,7 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
           location: reader.u8(),
           sequence: reader.u32(),
           description: reader.u64(),
-          client_mode: reader.u32(),
+          client_mode: reader.u8(),
         })),
         to_bp: reader.u8() != 0,
         to_ep: reader.u8() != 0,
@@ -132,7 +132,7 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
         forced: reader.u8() != 0,
         hint_timing: reader.u32(),
         hint_timing_other: reader.u32(),
-        selects: Array.from({ length: reader.u8() }, () => ({
+        selects: Array.from({ length: reader.u32() }, () => ({
           code: reader.u32(),
           controller: reader.u8(),
           location: reader.u8(),
@@ -489,17 +489,17 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
     case OcgMessageType.CHAINED:
       return {
         type,
-        chain_size: reader.u32(),
+        chain_size: reader.u8(),
       };
     case OcgMessageType.CHAIN_SOLVING:
       return {
         type,
-        chain_size: reader.u32(),
+        chain_size: reader.u8(),
       };
     case OcgMessageType.CHAIN_SOLVED:
       return {
         type,
-        chain_size: reader.u32(),
+        chain_size: reader.u8(),
       };
     case OcgMessageType.CHAIN_END:
       return {
@@ -508,12 +508,12 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
     case OcgMessageType.CHAIN_NEGATED:
       return {
         type,
-        chain_size: reader.u32(),
+        chain_size: reader.u8(),
       };
     case OcgMessageType.CHAIN_DISABLED:
       return {
         type,
-        chain_size: reader.u32(),
+        chain_size: reader.u8(),
       };
     case OcgMessageType.CARD_SELECTED:
       return {

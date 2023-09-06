@@ -1,6 +1,6 @@
 {
   "name": "ocgcore-wasm",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "type": "module",
   "author": {
     "name": "n1xx1"
@@ -33,7 +33,7 @@
     "clear:lib": "rm -rf dist/*.js dist/*.js.map",
     "build:emscripten": "chmod a+x ./build.sh && ./build.sh",
     "build:lib": "npm run clear:lib && esbuild ./src/index.ts --analyze --bundle --external:module --format=esm --target=es2020 --splitting --minify --sourcemap --outdir=dist",
-    "build:test": "esbuild ./tests/test.ts --analyze --bundle --platform=node --format=esm --target=es2020 --minify --sourcemap --outfile=tests/dist/test.js",
+    "build:test": "esbuild ./tests/test.ts --analyze --bundle --platform=node --format=esm --target=es2020 --splitting --minify --sourcemap --outdir=tests/dist",
     "build:types": "tsc --project tsconfig.types.json && api-extractor run",
     "build": "npm run build:emscripten && npm run build:lib && npm run build:types"
   },

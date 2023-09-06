@@ -22,7 +22,7 @@ async function main() {
   console.log(`OCGCORE: ${verMaj}.${verMin}`);
 
   const handle = await lib.createDuel({
-    flags: OcgDuelMode.MODE_MR5,
+    flags: OcgDuelMode.MODE_MR5 | OcgDuelMode.SIMPLE_AI,
     seed: [0n, 0n, 0n, 0n],
     team1: {
       drawCountPerTurn: 1,
@@ -42,7 +42,7 @@ async function main() {
         type: 0,
         level: 0,
         attribute: 0,
-        race: 0,
+        race: 0n,
         attack: 0,
         defense: 0,
         lscale: 0,
@@ -117,6 +117,7 @@ async function main() {
 
   await lib.startDuel(handle);
 
+  let wasWaitingResponse = false;
   while (true) {
     const status = await lib.duelProcess(handle);
 
@@ -126,13 +127,24 @@ async function main() {
       .map((d) => ({ ...d, type: messageTypeStrings[d.type] }))
       .forEach((d) => console.log(d));
 
+    if (wasWaitingResponse) {
+      if (status === OcgProcessResult.WAITING) {
+        break;
+      }
+    } else {
+      wasWaitingResponse = false;
+    }
+
     if (status == OcgProcessResult.END) {
       break;
     }
     if (status != OcgProcessResult.CONTINUE) {
       console.log("waiting response");
-      break;
+      wasWaitingResponse = true;
+      continue;
     }
+
+    wasWaitingResponse = false;
   }
   console.log(await lib.duelProcess(handle));
   console.log(handle);
