@@ -33,9 +33,10 @@
     "clear:lib": "rm -rf dist/*.js dist/*.js.map",
     "build:emscripten": "chmod a+x ./build.sh && ./build.sh",
     "build:lib": "npm run clear:lib && esbuild ./src/index.ts --analyze --bundle --external:module --format=esm --target=es2020 --splitting --minify --sourcemap --outdir=dist",
-    "build:test": "esbuild ./tests/test.ts --analyze --bundle --platform=node --format=esm --target=es2020 --splitting --minify --sourcemap --outdir=tests/dist",
+    "build:test": "esbuild ./tests/test.ts --analyze --bundle --platform=node --format=esm --target=es2020 --external:node-sqlite3-wasm --minify --sourcemap --outdir=tests/dist",
     "build:types": "tsc --project tsconfig.types.json && api-extractor run",
-    "build": "npm run build:emscripten && npm run build:lib && npm run build:types"
+    "build": "npm run build:emscripten && npm run build:lib && npm run build:types",
+    "start:tests": "npm run build:test && node --enable-source-maps --experimental-wasm-stack-switching tests/dist/test.js"
   },
   "devDependencies": {
     "@microsoft/api-extractor": "^7.36.4",
@@ -43,6 +44,9 @@
     "@types/node": "^20.5.9",
     "esbuild": "^0.19.2",
     "esno": "^0.17.0",
+    "node-sqlite3-wasm": "^0.6.9",
+    "promised-sqlite3": "^2.1.0",
+    "sqlite3": "^5.1.6",
     "typescript": "^5.2.2"
   }
 }

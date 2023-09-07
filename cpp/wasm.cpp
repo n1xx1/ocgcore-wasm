@@ -4,7 +4,11 @@
 #include "stdlib.h"
 
 EM_ASYNC_JS(void, ocgapiHandleDataReader, (void* payload, uint32_t code, OCG_CardData* data), {
-    await Module.handleDataReader(payload, code, data);
+    try {
+        await Module.handleDataReader(payload, code, data);
+    } catch(e) {
+        console.warn(e);
+    }
 })
 
 EM_ASYNC_JS(int, ocgapiHandleScriptReader, (void* payload, OCG_Duel duel, const char* name), {
@@ -22,6 +26,7 @@ EM_ASYNC_JS(int, ocgapiHandleScriptReader, (void* payload, OCG_Duel duel, const 
         }
         return 1;
     } catch(e) {
+        console.warn(e);
         return 0;
     }
 })

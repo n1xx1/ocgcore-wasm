@@ -7,16 +7,26 @@ FILES_LUA="./cpp/lua/lapi.c ./cpp/lua/lauxlib.c ./cpp/lua/lbaselib.c ./cpp/lua/l
 
 mkdir -p lib
 
-em++ \
-    -s RESERVED_FUNCTION_POINTERS=10 \
-    -s ASYNCIFY=2 -s MODULARIZE=1 -s ASSERTIONS=1 \
-    -s ALLOW_MEMORY_GROWTH=1 -s MALLOC=emmalloc \
-    -fwasm-exceptions \
-    -s NO_EXIT_RUNTIME=1 \
+DEBUG=0
+
+
+ADDITIONAL_ARGS=()
+
+if [ $DEBUG ]; then
+    ADDITIONAL_ARGS+=(-sSTACK_OVERFLOW_CHECK=1 -sSAFE_HEAP=1 -O1 -g3)
+else
+    ADDITIONAL_ARGS+=(-O3 -g0)
+fi
+
+em++ "${args[@]}" \
+    -sRESERVED_FUNCTION_POINTERS=10 \
+    -sASYNCIFY=2 -sMODULARIZE=1 -sASSERTIONS=1 \
+    -sALLOW_MEMORY_GROWTH=1 -sMALLOC=emmalloc \
+    -fwasm-exceptions -sSUPPORT_LONGJMP=wasm \
+    -sNO_EXIT_RUNTIME=1 \
     -sASYNCIFY_EXPORTS=ocgapi* \
-    -s "EXPORTED_FUNCTIONS=['_malloc', '_free']" \
-    -s "EXPORTED_RUNTIME_METHODS=['Asyncify', 'ccall', 'cwrap', 'stackSave', 'stackRestore', 'stackAlloc', 'getValue', 'setValue', 'UTF8ToString', 'stringToUTF8', 'stackTrace', 'lengthBytesUTF8', 'addFunction', 'removeFunction']" \
-    -O3 -g0 \
+    -sEXPORTED_FUNCTIONS=['_malloc','_free'] \
+    -sEXPORTED_RUNTIME_METHODS=['Asyncify','ccall','cwrap','stackSave','stackRestore','stackAlloc','getValue','setValue','UTF8ToString','stringToUTF8','stackTrace','lengthBytesUTF8','addFunction','removeFunction'] \
     -I./cpp/lua \
     $FILES_LUA \
     $FILES_YGO \

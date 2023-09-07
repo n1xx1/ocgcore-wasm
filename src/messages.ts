@@ -116,7 +116,7 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
         can_cancel: reader.u8() != 0,
         min: reader.u32(),
         max: reader.u32(),
-        selects: Array.from({ length: reader.u8() }, () => ({
+        selects: Array.from({ length: reader.u32() }, () => ({
           code: reader.u32(),
           controller: reader.u8(),
           location: reader.u8(),
@@ -152,7 +152,7 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
     case OcgMessageType.SELECT_POSITION:
       return {
         type,
-        player: reader.u32(),
+        player: reader.u8(),
         code: reader.u32(),
         positions: reader.u8(),
       };
@@ -555,13 +555,6 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
           position: reader.u32(),
         })),
       };
-    // READ_VALUE(drawnLength, uint32);
-    // Array drawn = Array::New(env, drawnLength);
-    // drawnLe: Array.from({ length: reader.u() }, () => ({
-    // Object value = Object::New(env);
-    // drawn.Set(i, value);
-    //       }
-    // message.Set("drawn", drawn);
     case OcgMessageType.DAMAGE:
       return {
         type,

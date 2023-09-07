@@ -236,11 +236,12 @@ export default async function initialize(
     },
     duelGetMessage({ [DuelHandleSymbol]: handle }: OcgDuelHandle) {
       const stack = m.stackSave();
+
       const lenPtr = m.stackAlloc(4);
       const buffer = m._ocgapiDuelGetMessage(handle, lenPtr);
-      m.stackRestore(stack);
-
       const bufferLength = m.getValue(lenPtr, "i32");
+
+      m.stackRestore(stack);
 
       const reader = new BufferReader(
         new DataView(m.HEAP8.buffer, buffer, bufferLength)
@@ -253,6 +254,7 @@ export default async function initialize(
         const subReader = reader.sub(length);
         const message = readMessage(subReader);
         if (!message) {
+          console.warn("failed to parse a message");
           // TODO: handle parse errors?
           continue;
         }

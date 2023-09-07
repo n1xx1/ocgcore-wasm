@@ -1,19 +1,25 @@
 import { readFile } from "fs/promises";
-import path from "path";
-import initialize from "../src/index";
+import sqlite3 from "node-sqlite3-wasm";
+import path, { join } from "path";
+import initialize, { OcgResponse, OcgResponseType } from "../src/index";
 import {
   OcgDuelMode,
   OcgLocation,
   OcgPosition,
   OcgProcessResult,
+  OcgType,
 } from "../src/type_core";
-import { messageTypeStrings } from "../src/types";
+import { OcgCardData, messageTypeStrings } from "../src/types";
 
 const scriptPath = "C:\\ProjectIgnis\\script";
+const cdbPath = "C:\\ProjectIgnis\\expansions";
 
 Error.stackTraceLimit = Infinity;
 
 async function main() {
+  const db = new sqlite3.Database(join(cdbPath, "cards.cdb"));
+  const cards = loadCards(db);
+
   const lib = await initialize({
     wasmBinary: await readFile("./lib/ocgcore.wasm"),
   });
@@ -22,8 +28,8 @@ async function main() {
   console.log(`OCGCORE: ${verMaj}.${verMin}`);
 
   const handle = await lib.createDuel({
-    flags: OcgDuelMode.MODE_MR5 | OcgDuelMode.SIMPLE_AI,
-    seed: [0n, 0n, 0n, 0n],
+    flags: OcgDuelMode.MODE_MR5,
+    seed: [1n, 1n, 1n, 1n],
     team1: {
       drawCountPerTurn: 1,
       startingDrawCount: 5,
@@ -35,20 +41,26 @@ async function main() {
       startingLP: 8000,
     },
     cardReader: async (code) => {
-      return {
-        code,
-        alias: 0,
-        setcodes: [],
-        type: 0,
-        level: 0,
-        attribute: 0,
-        race: 0n,
-        attack: 0,
-        defense: 0,
-        lscale: 0,
-        rscale: 0,
-        link_marker: 0,
-      };
+      const card = cards.get(code);
+      if (!card) {
+        console.warn("missing card: ", code);
+      }
+      return (
+        card ?? {
+          code,
+          alias: 0,
+          setcodes: [],
+          type: 0,
+          level: 0,
+          attribute: 0,
+          race: 0n,
+          attack: 0,
+          defense: 0,
+          lscale: 0,
+          rscale: 0,
+          link_marker: 0,
+        }
+      );
     },
     scriptReader: async (script) => {
       const filePath = script.match(/c\d+\.lua/)
@@ -117,7 +129,39 @@ async function main() {
 
   await lib.startDuel(handle);
 
-  let wasWaitingResponse = false;
+  let messagesToSend: (OcgResponse | null)[] = [
+    // activate Quick Launch
+    {
+      type: OcgResponseType.SELECT_CHAIN,
+      index: 0,
+    },
+    // select place for Quick Launch
+    {
+      type: OcgResponseType.SELECT_PLACE,
+      places: [{ player: 0, location: OcgLocation.SZONE, sequence: 2 }],
+    },
+    // skip select_chain
+    { type: OcgResponseType.SELECT_CHAIN, cancel: true },
+    { type: OcgResponseType.SELECT_CHAIN, cancel: true },
+    // select Rokket Tracer
+    { type: OcgResponseType.SELECT_CARD, indicies: [2] },
+    // select place for Rokket Tracer
+    {
+      type: OcgResponseType.SELECT_PLACE,
+      places: [{ player: 0, location: OcgLocation.MZONE, sequence: 2 }],
+    },
+    // select position for Rokket Tracer
+    {
+      type: OcgResponseType.SELECT_POSITION,
+      position: OcgPosition.FACEUP_ATTACK,
+    },
+    // skip select_chain
+    { type: OcgResponseType.SELECT_CHAIN, cancel: true },
+    { type: OcgResponseType.SELECT_CHAIN, cancel: true },
+    { type: OcgResponseType.SELECT_CHAIN, cancel: true },
+    { type: OcgResponseType.SELECT_CHAIN, cancel: true },
+  ];
+
   while (true) {
     const status = await lib.duelProcess(handle);
 
@@ -127,28 +171,22 @@ async function main() {
       .map((d) => ({ ...d, type: messageTypeStrings[d.type] }))
       .forEach((d) => console.log(d));
 
-    if (wasWaitingResponse) {
-      if (status === OcgProcessResult.WAITING) {
-        break;
-      }
-    } else {
-      wasWaitingResponse = false;
-    }
-
-    if (status == OcgProcessResult.END) {
+    if (status === OcgProcessResult.END) {
       break;
     }
-    if (status != OcgProcessResult.CONTINUE) {
-      console.log("waiting response");
-      wasWaitingResponse = true;
+    if (status === OcgProcessResult.CONTINUE) {
       continue;
     }
 
-    wasWaitingResponse = false;
+    const response = messagesToSend.shift();
+    if (response === undefined) {
+      console.log("no more programmed responses");
+      break;
+    }
+    if (response) {
+      lib.duelSetResponse(handle, response);
+    }
   }
-  console.log(await lib.duelProcess(handle));
-  console.log(handle);
-  return;
 }
 const deck = {
   mainDeck: [
@@ -168,5 +206,80 @@ const deck = {
     86148577,
   ],
 };
+
+function asBigInt(v: number | bigint) {
+  return typeof v === "bigint" ? v : BigInt(v);
+}
+function asNumber(v: number | bigint) {
+  return typeof v === "number" ? v : Number(v);
+}
+
+function loadCards(db: sqlite3.Database) {
+  type Card = {
+    id: number | bigint;
+    ot: number | bigint;
+    alias: number | bigint;
+    setcode: number | bigint;
+    type: number | bigint;
+    atk: number | bigint;
+    def: number | bigint;
+    level: number | bigint;
+    race: number | bigint;
+    attribute: number | bigint;
+    category: number | bigint;
+  };
+
+  const cards = new Map<number, OcgCardData>();
+
+  const data = db.all("SELECT * FROM datas");
+  for (const d of data) {
+    const datum = d as Card;
+    const setcode = asBigInt(datum.setcode);
+    const setcodes = [...new Int16Array(BigInt64Array.from([setcode]).buffer)];
+    const type = asNumber(datum.type);
+
+    const card: OcgCardData = {
+      code: asNumber(datum.id),
+      alias: asNumber(datum.alias),
+      setcodes,
+      type,
+      attack: asNumber(datum.atk),
+      defense: type & OcgType.LINK ? 0 : asNumber(datum.def),
+      link_marker: type & OcgType.LINK ? asNumber(datum.def) : 0,
+      level: asNumber(datum.level) & 0xff,
+      lscale: (asNumber(datum.level) >> 24) & 0xff,
+      rscale: (asNumber(datum.level) >> 16) & 0xff,
+      race: asBigInt(datum.race),
+      attribute: asNumber(datum.attribute),
+    };
+
+    cards.set(card.code, card);
+  }
+
+  return cards;
+}
+
+// CREATE TABLE "texts" (
+//     "id"    INTEGER,
+//     "name"  TEXT,
+//     "desc"  TEXT,
+//     "str1"  TEXT,
+//     "str2"  TEXT,
+//     "str3"  TEXT,
+//     "str4"  TEXT,
+//     "str5"  TEXT,
+//     "str6"  TEXT,
+//     "str7"  TEXT,
+//     "str8"  TEXT,
+//     "str9"  TEXT,
+//     "str10" TEXT,
+//     "str11" TEXT,
+//     "str12" TEXT,
+//     "str13" TEXT,
+//     "str14" TEXT,
+//     "str15" TEXT,
+//     "str16" TEXT,
+//     PRIMARY KEY("id")
+// )
 
 main().catch((e) => console.log(e));

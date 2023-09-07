@@ -289,3 +289,19 @@ export const OcgQueryFlags = {
   IS_HIDDEN: 0x1000000,
   COVER: 0x2000000,
 };
+
+export type OcgScope = number;
+
+export const OcgScope = {
+  OCG: 0x1,
+  TCG: 0x2,
+  ANIME: 0x4,
+  ILLEGAL: 0x8,
+  VIDEO_GAME: 0x10,
+  CUSTOM: 0x20,
+  SPEED: 0x40,
+  PRERELEASE: 0x100,
+  RUSH: 0x200,
+  LEGEND: 0x400,
+  HIDDEN: 0x1000,
+};
