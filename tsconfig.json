@@ -6,7 +6,10 @@
     "esModuleInterop": true,
     "sourceMap": true,
     "baseUrl": ".",
-    "strict": true
+    "strict": true,
+    "paths": {
+      "~/*": ["./*"]
+    }
   },
   "include": ["./src/**/*", "./tests/**/*"]
 }

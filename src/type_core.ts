@@ -1,9 +1,17 @@
+import { makeMap } from "./internal/utils";
+
 export type OcgProcessResult = number;
 export const OcgProcessResult = {
   END: 0,
   WAITING: 1,
   CONTINUE: 2,
-};
+} as const;
+
+export const ocgProcessResultString = makeMap([
+  [OcgProcessResult.END, "end"],
+  [OcgProcessResult.WAITING, "waiting"],
+  [OcgProcessResult.CONTINUE, "continue"],
+]);
 
 export type OcgPosition = number;
 
@@ -16,7 +24,29 @@ export const OcgPosition = {
   FACEDOWN: 0xa,
   ATTACK: 0x3,
   DEFENSE: 0xc,
-};
+} as const;
+
+export const ocgPositionString = makeMap([
+  [OcgPosition.FACEUP_ATTACK, "faceup_attack"],
+  [OcgPosition.FACEDOWN_ATTACK, "facedown_attack"],
+  [OcgPosition.FACEUP_DEFENSE, "faceup_defense"],
+  [OcgPosition.FACEDOWN_DEFENSE, "facedown_defense"],
+  [OcgPosition.FACEUP, "faceup"],
+  [OcgPosition.FACEDOWN, "facedown"],
+  [OcgPosition.ATTACK, "attack"],
+  [OcgPosition.DEFENSE, "defense"],
+]);
+
+const ocgPositionMapElements = [
+  OcgPosition.FACEUP_ATTACK,
+  OcgPosition.FACEDOWN_ATTACK,
+  OcgPosition.FACEUP_DEFENSE,
+  OcgPosition.FACEDOWN_DEFENSE,
+];
+
+export function ocgPositionParse(position: OcgPosition) {
+  return ocgPositionMapElements.filter((x) => position & x);
+}
 
 export type OcgLocation = number;
 
@@ -29,11 +59,43 @@ export const OcgLocation = {
   REMOVED: 0x20,
   EXTRA: 0x40,
   OVERLAY: 0x80,
-  ONFIELD: 0x0c,
   FZONE: 0x100,
   PZONE: 0x200,
+  ONFIELD: 0x0c,
   ALL: 0x3ff,
-};
+} as const;
+
+export const ocgLocationString = makeMap([
+  [OcgLocation.DECK, "deck"],
+  [OcgLocation.HAND, "hand"],
+  [OcgLocation.MZONE, "mzone"],
+  [OcgLocation.SZONE, "szone"],
+  [OcgLocation.GRAVE, "grave"],
+  [OcgLocation.REMOVED, "removed"],
+  [OcgLocation.EXTRA, "extra"],
+  [OcgLocation.OVERLAY, "overlay"],
+  [OcgLocation.FZONE, "fzone"],
+  [OcgLocation.PZONE, "pzone"],
+  [OcgLocation.ONFIELD, "onfield"],
+  [OcgLocation.ALL, "all"],
+]);
+
+const ocgLocationMapElements = [
+  OcgLocation.DECK,
+  OcgLocation.HAND,
+  OcgLocation.MZONE,
+  OcgLocation.SZONE,
+  OcgLocation.GRAVE,
+  OcgLocation.REMOVED,
+  OcgLocation.EXTRA,
+  OcgLocation.OVERLAY,
+  OcgLocation.FZONE,
+  OcgLocation.PZONE,
+] as const;
+
+export function ocgLocationParse(location: OcgLocation) {
+  return ocgLocationMapElements.filter((x) => location & x);
+}
 
 export type OcgType = number;
 
@@ -64,7 +126,42 @@ export const OcgType = {
   PENDULUM: 0x1000000,
   SPSUMMON: 0x2000000,
   LINK: 0x4000000,
-};
+} as const;
+
+export const ocgTypeString = makeMap([
+  [OcgType.MONSTER, "monster"],
+  [OcgType.SPELL, "spell"],
+  [OcgType.TRAP, "trap"],
+  [OcgType.NORMAL, "normal"],
+  [OcgType.EFFECT, "effect"],
+  [OcgType.FUSION, "fusion"],
+  [OcgType.RITUAL, "ritual"],
+  [OcgType.TRAPMONSTER, "trapmonster"],
+  [OcgType.SPIRIT, "spirit"],
+  [OcgType.UNION, "union"],
+  [OcgType.GEMINI, "gemini"],
+  [OcgType.TUNER, "tuner"],
+  [OcgType.SYNCHRO, "synchro"],
+  [OcgType.TOKEN, "token"],
+  [OcgType.MAXIMUM, "maximum"],
+  [OcgType.QUICKPLAY, "quickplay"],
+  [OcgType.CONTINUOUS, "continuous"],
+  [OcgType.EQUIP, "equip"],
+  [OcgType.FIELD, "field"],
+  [OcgType.COUNTER, "counter"],
+  [OcgType.FLIP, "flip"],
+  [OcgType.TOON, "toon"],
+  [OcgType.XYZ, "xyz"],
+  [OcgType.PENDULUM, "pendulum"],
+  [OcgType.SPSUMMON, "spsummon"],
+  [OcgType.LINK, "link"],
+]);
+
+const ocgTypeMapElements = Object.values(OcgType);
+
+export function ocgTypeParse(type: OcgType) {
+  return ocgTypeMapElements.filter((x) => type & x);
+}
 
 export type OcgAttribute = number;
 
@@ -76,7 +173,17 @@ export const OcgAttribute = {
   LIGHT: 0x10,
   DARK: 0x20,
   DIVINE: 0x40,
-};
+} as const;
+
+export const ocgAttributeString = makeMap([
+  [OcgAttribute.EARTH, "earth"],
+  [OcgAttribute.WATER, "water"],
+  [OcgAttribute.FIRE, "fire"],
+  [OcgAttribute.WIND, "wind"],
+  [OcgAttribute.LIGHT, "light"],
+  [OcgAttribute.DARK, "dark"],
+  [OcgAttribute.DIVINE, "divine"],
+]);
 
 export type OcgRace = bigint;
 
@@ -113,7 +220,42 @@ export const OcgRace = {
   OMEGAPSYCHIC: 0x20000000n,
   CELESTIALWARRIOR: 0x40000000n,
   GALAXY: 0x80000000n,
-};
+} as const;
+
+export const ocgRaceString = makeMap([
+  [OcgRace.WARRIOR, "warrior"],
+  [OcgRace.SPELLCASTER, "spellcaster"],
+  [OcgRace.FAIRY, "fairy"],
+  [OcgRace.FIEND, "fiend"],
+  [OcgRace.ZOMBIE, "zombie"],
+  [OcgRace.MACHINE, "machine"],
+  [OcgRace.AQUA, "aqua"],
+  [OcgRace.PYRO, "pyro"],
+  [OcgRace.ROCK, "rock"],
+  [OcgRace.WINGEDBEAST, "winged_beast"],
+  [OcgRace.PLANT, "plant"],
+  [OcgRace.INSECT, "insect"],
+  [OcgRace.THUNDER, "thunder"],
+  [OcgRace.DRAGON, "dragon"],
+  [OcgRace.BEAST, "beast"],
+  [OcgRace.BEASTWARRIOR, "beast_warrior"],
+  [OcgRace.DINOSAUR, "dinosaur"],
+  [OcgRace.FISH, "fish"],
+  [OcgRace.SEASERPENT, "sea_serpent"],
+  [OcgRace.REPTILE, "reptile"],
+  [OcgRace.PSYCHIC, "psychic"],
+  [OcgRace.DIVINE, "divine"],
+  [OcgRace.CREATORGOD, "creator_god"],
+  [OcgRace.WYRM, "wyrm"],
+  [OcgRace.CYBERSE, "cyberse"],
+  [OcgRace.ILLUSION, "illusion"],
+  [OcgRace.CYBORG, "cyborg"],
+  [OcgRace.MAGICALKNIGHT, "magical_knight"],
+  [OcgRace.HIGHDRAGON, "high_dragon"],
+  [OcgRace.OMEGAPSYCHIC, "omega_psychic"],
+  [OcgRace.CELESTIALWARRIOR, "celestial_warrior"],
+  [OcgRace.GALAXY, "galaxy"],
+]);
 
 export type OcgLinkMarker = number;
 
@@ -128,6 +270,23 @@ export const OcgLinkMarker = {
   TOP_RIGHT: 0o400,
 };
 
+export const ocgLinkMarkerString = makeMap([
+  [OcgLinkMarker.BOTTOM_LEFT, "bottom_left"],
+  [OcgLinkMarker.BOTTOM, "bottom"],
+  [OcgLinkMarker.BOTTOM_RIGHT, "bottom_right"],
+  [OcgLinkMarker.LEFT, "left"],
+  [OcgLinkMarker.RIGHT, "right"],
+  [OcgLinkMarker.TOP_LEFT, "top_left"],
+  [OcgLinkMarker.TOP, "top"],
+  [OcgLinkMarker.TOP_RIGHT, "top_right"],
+]);
+
+const ocgLinkMarkerMapElements = Object.values(OcgLinkMarker);
+
+export function ocgLinkMarkerParse(marker: OcgLinkMarker) {
+  return ocgLinkMarkerMapElements.filter((x) => marker & x);
+}
+
 export type OcgRPS = number;
 
 export const OcgRPS = {
@@ -136,9 +295,13 @@ export const OcgRPS = {
   PAPER: 3,
 };
 
-export type OcgDuelMode = bigint;
+export const ocgRPSString = makeMap([
+  [OcgRPS.SCISSORS, "scissors"],
+  [OcgRPS.ROCK, "rock"],
+  [OcgRPS.PAPER, "paper"],
+]);
 
-const mutableDuelMode = {
+const duelModeBase = {
   TEST_MODE: 0x01n,
   ATTACK_FIRST_TURN: 0x02n,
   USE_TRAPS_IN_NEW_CHAIN: 0x04n,
@@ -173,84 +336,76 @@ const mutableDuelMode = {
   CAN_REPOS_IF_NON_SUMPLAYER: 0x80000000n,
   TCG_SEGOC_NONPUBLIC: 0x100000000n,
   TCG_SEGOC_FIRSTTRIGGER: 0x200000000n,
-  MODE_SPEED: 0n,
-  MODE_RUSH: 0n,
-  MODE_MR1: 0n,
-  MODE_GOAT: 0n,
-  MODE_MR2: 0n,
-  MODE_MR3: 0n,
-  MODE_MR4: 0n,
-  MODE_MR5: 0n,
-};
+} as const;
 
-mutableDuelMode.MODE_SPEED =
-  mutableDuelMode.THREE_COLUMNS_FIELD |
-  mutableDuelMode.NO_MAIN_PHASE_2 |
-  mutableDuelMode.TRIGGER_ONLY_IN_LOCATION;
+const duelModeBase1 = {
+  ...duelModeBase,
+  MODE_MR1:
+    duelModeBase.OBSOLETE_IGNITION |
+    duelModeBase.FIRST_TURN_DRAW |
+    duelModeBase.ONE_FACEUP_FIELD |
+    duelModeBase.SPSUMMON_ONCE_OLD_NEGATE |
+    duelModeBase.RETURN_TO_EXTRA_DECK_TRIGGERS |
+    duelModeBase.CANNOT_SUMMON_OATH_OLD,
+} as const;
 
-mutableDuelMode.MODE_RUSH =
-  mutableDuelMode.THREE_COLUMNS_FIELD |
-  mutableDuelMode.NO_MAIN_PHASE_2 |
-  mutableDuelMode.NO_STANDBY_PHASE |
-  mutableDuelMode.FIRST_TURN_DRAW |
-  mutableDuelMode.INVERTED_QUICK_PRIORITY |
-  mutableDuelMode.DRAW_UNTIL_5 |
-  mutableDuelMode.NO_HAND_LIMIT |
-  mutableDuelMode.UNLIMITED_SUMMONS |
-  mutableDuelMode.TRIGGER_ONLY_IN_LOCATION;
+const duelModeBase2 = {
+  ...duelModeBase1,
+  MODE_SPEED:
+    duelModeBase.THREE_COLUMNS_FIELD |
+    duelModeBase.NO_MAIN_PHASE_2 |
+    duelModeBase.TRIGGER_ONLY_IN_LOCATION,
+  MODE_RUSH:
+    duelModeBase.THREE_COLUMNS_FIELD |
+    duelModeBase.NO_MAIN_PHASE_2 |
+    duelModeBase.NO_STANDBY_PHASE |
+    duelModeBase.FIRST_TURN_DRAW |
+    duelModeBase.INVERTED_QUICK_PRIORITY |
+    duelModeBase.DRAW_UNTIL_5 |
+    duelModeBase.NO_HAND_LIMIT |
+    duelModeBase.UNLIMITED_SUMMONS |
+    duelModeBase.TRIGGER_ONLY_IN_LOCATION,
+  MODE_GOAT:
+    duelModeBase1.MODE_MR1 |
+    duelModeBase.USE_TRAPS_IN_NEW_CHAIN |
+    duelModeBase.SIX_STEP_BATLLE_STEP |
+    duelModeBase.TRIGGER_WHEN_PRIVATE_KNOWLEDGE |
+    duelModeBase.EQUIP_NOT_SENT_IF_MISSING_TARGET |
+    duelModeBase.ZERO_ATK_DESTROYED |
+    duelModeBase.STORE_ATTACK_REPLAYS |
+    duelModeBase.SINGLE_CHAIN_IN_DAMAGE_SUBSTEP |
+    duelModeBase.CAN_REPOS_IF_NON_SUMPLAYER |
+    duelModeBase.TCG_SEGOC_NONPUBLIC |
+    duelModeBase.TCG_SEGOC_FIRSTTRIGGER,
+  MODE_MR2:
+    duelModeBase.FIRST_TURN_DRAW |
+    duelModeBase.ONE_FACEUP_FIELD |
+    duelModeBase.SPSUMMON_ONCE_OLD_NEGATE |
+    duelModeBase.RETURN_TO_EXTRA_DECK_TRIGGERS |
+    duelModeBase.CANNOT_SUMMON_OATH_OLD,
+  MODE_MR3:
+    duelModeBase.PZONE |
+    duelModeBase.SEPARATE_PZONE |
+    duelModeBase.SPSUMMON_ONCE_OLD_NEGATE |
+    duelModeBase.RETURN_TO_EXTRA_DECK_TRIGGERS |
+    duelModeBase.CANNOT_SUMMON_OATH_OLD,
+  MODE_MR4:
+    duelModeBase.PZONE |
+    duelModeBase.EMZONE |
+    duelModeBase.SPSUMMON_ONCE_OLD_NEGATE |
+    duelModeBase.RETURN_TO_EXTRA_DECK_TRIGGERS |
+    duelModeBase.CANNOT_SUMMON_OATH_OLD,
+  MODE_MR5:
+    duelModeBase.PZONE |
+    duelModeBase.EMZONE |
+    duelModeBase.FSX_MMZONE |
+    duelModeBase.TRAP_MONSTERS_NOT_USE_ZONE |
+    duelModeBase.TRIGGER_ONLY_IN_LOCATION,
+} as const;
 
-mutableDuelMode.MODE_MR1 =
-  mutableDuelMode.OBSOLETE_IGNITION |
-  mutableDuelMode.FIRST_TURN_DRAW |
-  mutableDuelMode.ONE_FACEUP_FIELD |
-  mutableDuelMode.SPSUMMON_ONCE_OLD_NEGATE |
-  mutableDuelMode.RETURN_TO_EXTRA_DECK_TRIGGERS |
-  mutableDuelMode.CANNOT_SUMMON_OATH_OLD;
+export type OcgDuelMode = bigint;
 
-mutableDuelMode.MODE_GOAT =
-  mutableDuelMode.MODE_MR1 |
-  mutableDuelMode.USE_TRAPS_IN_NEW_CHAIN |
-  mutableDuelMode.SIX_STEP_BATLLE_STEP |
-  mutableDuelMode.TRIGGER_WHEN_PRIVATE_KNOWLEDGE |
-  mutableDuelMode.EQUIP_NOT_SENT_IF_MISSING_TARGET |
-  mutableDuelMode.ZERO_ATK_DESTROYED |
-  mutableDuelMode.STORE_ATTACK_REPLAYS |
-  mutableDuelMode.SINGLE_CHAIN_IN_DAMAGE_SUBSTEP |
-  mutableDuelMode.CAN_REPOS_IF_NON_SUMPLAYER |
-  mutableDuelMode.TCG_SEGOC_NONPUBLIC |
-  mutableDuelMode.TCG_SEGOC_FIRSTTRIGGER;
-
-mutableDuelMode.MODE_MR2 =
-  mutableDuelMode.FIRST_TURN_DRAW |
-  mutableDuelMode.ONE_FACEUP_FIELD |
-  mutableDuelMode.SPSUMMON_ONCE_OLD_NEGATE |
-  mutableDuelMode.RETURN_TO_EXTRA_DECK_TRIGGERS |
-  mutableDuelMode.CANNOT_SUMMON_OATH_OLD;
-
-mutableDuelMode.MODE_MR3 =
-  mutableDuelMode.PZONE |
-  mutableDuelMode.SEPARATE_PZONE |
-  mutableDuelMode.SPSUMMON_ONCE_OLD_NEGATE |
-  mutableDuelMode.RETURN_TO_EXTRA_DECK_TRIGGERS |
-  mutableDuelMode.CANNOT_SUMMON_OATH_OLD;
-
-mutableDuelMode.MODE_MR4 =
-  mutableDuelMode.PZONE |
-  mutableDuelMode.EMZONE |
-  mutableDuelMode.SPSUMMON_ONCE_OLD_NEGATE |
-  mutableDuelMode.RETURN_TO_EXTRA_DECK_TRIGGERS |
-  mutableDuelMode.CANNOT_SUMMON_OATH_OLD;
-
-mutableDuelMode.MODE_MR5 =
-  mutableDuelMode.PZONE |
-  mutableDuelMode.EMZONE |
-  mutableDuelMode.FSX_MMZONE |
-  mutableDuelMode.TRAP_MONSTERS_NOT_USE_ZONE |
-  mutableDuelMode.TRIGGER_ONLY_IN_LOCATION;
-
-export const OcgDuelMode = { ...mutableDuelMode } as {
-  readonly [k in keyof typeof mutableDuelMode]: OcgDuelMode;
-};
+export const OcgDuelMode = duelModeBase2;
 
 export enum OcgLogType {
   ERROR,
@@ -304,4 +459,62 @@ export const OcgScope = {
   RUSH: 0x200,
   LEGEND: 0x400,
   HIDDEN: 0x1000,
-};
+} as const;
+
+export type OcgPhase = number;
+
+export const OcgPhase = {
+  DRAW: 0x01,
+  STANDBY: 0x02,
+  MAIN1: 0x04,
+  BATTLE_START: 0x08,
+  BATTLE_STEP: 0x10,
+  DAMAGE: 0x20,
+  DAMAGE_CAL: 0x40,
+  BATTLE: 0x80,
+  MAIN2: 0x100,
+  END: 0x200,
+} as const;
+
+export const ocgPhaseString = makeMap([
+  [OcgPhase.DRAW, "draw"],
+  [OcgPhase.STANDBY, "standby"],
+  [OcgPhase.MAIN1, "main1"],
+  [OcgPhase.BATTLE_START, "battle_start"],
+  [OcgPhase.BATTLE_STEP, "battle_step"],
+  [OcgPhase.DAMAGE, "damage"],
+  [OcgPhase.DAMAGE_CAL, "damage_cal"],
+  [OcgPhase.BATTLE, "battle"],
+  [OcgPhase.MAIN2, "main2"],
+  [OcgPhase.END, "end"],
+]);
+
+export type OcgHintType = number;
+
+export const OcgHintType = {
+  EVENT: 1,
+  MESSAGE: 2,
+  SELECTMSG: 3,
+  OPSELECTED: 4,
+  EFFECT: 5,
+  RACE: 6,
+  ATTRIB: 7,
+  CODE: 8,
+  NUMBER: 9,
+  CARD: 10,
+  ZONE: 11,
+} as const;
+
+export const ocgHintString = makeMap([
+  [OcgHintType.EVENT, "event"],
+  [OcgHintType.MESSAGE, "message"],
+  [OcgHintType.SELECTMSG, "selectmsg"],
+  [OcgHintType.OPSELECTED, "opselected"],
+  [OcgHintType.EFFECT, "effect"],
+  [OcgHintType.RACE, "race"],
+  [OcgHintType.ATTRIB, "attrib"],
+  [OcgHintType.CODE, "code"],
+  [OcgHintType.NUMBER, "number"],
+  [OcgHintType.CARD, "card"],
+  [OcgHintType.ZONE, "zone"],
+]);

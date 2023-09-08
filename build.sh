@@ -19,16 +19,16 @@ else
 fi
 
 em++ "${args[@]}" \
-    -sRESERVED_FUNCTION_POINTERS=10 \
     -sASYNCIFY=2 -sMODULARIZE=1 -sASSERTIONS=1 \
     -sALLOW_MEMORY_GROWTH=1 -sMALLOC=emmalloc \
     -fwasm-exceptions -sSUPPORT_LONGJMP=wasm \
+    -fno-rtti \
     -sNO_EXIT_RUNTIME=1 \
     -sASYNCIFY_EXPORTS=ocgapi* \
     -sEXPORTED_FUNCTIONS=['_malloc','_free'] \
-    -sEXPORTED_RUNTIME_METHODS=['Asyncify','ccall','cwrap','stackSave','stackRestore','stackAlloc','getValue','setValue','UTF8ToString','stringToUTF8','stackTrace','lengthBytesUTF8','addFunction','removeFunction'] \
+    -sEXPORTED_RUNTIME_METHODS=['Asyncify','stackSave','stackRestore','stackAlloc','getValue','stringToUTF8','lengthBytesUTF8'] \
     -I./cpp/lua \
     $FILES_LUA \
     $FILES_YGO \
     ./cpp/wasm.cpp \
-    -o lib/ocgcore.mjs
+    -o lib/ocgcore.jspi.mjs

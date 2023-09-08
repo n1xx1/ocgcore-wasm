@@ -31,12 +31,13 @@
   "license": "MIT",
   "scripts": {
     "clear:lib": "rm -rf dist/*.js dist/*.js.map",
+    "build:lib": "npm run clear:lib && esbuild ./src/index.ts --loader:.wasm=binary --analyze --bundle --external:module --format=esm --target=es2020 --splitting --minify --sourcemap --outdir=dist",
     "build:emscripten": "chmod a+x ./build.sh && ./build.sh",
-    "build:lib": "npm run clear:lib && esbuild ./src/index.ts --analyze --bundle --external:module --format=esm --target=es2020 --splitting --minify --sourcemap --outdir=dist",
-    "build:test": "esbuild ./tests/test.ts --analyze --bundle --platform=node --format=esm --target=es2020 --external:node-sqlite3-wasm --minify --sourcemap --outdir=tests/dist",
+    "clear:tests": "rm -rf tests/dist/*.js tests/*.js.map",
+    "build:tests": "esbuild ./tests/test.ts --analyze --bundle --platform=node --loader:.wasm=binary --format=esm --target=es2020 --external:node-sqlite3-wasm --splitting --minify --sourcemap --outdir=tests/dist",
+    "start:tests": "npm run build:tests && node --enable-source-maps --experimental-wasm-stack-switching tests/dist/test.js",
     "build:types": "tsc --project tsconfig.types.json && api-extractor run",
-    "build": "npm run build:emscripten && npm run build:lib && npm run build:types",
-    "start:tests": "npm run build:test && node --enable-source-maps --experimental-wasm-stack-switching tests/dist/test.js"
+    "build": "npm run build:emscripten && npm run build:lib && npm run build:types"
   },
   "devDependencies": {
     "@microsoft/api-extractor": "^7.36.4",

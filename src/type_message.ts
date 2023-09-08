@@ -2,6 +2,7 @@ import { OcgOpCode } from "./opcodes";
 import {
   OcgAttribute,
   OcgDuelMode,
+  OcgHintType,
   OcgLocation,
   OcgPosition,
   OcgRace,
@@ -131,8 +132,7 @@ export interface OcgLocPos {
   controller: number;
   location: OcgLocation;
   sequence: number;
-  // if location & OcgCardLocation.OVERLAY, then this is actually xyz material sequence
-  position: number;
+  position: OcgPosition | number; // if location & OcgCardLocation.OVERLAY, then this is actually xyz material sequence
 }
 
 export interface OcgCardLoc {
@@ -192,7 +192,7 @@ export interface OcgMessageRetry {
 
 export interface OcgMessageHint {
   type: OcgMessageType.HINT;
-  hint_type: number;
+  hint_type: OcgHintType;
   player: number;
   hint: bigint;
 }
