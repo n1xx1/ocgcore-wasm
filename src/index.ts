@@ -1,4 +1,5 @@
 import type { OcgCoreModule } from "~/lib/ocgcore.jspi.mjs";
+import { writeCardData, writeDuelOptions, writeNewCardInfo } from "./data";
 import { BufferReader, BufferWriter } from "./internal/buffer";
 import { readMessage } from "./messages";
 import { readField, readQuery, readQueryLocation } from "./queries";
@@ -70,34 +71,13 @@ export default async function createCore(): Promise<OcgCore> {
 
       const setCodesArr = new Uint16Array([...cardData.setcodes, 0]);
       const setCodes = m._malloc(setCodesArr.byteLength);
+      copyArray(heap(), setCodesArr, setCodes);
 
-      const view = heap();
-      copyArray(view, setCodesArr, setCodes);
-
-      // uint32_t code;
-      view.setUint32(data + 0, cardData.code, true);
-      // uint32_t alias;
-      view.setUint32(data + 4, cardData.alias, true);
-      // uint16_t* setcodes;
-      view.setUint32(data + 8, setCodes, true);
-      // uint32_t type;
-      view.setUint32(data + 12, cardData.type, true);
-      // uint32_t level;
-      view.setUint32(data + 16, cardData.level, true);
-      // uint32_t attribute;
-      view.setUint32(data + 20, cardData.attribute, true);
-      // uint64_t race;
-      view.setBigUint64(data + 28, BigInt(cardData.race), true);
-      // int32_t attack;
-      view.setInt32(data + 32, cardData.attack, true);
-      // int32_t defense;
-      view.setInt32(data + 36, cardData.defense, true);
-      // uint32_t lscale;
-      view.setUint32(data + 40, cardData.lscale, true);
-      // uint32_t rscale;
-      view.setUint32(data + 48, cardData.rscale, true);
-      // uint32_t link_marker;
-      view.setUint32(data + 52, cardData.link_marker, true);
+      writeCardData(heap(data), {
+        ...cardData,
+        ptrSize: 4,
+        setcodes: setCodes,
+      });
     },
     async handleScriptReader(payload: number, duel: number, name: string) {
       const { scriptReader } = callbacks.get(payload)!;
@@ -125,64 +105,31 @@ export default async function createCore(): Promise<OcgCore> {
       }
     },
     async createDuel(options: OcgDuelOptions): Promise<OcgDuelHandle | null> {
-      const stack = m.stackSave();
-      const duelPtr = m.stackAlloc(4);
-      const buf = m.stackAlloc(104);
-      const view = heap(buf);
-
       const callback = ++lastCallbackId;
-
       callbacks.set(callback, {
         cardReader: options.cardReader,
         errorHandler: options.errorHandler,
         scriptReader: options.scriptReader,
       });
 
-      // uint64_t seed[4]
-      view.setBigUint64(0, options.seed[0], true);
-      view.setBigUint64(8, options.seed[1], true);
-      view.setBigUint64(16, options.seed[2], true);
-      view.setBigUint64(24, options.seed[3], true);
-      // uint64_t flags
-      view.setBigUint64(32, options.flags, true);
-      // OCG_Player team1 {
-      //    uint32_t startingLP
-      view.setUint32(40, options.team1.startingLP, true);
-      //    uint32_t startingDrawCount
-      view.setUint32(44, options.team1.startingDrawCount, true);
-      //    uint32_t drawCountPerTurn
-      view.setUint32(48, options.team1.drawCountPerTurn, true);
-      // }
-      // OCG_Player team2 {
-      //    uint32_t startingLP
-      view.setUint32(52, options.team1.startingLP, true);
-      //    uint32_t startingDrawCount
-      view.setUint32(56, options.team1.startingDrawCount, true);
-      //    uint32_t drawCountPerTurn
-      view.setUint32(60, options.team1.drawCountPerTurn, true);
-      // }
-      // OCG_DataReader cardReader
-      view.setUint32(64, 0, true);
-      // void* payload1
-      view.setUint32(68, callback, true);
-      // OCG_ScriptReader scriptReader
-      view.setUint32(72, 0, true);
-      // void* payload2
-      view.setUint32(76, callback, true);
-      // OCG_LogHandler logHandler
-      view.setUint32(80, 0, true);
-      // void* payload3
-      view.setUint32(84, callback, true);
-      // OCG_DataReaderDone cardReaderDone
-      view.setUint32(88, 0, true);
-      // void* payload4
-      view.setUint32(92, callback, true);
-      // uint8_t enableUnsafeLibraries
-      view.setUint32(96, 1, true);
+      const stack = m.stackSave();
 
-      // sizeof(OCG_Player) = 3 * 4
-      // sizeof(OCG_DuelOptions) = 4 * 8 + 8 + 2 * sizeof(OCG_Player) + 8 * 4 + 1 (+7)
-      // = 104
+      const duelPtr = m.stackAlloc(4);
+
+      const buf = m.stackAlloc(104);
+      writeDuelOptions(heap(buf), {
+        ...options,
+        ptrSize: 4,
+        cardReader: 0,
+        cardReaderPayload: 0,
+        cardReaderDone: 0,
+        cardReaderDonePayload: callback,
+        errorHandler: 0,
+        errorHandlerPayload: callback,
+        scriptReader: 0,
+        scriptReaderPayload: callback,
+        enableUnsafeLibraries: true,
+      });
 
       try {
         const res = await m._ocgapiCreateDuel(duelPtr, buf);
@@ -204,22 +151,8 @@ export default async function createCore(): Promise<OcgCore> {
     ) {
       const stack = m.stackSave();
       const buf = m.stackAlloc(24);
-      const view = heap(buf);
 
-      // uint8_t team; /* either 0 or 1 */
-      view.setUint8(0, cardInfo.team);
-      // uint8_t duelist; /* index of original owner */
-      view.setUint8(1, cardInfo.duelist);
-      // uint32_t code;
-      view.setUint32(4, cardInfo.code, true);
-      // uint8_t con;
-      view.setUint8(8, cardInfo.controller);
-      // uint32_t loc;
-      view.setUint32(12, cardInfo.location, true);
-      // uint32_t seq;
-      view.setUint32(16, cardInfo.sequence, true);
-      // uint32_t pos;
-      view.setUint32(20, cardInfo.position, true);
+      writeNewCardInfo(heap(buf), cardInfo);
 
       try {
         await m._ocgapiDuelNewCard(handle, buf);
