@@ -1,4 +1,4 @@
-import { DepromisifyFunction } from "./internal/utils";
+import { InternalDepromisifyFunction } from "./internal/utils";
 import {
   OcgAttribute,
   OcgDuelMode,
@@ -61,7 +61,7 @@ export interface OcgDuelOptions {
 }
 
 export type OcgDuelOptionsSync = {
-  [F in keyof OcgDuelOptions]: DepromisifyFunction<OcgDuelOptions[F]>;
+  [F in keyof OcgDuelOptions]: InternalDepromisifyFunction<OcgDuelOptions[F]>;
 };
 
 export type OcgQuery = {
@@ -161,5 +161,7 @@ export interface OcgCore {
 }
 
 export type OcgCoreSync = {
-  [F in keyof Omit<OcgCore, "createDuel">]: DepromisifyFunction<OcgCore[F]>;
+  [F in keyof Omit<OcgCore, "createDuel">]: InternalDepromisifyFunction<
+    OcgCore[F]
+  >;
 } & { createDuel: (options: OcgDuelOptionsSync) => OcgDuelHandle | null };

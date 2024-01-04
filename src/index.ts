@@ -23,6 +23,10 @@ export * from "./type_core";
 export * from "./type_message";
 export * from "./type_response";
 export type * from "./types";
+export type {
+  InternalMappedMap,
+  InternalDepromisifyFunction,
+} from "./internal/utils";
 
 export interface Initializer {
   print?(str: string): void;
