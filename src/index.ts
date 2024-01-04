@@ -46,10 +46,6 @@ export default async function createCore(options: {
 export default async function createCore(options?: {
   sync: boolean;
 }): Promise<OcgCore | OcgCoreSync> {
-  if (!("Suspender" in WebAssembly) || !("Function" in WebAssembly)) {
-    throw new Error("jspi not supported");
-  }
-
   const sync = options?.sync ?? false;
 
   console.log(sync);
@@ -363,6 +359,10 @@ async function createCoreSync(): Promise<OcgCoreSync> {
 }
 
 async function createCoreJspi(): Promise<OcgCore> {
+  if (!("Suspender" in WebAssembly) || !("Function" in WebAssembly)) {
+    throw new Error("jspi not supported");
+  }
+
   const [factory, wasmBinary] = await Promise.all([
     importFactoryJspi(),
     importWasmJspi(),
