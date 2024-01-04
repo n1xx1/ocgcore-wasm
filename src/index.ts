@@ -47,8 +47,6 @@ export default async function createCore(options?: {
   sync: boolean;
 }): Promise<OcgCore | OcgCoreSync> {
   const sync = options?.sync ?? false;
-
-  console.log(sync);
   return sync ? await createCoreSync() : await createCoreJspi();
 }
 
