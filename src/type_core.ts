@@ -1,5 +1,7 @@
 import { makeMap } from "./internal/utils";
 
+export type { MappedMap } from "./internal/utils";
+
 export type OcgProcessResult = number;
 export const OcgProcessResult = {
   END: 0,
