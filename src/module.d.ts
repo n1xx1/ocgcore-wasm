@@ -1,5 +1,5 @@
 declare module "~/lib/ocgcore.jspi.mjs" {
-  export type OcgCoreModule = _OcgCoreModule;
+  export type OcgCoreModule = OcgCoreModuleBase;
 
   const Module: EmscriptenModuleFactory<OcgCoreModule>;
   export default Module;
@@ -10,7 +10,25 @@ declare module "~/lib/ocgcore.jspi.wasm" {
   export default wasm;
 }
 
-interface _OcgCoreModule extends EmscriptenModule {
+declare module "~/lib/ocgcore.sync.mjs" {
+  type DepromisifyFunction<Fn> = Fn extends (...args: infer Args) => infer Ret
+    ? (...args: Args) => Awaited<Ret>
+    : Fn;
+
+  export type OcgCoreModule = {
+    [F in keyof OcgCoreModuleBase]: DepromisifyFunction<OcgCoreModuleBase[F]>;
+  };
+
+  const Module: EmscriptenModuleFactory<OcgCoreModule>;
+  export default Module;
+}
+
+declare module "~/lib/ocgcore.sync.wasm" {
+  const wasm: Uint8Array;
+  export default wasm;
+}
+
+interface OcgCoreModuleBase extends EmscriptenModule {
   stackAlloc: typeof stackAlloc;
   stackSave: typeof stackSave;
   stackRestore: typeof stackRestore;

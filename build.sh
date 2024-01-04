@@ -9,7 +9,6 @@ mkdir -p lib
 
 DEBUG=0
 
-
 ADDITIONAL_ARGS=()
 
 if [ $DEBUG ]; then
@@ -19,7 +18,8 @@ else
 fi
 
 em++ "${args[@]}" \
-    -sASYNCIFY=2 -sMODULARIZE=1 -sASSERTIONS=1 \
+    "${ADDITIONAL_ARGS[@]}" \
+    -sASYNCIFY=2 -sMODULARIZE=1 -sASSERTIONS=1 -DWASM_USE_JSPI \
     -sALLOW_MEMORY_GROWTH=1 -sMALLOC=emmalloc \
     -fwasm-exceptions -sSUPPORT_LONGJMP=wasm \
     -fno-rtti \
@@ -32,3 +32,18 @@ em++ "${args[@]}" \
     $FILES_YGO \
     ./cpp/wasm.cpp \
     -o lib/ocgcore.jspi.mjs
+
+em++ "${args[@]}" \
+    "${ADDITIONAL_ARGS[@]}" \
+    -sMODULARIZE=1 -sASSERTIONS=1 \
+    -sALLOW_MEMORY_GROWTH=1 -sMALLOC=emmalloc \
+    -fwasm-exceptions -sSUPPORT_LONGJMP=wasm \
+    -fno-rtti \
+    -sNO_EXIT_RUNTIME=1 \
+    -sEXPORTED_FUNCTIONS=['_malloc','_free'] \
+    -sEXPORTED_RUNTIME_METHODS=['stackSave','stackRestore','stackAlloc','getValue','stringToUTF8','lengthBytesUTF8'] \
+    -I./cpp/lua \
+    $FILES_LUA \
+    $FILES_YGO \
+    ./cpp/wasm.cpp \
+    -o lib/ocgcore.sync.mjs

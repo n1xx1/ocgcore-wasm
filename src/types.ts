@@ -1,3 +1,4 @@
+import { DepromisifyFunction } from "./internal/utils";
 import {
   OcgAttribute,
   OcgDuelMode,
@@ -58,6 +59,10 @@ export interface OcgDuelOptions {
   scriptReader: (name: string) => Promise<string> | string;
   errorHandler?: (type: OcgLogType, text: string) => void;
 }
+
+export type OcgDuelOptionsSync = {
+  [F in keyof OcgDuelOptions]: DepromisifyFunction<OcgDuelOptions[F]>;
+};
 
 export type OcgQuery = {
   flags: OcgQueryFlags;
@@ -154,3 +159,7 @@ export interface OcgCore {
   ) => (Partial<OcgCardQueryInfo> | null)[];
   duelQueryField: (handle: OcgDuelHandle) => OcgFieldState;
 }
+
+export type OcgCoreSync = {
+  [F in keyof Omit<OcgCore, "createDuel">]: DepromisifyFunction<OcgCore[F]>;
+} & { createDuel: (options: OcgDuelOptionsSync) => OcgDuelHandle | null };

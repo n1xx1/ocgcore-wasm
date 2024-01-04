@@ -5,6 +5,10 @@ import { OcgFieldPlayer, OcgMessage, OcgMessageType } from "./type_message";
 export function readMessage(reader: BufferReader): OcgMessage | null {
   const type: OcgMessageType = reader.u8();
   switch (type) {
+    case OcgMessageType.RETRY:
+      return {
+        type,
+      };
     case OcgMessageType.HINT:
       return {
         type,

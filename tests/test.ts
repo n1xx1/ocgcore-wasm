@@ -1,4 +1,5 @@
 import { readFile } from "fs/promises";
+import { readFileSync } from "fs";
 import sqlite3 from "node-sqlite3-wasm";
 import path, { join } from "path";
 import createCore, { OcgResponse, OcgResponseType } from "../src/index";
@@ -29,6 +30,11 @@ const stringsPath = "C:\\ProjectIgnis\\config\\strings.conf";
 Error.stackTraceLimit = Infinity;
 
 async function main() {
+  testSync();
+  await testJspi();
+}
+
+async function testJspi() {
   const db = new sqlite3.Database(join(cdbPath, "cards.cdb"));
   const cards = loadCards(db);
   const cardTexts = loadTexts(db);
@@ -146,38 +152,7 @@ async function main() {
 
   await lib.startDuel(handle);
 
-  let messagesToSend: (OcgResponse | null)[] = [
-    // activate Quick Launch
-    {
-      type: OcgResponseType.SELECT_CHAIN,
-      index: 0,
-    },
-    // select place for Quick Launch
-    {
-      type: OcgResponseType.SELECT_PLACE,
-      places: [{ player: 0, location: OcgLocation.SZONE, sequence: 2 }],
-    },
-    // skip select_chain
-    { type: OcgResponseType.SELECT_CHAIN, cancel: true },
-    { type: OcgResponseType.SELECT_CHAIN, cancel: true },
-    // select Rokket Tracer
-    { type: OcgResponseType.SELECT_CARD, indicies: [2] },
-    // select place for Rokket Tracer
-    {
-      type: OcgResponseType.SELECT_PLACE,
-      places: [{ player: 0, location: OcgLocation.MZONE, sequence: 2 }],
-    },
-    // select position for Rokket Tracer
-    {
-      type: OcgResponseType.SELECT_POSITION,
-      position: OcgPosition.FACEUP_ATTACK,
-    },
-    // skip select_chain
-    { type: OcgResponseType.SELECT_CHAIN, cancel: true },
-    { type: OcgResponseType.SELECT_CHAIN, cancel: true },
-    { type: OcgResponseType.SELECT_CHAIN, cancel: true },
-    { type: OcgResponseType.SELECT_CHAIN, cancel: true },
-  ];
+  let messagesToSend = baseMessagesToSend.slice();
 
   while (true) {
     const status = await lib.duelProcess(handle);
@@ -202,6 +177,184 @@ async function main() {
     }
   }
 }
+
+async function testSync() {
+  const db = new sqlite3.Database(join(cdbPath, "cards.cdb"));
+  const cards = loadCards(db);
+  const cardTexts = loadTexts(db);
+  db.close();
+
+  const lang: LangData = {
+    texts: cardTexts,
+    ...(await loadStrings()),
+  };
+
+  const lib = await createCore({ sync: true });
+
+  const [verMaj, verMin] = lib.getVersion();
+  console.log(`OCGCORE: ${verMaj}.${verMin}`);
+
+  const handle = lib.createDuel({
+    flags: OcgDuelMode.MODE_MR5,
+    seed: [1n, 1n, 1n, 1n],
+    team1: {
+      drawCountPerTurn: 1,
+      startingDrawCount: 5,
+      startingLP: 8000,
+    },
+    team2: {
+      drawCountPerTurn: 1,
+      startingDrawCount: 5,
+      startingLP: 8000,
+    },
+    cardReader: (code) => {
+      const card = cards.get(code);
+      if (!card) {
+        console.warn("missing card: ", code);
+      }
+      return (
+        card ?? {
+          code,
+          alias: 0,
+          setcodes: [],
+          type: 0,
+          level: 0,
+          attribute: 0,
+          race: 0n,
+          attack: 0,
+          defense: 0,
+          lscale: 0,
+          rscale: 0,
+          link_marker: 0,
+        }
+      );
+    },
+    scriptReader: (script) => {
+      const filePath = script.match(/c\d+\.lua/)
+        ? path.join(scriptPath, "official", script)
+        : path.join(scriptPath, script);
+
+      // console.log(`loading script: ${script}`);
+
+      try {
+        return readFileSync(filePath, "utf-8");
+      } catch (e) {
+        console.log(`error reading script "${script}", ${e}`);
+        throw e;
+      }
+    },
+    errorHandler: (type, text) => {
+      console.warn(type, text);
+    },
+  });
+
+  if (!handle) {
+    throw new Error("failed to create");
+  }
+
+  lib.loadScript(
+    handle,
+    "constant.lua",
+    readFileSync(path.join(scriptPath, "constant.lua"), "utf8")
+  );
+
+  lib.loadScript(
+    handle,
+    "utility.lua",
+    readFileSync(path.join(scriptPath, "utility.lua"), "utf8")
+  );
+
+  const addCard = (
+    team: number,
+    code: number,
+    location: OcgLocation,
+    position: OcgPosition
+  ) => {
+    lib.duelNewCard(handle, {
+      code,
+      duelist: 0,
+      team,
+      controller: team,
+      location,
+      position,
+      sequence: 0,
+    });
+  };
+
+  for (const card of deck.mainDeck) {
+    addCard(0, card, OcgLocation.DECK, OcgPosition.FACEDOWN_DEFENSE);
+  }
+  for (const card of deck.extraDeck) {
+    addCard(0, card, OcgLocation.EXTRA, OcgPosition.FACEDOWN_DEFENSE);
+  }
+  for (const card of deck.mainDeck) {
+    addCard(1, card, OcgLocation.DECK, OcgPosition.FACEDOWN_DEFENSE);
+  }
+  for (const card of deck.extraDeck) {
+    addCard(1, card, OcgLocation.EXTRA, OcgPosition.FACEDOWN_DEFENSE);
+  }
+
+  lib.startDuel(handle);
+
+  let messagesToSend = baseMessagesToSend.slice();
+
+  while (true) {
+    const status = lib.duelProcess(handle);
+
+    const data = lib.duelGetMessage(handle);
+    data.filter((d) => d).forEach((d) => printMessage(lang, d));
+
+    if (status === OcgProcessResult.END) {
+      break;
+    }
+    if (status === OcgProcessResult.CONTINUE) {
+      continue;
+    }
+
+    const response = messagesToSend.shift();
+    if (response === undefined) {
+      console.log("no more programmed responses");
+      break;
+    }
+    if (response) {
+      lib.duelSetResponse(handle, response);
+    }
+  }
+}
+
+const baseMessagesToSend: (OcgResponse | null)[] = [
+  // activate Quick Launch
+  {
+    type: OcgResponseType.SELECT_CHAIN,
+    index: 1,
+  },
+  // select place for Quick Launch
+  {
+    type: OcgResponseType.SELECT_PLACE,
+    places: [{ player: 0, location: OcgLocation.SZONE, sequence: 2 }],
+  },
+  // skip select_chain
+  { type: OcgResponseType.SELECT_CHAIN, cancel: true },
+  { type: OcgResponseType.SELECT_CHAIN, cancel: true },
+  // select Rokket Tracer
+  { type: OcgResponseType.SELECT_CARD, indicies: [2] },
+  // select place for Rokket Tracer
+  {
+    type: OcgResponseType.SELECT_PLACE,
+    places: [{ player: 0, location: OcgLocation.MZONE, sequence: 2 }],
+  },
+  // select position for Rokket Tracer
+  {
+    type: OcgResponseType.SELECT_POSITION,
+    position: OcgPosition.FACEUP_ATTACK,
+  },
+  // skip select_chain
+  { type: OcgResponseType.SELECT_CHAIN, cancel: true },
+  { type: OcgResponseType.SELECT_CHAIN, cancel: true },
+  { type: OcgResponseType.SELECT_CHAIN, cancel: true },
+  { type: OcgResponseType.SELECT_CHAIN, cancel: true },
+];
+
 const deck = {
   mainDeck: [
     96005454, 55878038, 88774734, 67748760, 61901281, 26655293, 15381421,

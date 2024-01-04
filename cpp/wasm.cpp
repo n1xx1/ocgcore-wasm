@@ -3,6 +3,8 @@
 #include "emscripten.h"
 #include "stdlib.h"
 
+#if WASM_USE_JSPI
+
 EM_ASYNC_JS(void, ocgapiHandleDataReader, (void* payload, uint32_t code, OCG_CardData* data), {
     try {
         await Module.handleDataReader(payload, code, data);
@@ -30,6 +32,38 @@ EM_ASYNC_JS(int, ocgapiHandleScriptReader, (void* payload, OCG_Duel duel, const 
         return 0;
     }
 })
+
+#else
+
+EM_JS(void, ocgapiHandleDataReader, (void* payload, uint32_t code, OCG_CardData* data), {
+    try {
+        Module.handleDataReader(payload, code, data);
+    } catch(e) {
+        console.warn(e);
+    }
+})
+
+EM_JS(int, ocgapiHandleScriptReader, (void* payload, OCG_Duel duel, const char* name), {
+    try {
+        const contents = Module.handleScriptReader(payload, duel, UTF8ToString(name));
+
+        const contentLength = lengthBytesUTF8(contents);
+        const contentPtr = _malloc(contentLength + 1);
+        stringToUTF8(contents, contentPtr, contentLength + 1);
+
+        try {
+            _ocgapiLoadScript(duel, contentPtr, contentLength, name);
+        } finally {
+            _free(contentPtr);
+        }
+        return 1;
+    } catch(e) {
+        console.warn(e);
+        return 0;
+    }
+})
+
+#endif
 
 EM_JS(void, ocgapiHandleLogHandler, (void* payload, const char* string, int type), {
     Module.handleLogHandler(payload, UTF8ToString(string), type);

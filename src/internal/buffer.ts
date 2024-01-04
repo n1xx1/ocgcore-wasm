@@ -17,6 +17,9 @@ export class BufferReader {
   get avail(): number {
     return this.view.byteLength - this.off;
   }
+  reset() {
+    this.off = 0;
+  }
   sub(length: number): BufferReader {
     if (this.avail < length) {
       throw new Error("eof");

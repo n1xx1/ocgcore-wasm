@@ -13,3 +13,9 @@ export function makeMap<const E extends readonly (readonly [any, any])[]>(
 ) {
   return new Map(e) as MappedMap<E>;
 }
+
+export type DepromisifyFunction<Fn> = Fn extends (
+  ...args: infer Args
+) => infer Ret
+  ? (...args: Args) => Awaited<Ret>
+  : Fn;
