@@ -407,12 +407,78 @@ export type OcgDuelMode = bigint;
 
 export const OcgDuelMode = duelModeBase2;
 
+export const ocgDuelModeString = makeMap([
+  [OcgDuelMode.TEST_MODE, "test_mode"],
+  [OcgDuelMode.ATTACK_FIRST_TURN, "attack_first_turn"],
+  [OcgDuelMode.USE_TRAPS_IN_NEW_CHAIN, "use_traps_in_new_chain"],
+  [OcgDuelMode.SIX_STEP_BATLLE_STEP, "six_step_batlle_step"],
+  [OcgDuelMode.PSEUDO_SHUFFLE, "pseudo_shuffle"],
+  [
+    OcgDuelMode.TRIGGER_WHEN_PRIVATE_KNOWLEDGE,
+    "trigger_when_private_knowledge",
+  ],
+  [OcgDuelMode.SIMPLE_AI, "simple_ai"],
+  [OcgDuelMode.RELAY, "relay"],
+  [OcgDuelMode.OBSOLETE_IGNITION, "obsolete_ignition"],
+  [OcgDuelMode.FIRST_TURN_DRAW, "first_turn_draw"],
+  [OcgDuelMode.ONE_FACEUP_FIELD, "one_faceup_field"],
+  [OcgDuelMode.PZONE, "pzone"],
+  [OcgDuelMode.SEPARATE_PZONE, "separate_pzone"],
+  [OcgDuelMode.EMZONE, "emzone"],
+  [OcgDuelMode.FSX_MMZONE, "fsx_mmzone"],
+  [OcgDuelMode.TRAP_MONSTERS_NOT_USE_ZONE, "trap_monsters_not_use_zone"],
+  [OcgDuelMode.RETURN_TO_EXTRA_DECK_TRIGGERS, "return_to_extra_deck_triggers"],
+  [OcgDuelMode.TRIGGER_ONLY_IN_LOCATION, "trigger_only_in_location"],
+  [OcgDuelMode.SPSUMMON_ONCE_OLD_NEGATE, "spsummon_once_old_negate"],
+  [OcgDuelMode.CANNOT_SUMMON_OATH_OLD, "cannot_summon_oath_old"],
+  [OcgDuelMode.NO_STANDBY_PHASE, "no_standby_phase"],
+  [OcgDuelMode.NO_MAIN_PHASE_2, "no_main_phase_2"],
+  [OcgDuelMode.THREE_COLUMNS_FIELD, "three_columns_field"],
+  [OcgDuelMode.DRAW_UNTIL_5, "draw_until_5"],
+  [OcgDuelMode.NO_HAND_LIMIT, "no_hand_limit"],
+  [OcgDuelMode.UNLIMITED_SUMMONS, "unlimited_summons"],
+  [OcgDuelMode.INVERTED_QUICK_PRIORITY, "inverted_quick_priority"],
+  [
+    OcgDuelMode.EQUIP_NOT_SENT_IF_MISSING_TARGET,
+    "equip_not_sent_if_missing_target",
+  ],
+  [OcgDuelMode.ZERO_ATK_DESTROYED, "zero_atk_destroyed"],
+  [OcgDuelMode.STORE_ATTACK_REPLAYS, "store_attack_replays"],
+  [
+    OcgDuelMode.SINGLE_CHAIN_IN_DAMAGE_SUBSTEP,
+    "single_chain_in_damage_substep",
+  ],
+  [OcgDuelMode.CAN_REPOS_IF_NON_SUMPLAYER, "can_repos_if_non_sumplayer"],
+  [OcgDuelMode.TCG_SEGOC_NONPUBLIC, "tcg_segoc_nonpublic"],
+  [OcgDuelMode.TCG_SEGOC_FIRSTTRIGGER, "tcg_segoc_firsttrigger"],
+  [OcgDuelMode.MODE_SPEED, "mode_speed"],
+  [OcgDuelMode.MODE_RUSH, "mode_rush"],
+  [OcgDuelMode.MODE_GOAT, "mode_goat"],
+  [OcgDuelMode.MODE_MR2, "mode_mr2"],
+  [OcgDuelMode.MODE_MR3, "mode_mr3"],
+  [OcgDuelMode.MODE_MR4, "mode_mr4"],
+  [OcgDuelMode.MODE_MR5, "mode_mr5"],
+]);
+
+const ocgDuelModeMapElements = Object.values(duelModeBase1);
+
+export function ocgDuelModeParse(mode: OcgDuelMode): OcgDuelMode[] {
+  return ocgDuelModeMapElements.filter((x) => mode & x);
+}
+
 export enum OcgLogType {
   ERROR,
   FROM_SCRIPT,
   FOR_DEBUG,
   UNDEFINED,
 }
+
+export const ocgLogTypeString = makeMap([
+  [OcgLogType.ERROR, "error"],
+  [OcgLogType.FROM_SCRIPT, "from_script"],
+  [OcgLogType.FOR_DEBUG, "for_debug"],
+  [OcgLogType.UNDEFINED, "undefined"],
+]);
 
 export type OcgQueryFlags = number;
 
@@ -445,6 +511,35 @@ export const OcgQueryFlags = {
   COVER: 0x2000000,
 };
 
+export const ocgQueryFlagsString = makeMap([
+  [OcgQueryFlags.CODE, "code"],
+  [OcgQueryFlags.POSITION, "position"],
+  [OcgQueryFlags.ALIAS, "alias"],
+  [OcgQueryFlags.TYPE, "type"],
+  [OcgQueryFlags.LEVEL, "level"],
+  [OcgQueryFlags.RANK, "rank"],
+  [OcgQueryFlags.ATTRIBUTE, "attribute"],
+  [OcgQueryFlags.RACE, "race"],
+  [OcgQueryFlags.ATTACK, "attack"],
+  [OcgQueryFlags.DEFENSE, "defense"],
+  [OcgQueryFlags.BASE_ATTACK, "base_attack"],
+  [OcgQueryFlags.BASE_DEFENSE, "base_defense"],
+  [OcgQueryFlags.REASON, "reason"],
+  [OcgQueryFlags.REASON_CARD, "reason_card"],
+  [OcgQueryFlags.EQUIP_CARD, "equip_card"],
+  [OcgQueryFlags.TARGET_CARD, "target_card"],
+  [OcgQueryFlags.OVERLAY_CARD, "overlay_card"],
+  [OcgQueryFlags.COUNTERS, "counters"],
+  [OcgQueryFlags.OWNER, "owner"],
+  [OcgQueryFlags.STATUS, "status"],
+  [OcgQueryFlags.IS_PUBLIC, "is_public"],
+  [OcgQueryFlags.LSCALE, "lscale"],
+  [OcgQueryFlags.RSCALE, "rscale"],
+  [OcgQueryFlags.LINK, "link"],
+  [OcgQueryFlags.IS_HIDDEN, "is_hidden"],
+  [OcgQueryFlags.COVER, "cover"],
+]);
+
 export type OcgScope = number;
 
 export const OcgScope = {
@@ -460,6 +555,20 @@ export const OcgScope = {
   LEGEND: 0x400,
   HIDDEN: 0x1000,
 } as const;
+
+export const ocgScopeString = makeMap([
+  [OcgScope.OCG, "ocg"],
+  [OcgScope.TCG, "tcg"],
+  [OcgScope.ANIME, "anime"],
+  [OcgScope.ILLEGAL, "illegal"],
+  [OcgScope.VIDEO_GAME, "video_game"],
+  [OcgScope.CUSTOM, "custom"],
+  [OcgScope.SPEED, "speed"],
+  [OcgScope.PRERELEASE, "prerelease"],
+  [OcgScope.RUSH, "rush"],
+  [OcgScope.LEGEND, "legend"],
+  [OcgScope.HIDDEN, "hidden"],
+]);
 
 export type OcgPhase = number;
 

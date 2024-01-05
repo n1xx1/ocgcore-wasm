@@ -710,11 +710,10 @@ function printMessage(lang: LangData, m: OcgMessage) {
           return;
         }
         default:
-          console.log(`\n${messageTypeStrings[m.type]}: unknown`);
+          console.log(`\n${messageTypeStrings.get(m.type)}: unknown`);
           console.log(m);
           throw "stop";
       }
-      return;
     }
     case OcgMessageType.HINT: {
       switch (m.hint_type) {
@@ -730,13 +729,13 @@ function printMessage(lang: LangData, m: OcgMessage) {
           return;
         }
         default:
-          console.log(`\n${messageTypeStrings[m.type]}: unknown`);
+          console.log(`\n${messageTypeStrings.get(m.type)}: unknown`);
           console.log(m);
           throw "stop";
       }
     }
     default: {
-      console.log(`\n${messageTypeStrings[m.type]}: unknown`);
+      console.log(`\n${messageTypeStrings.get(m.type)}: unknown`);
       console.log(m);
       throw "stop";
     }
