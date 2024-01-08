@@ -257,6 +257,7 @@ export interface OcgMessageSelectEffectYN {
   location: OcgLocation;
   sequence: number;
   position: OcgPosition;
+  overlay_sequence?: number;
   description: bigint;
 }
 
