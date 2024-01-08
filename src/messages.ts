@@ -1,6 +1,6 @@
-import { OcgLocation, OcgPosition } from ".";
 import { BufferReader } from "./internal/buffer";
 import { readField } from "./queries";
+import { OcgLocation, OcgPosition } from "./type_core";
 import { OcgLocPos, OcgMessage, OcgMessageType } from "./type_message";
 
 function parseInfoLocation(reader: BufferReader): OcgLocPos {
