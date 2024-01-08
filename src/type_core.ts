@@ -13,7 +13,7 @@ export const ocgProcessResultString = makeMap([
   [OcgProcessResult.CONTINUE, "continue"],
 ]);
 
-export type OcgPosition = number;
+export type OcgPosition = (typeof OcgPosition)[keyof typeof OcgPosition];
 
 export const OcgPosition = {
   FACEUP_ATTACK: 0x1,
@@ -48,7 +48,7 @@ export function ocgPositionParse(position: OcgPosition) {
   return ocgPositionMapElements.filter((x) => position & x);
 }
 
-export type OcgLocation = number;
+export type OcgLocation = (typeof OcgLocation)[keyof typeof OcgLocation];
 
 export const OcgLocation = {
   DECK: 0x01,
@@ -386,7 +386,7 @@ const duelModeBase2 = {
     duelModeBase.TRIGGER_ONLY_IN_LOCATION,
 } as const;
 
-export type OcgDuelMode = bigint;
+export type OcgDuelMode = (typeof duelModeBase)[keyof typeof duelModeBase];
 
 export const OcgDuelMode = duelModeBase2;
 
@@ -443,18 +443,20 @@ export const ocgDuelModeString = makeMap([
   [OcgDuelMode.MODE_MR5, "mode_mr5"],
 ]);
 
-const ocgDuelModeMapElements = Object.values(duelModeBase1);
+const ocgDuelModeMapElements = Object.values(duelModeBase);
 
 export function ocgDuelModeParse(mode: OcgDuelMode): OcgDuelMode[] {
   return ocgDuelModeMapElements.filter((x) => mode & x);
 }
 
-export enum OcgLogType {
-  ERROR,
-  FROM_SCRIPT,
-  FOR_DEBUG,
-  UNDEFINED,
-}
+export type OcgLogType = (typeof OcgLogType)[keyof typeof OcgLogType];
+
+export const OcgLogType = {
+  ERROR: 0,
+  FROM_SCRIPT: 1,
+  FOR_DEBUG: 2,
+  UNDEFINED: 3,
+} as const;
 
 export const ocgLogTypeString = makeMap([
   [OcgLogType.ERROR, "error"],
@@ -463,7 +465,7 @@ export const ocgLogTypeString = makeMap([
   [OcgLogType.UNDEFINED, "undefined"],
 ]);
 
-export type OcgQueryFlags = number;
+export type OcgQueryFlags = (typeof OcgQueryFlags)[keyof typeof OcgQueryFlags];
 
 export const OcgQueryFlags = {
   CODE: 0x1,
@@ -523,7 +525,7 @@ export const ocgQueryFlagsString = makeMap([
   [OcgQueryFlags.COVER, "cover"],
 ]);
 
-export type OcgScope = number;
+export type OcgScope = (typeof OcgScope)[keyof typeof OcgScope];
 
 export const OcgScope = {
   OCG: 0x1,
@@ -553,7 +555,7 @@ export const ocgScopeString = makeMap([
   [OcgScope.HIDDEN, "hidden"],
 ]);
 
-export type OcgPhase = number;
+export type OcgPhase = (typeof OcgPhase)[keyof typeof OcgPhase];
 
 export const OcgPhase = {
   DRAW: 0x01,
@@ -581,7 +583,7 @@ export const ocgPhaseString = makeMap([
   [OcgPhase.END, "end"],
 ]);
 
-export type OcgHintType = number;
+export type OcgHintType = (typeof OcgHintType)[keyof typeof OcgHintType];
 
 export const OcgHintType = {
   EVENT: 1,

@@ -334,8 +334,8 @@ const baseMessagesToSend: (OcgResponse | null)[] = [
     places: [{ player: 0, location: OcgLocation.SZONE, sequence: 2 }],
   },
   // skip select_chain
-  { type: OcgResponseType.SELECT_CHAIN, cancel: true },
-  { type: OcgResponseType.SELECT_CHAIN, cancel: true },
+  { type: OcgResponseType.SELECT_CHAIN, index: null },
+  { type: OcgResponseType.SELECT_CHAIN, index: null },
   // select Rokket Tracer
   { type: OcgResponseType.SELECT_CARD, indicies: [2] },
   // select place for Rokket Tracer
@@ -349,10 +349,10 @@ const baseMessagesToSend: (OcgResponse | null)[] = [
     position: OcgPosition.FACEUP_ATTACK,
   },
   // skip select_chain
-  { type: OcgResponseType.SELECT_CHAIN, cancel: true },
-  { type: OcgResponseType.SELECT_CHAIN, cancel: true },
-  { type: OcgResponseType.SELECT_CHAIN, cancel: true },
-  { type: OcgResponseType.SELECT_CHAIN, cancel: true },
+  { type: OcgResponseType.SELECT_CHAIN, index: null },
+  { type: OcgResponseType.SELECT_CHAIN, index: null },
+  { type: OcgResponseType.SELECT_CHAIN, index: null },
+  { type: OcgResponseType.SELECT_CHAIN, index: null },
 ];
 
 const deck = {

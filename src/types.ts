@@ -43,7 +43,7 @@ export interface OcgNewCardInfo {
 }
 
 export interface OcgDuelOptions {
-  flags: OcgDuelMode;
+  flags: bigint;
   seed: [bigint, bigint, bigint, bigint];
   team1: {
     startingLP: number;

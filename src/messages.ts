@@ -1,17 +1,18 @@
 import { BufferReader } from "./internal/buffer";
 import { readField } from "./queries";
-import { OcgLocation, OcgPosition } from "./type_core";
+import { OcgHintType, OcgLocation, OcgPhase, OcgPosition } from "./type_core";
 import { OcgLocPos, OcgMessage, OcgMessageType } from "./type_message";
 
 function parseInfoLocation(reader: BufferReader): OcgLocPos {
   const controller = reader.u8();
-  const location = reader.u8();
+  const location = reader.u8() as OcgLocation;
   const sequence = reader.u32();
-  const position = reader.u32();
+  const position = reader.u32() as OcgPosition;
+
   if (location & OcgLocation.OVERLAY) {
     return {
       controller,
-      location: location & ~OcgLocation.OVERLAY,
+      location: (location & ~OcgLocation.OVERLAY) as OcgLocation,
       sequence,
       position: OcgPosition.FACEUP_ATTACK,
       overlay_sequence: position,
@@ -36,7 +37,7 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
     case OcgMessageType.HINT:
       return {
         type,
-        hint_type: reader.u8(),
+        hint_type: reader.u8() as OcgHintType,
         player: reader.u8(),
         hint: reader.avail > 4 ? reader.u64() : BigInt(reader.u32()),
       };
@@ -53,7 +54,7 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
         chains: Array.from({ length: reader.u32() }, () => ({
           code: reader.u32(),
           controller: reader.u8(),
-          location: reader.u8(),
+          location: reader.u8() as OcgLocation,
           sequence: reader.u32(),
           description: reader.u64(),
           client_mode: reader.u8(),
@@ -61,7 +62,7 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
         attacks: Array.from({ length: reader.u32() }, () => ({
           code: reader.u32(),
           controller: reader.u8(),
-          location: reader.u8(),
+          location: reader.u8() as OcgLocation,
           sequence: reader.u8(),
           can_direct: reader.u8() != 0,
         })),
@@ -75,37 +76,37 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
         summons: Array.from({ length: reader.u32() }, () => ({
           code: reader.u32(),
           controller: reader.u8(),
-          location: reader.u8(),
+          location: reader.u8() as OcgLocation,
           sequence: reader.u32(),
         })),
         special_summons: Array.from({ length: reader.u32() }, () => ({
           code: reader.u32(),
           controller: reader.u8(),
-          location: reader.u8(),
+          location: reader.u8() as OcgLocation,
           sequence: reader.u32(),
         })),
         pos_changes: Array.from({ length: reader.u32() }, () => ({
           code: reader.u32(),
           controller: reader.u8(),
-          location: reader.u8(),
+          location: reader.u8() as OcgLocation,
           sequence: reader.u8(),
         })),
         monster_sets: Array.from({ length: reader.u32() }, () => ({
           code: reader.u32(),
           controller: reader.u8(),
-          location: reader.u8(),
+          location: reader.u8() as OcgLocation,
           sequence: reader.u32(),
         })),
         spell_sets: Array.from({ length: reader.u32() }, () => ({
           code: reader.u32(),
           controller: reader.u8(),
-          location: reader.u8(),
+          location: reader.u8() as OcgLocation,
           sequence: reader.u32(),
         })),
         activates: Array.from({ length: reader.u32() }, () => ({
           code: reader.u32(),
           controller: reader.u8(),
-          location: reader.u8(),
+          location: reader.u8() as OcgLocation,
           sequence: reader.u32(),
           description: reader.u64(),
           client_mode: reader.u8(),
@@ -173,7 +174,7 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
         type,
         player: reader.u8(),
         code: reader.u32(),
-        positions: reader.u8(),
+        positions: reader.u8() as OcgPosition,
       };
     case OcgMessageType.SELECT_TRIBUTE:
       return {
@@ -185,7 +186,7 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
         selects: Array.from({ length: reader.u32() }, () => ({
           code: reader.u32(),
           controller: reader.u8(),
-          location: reader.u8(),
+          location: reader.u8() as OcgLocation,
           sequence: reader.u32(),
           release_param: reader.u8(),
         })),
@@ -197,7 +198,7 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
         cards: Array.from({ length: reader.u32() }, () => ({
           code: reader.u32(),
           controller: reader.u8(),
-          location: reader.u32(),
+          location: reader.u32() as OcgLocation,
           sequence: reader.u32(),
         })),
       };
@@ -210,7 +211,7 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
         cards: Array.from({ length: reader.u32() }, () => ({
           code: reader.u32(),
           controller: reader.u8(),
-          location: reader.u8(),
+          location: reader.u8() as OcgLocation,
           sequence: reader.u8(),
           count: reader.u16(),
         })),
@@ -226,14 +227,14 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
         selects: Array.from({ length: reader.u32() }, () => ({
           code: reader.u32(),
           controller: reader.u8(),
-          location: reader.u8(),
+          location: reader.u8() as OcgLocation,
           sequence: reader.u32(),
           amount: reader.u32(),
         })),
         selects_must: Array.from({ length: reader.u32() }, () => ({
           code: reader.u32(),
           controller: reader.u8(),
-          location: reader.u8(),
+          location: reader.u8() as OcgLocation,
           sequence: reader.u32(),
           amount: reader.u32(),
         })),
@@ -252,7 +253,7 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
         cards: Array.from({ length: reader.u32() }, () => ({
           code: reader.u32(),
           controller: reader.u8(),
-          location: reader.u32(),
+          location: reader.u32() as OcgLocation,
           sequence: reader.u32(),
         })),
       };
@@ -280,7 +281,7 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
         cards: Array.from({ length: reader.u32() }, () => ({
           code: reader.u32(),
           controller: reader.u8(),
-          location: reader.u8(),
+          location: reader.u8() as OcgLocation,
           sequence: reader.u32(),
         })),
       };
@@ -291,7 +292,7 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
         cards: Array.from({ length: reader.u32() }, () => ({
           code: reader.u32(),
           controller: reader.u8(),
-          location: reader.u8(),
+          location: reader.u8() as OcgLocation,
           sequence: reader.u32(),
         })),
       };
@@ -332,7 +333,7 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
     case OcgMessageType.SHUFFLE_SET_CARD:
       return {
         type,
-        location: reader.u8(),
+        location: reader.u8() as OcgLocation,
         cards: Array.from({ length: reader.u32() }, () => ({
           from: parseInfoLocation(reader),
           to: parseInfoLocation(reader),
@@ -348,7 +349,7 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
         player: reader.u8(),
         count: reader.u32(),
         code: reader.u32(),
-        position: reader.u32(),
+        position: reader.u32() as OcgPosition,
       };
     case OcgMessageType.SHUFFLE_EXTRA:
       return {
@@ -364,7 +365,7 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
     case OcgMessageType.NEW_PHASE:
       return {
         type,
-        phase: reader.u16(),
+        phase: reader.u16() as OcgPhase,
       };
     case OcgMessageType.CONFIRM_EXTRATOP:
       return {
@@ -373,7 +374,7 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
         cards: Array.from({ length: reader.u32() }, () => ({
           code: reader.u32(),
           controller: reader.u8(),
-          location: reader.u8(),
+          location: reader.u8() as OcgLocation,
           sequence: reader.u32(),
         })),
       };
@@ -389,10 +390,10 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
         type,
         code: reader.u32(),
         controller: reader.u8(),
-        location: reader.u8(),
+        location: reader.u8() as OcgLocation,
         sequence: reader.u8(),
-        prev_position: reader.u8(),
-        position: reader.u8(),
+        prev_position: reader.u8() as OcgPosition,
+        position: reader.u8() as OcgPosition,
       };
     case OcgMessageType.SET:
       return {
@@ -453,7 +454,7 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
         code: reader.u32(),
         ...parseInfoLocation(reader),
         triggering_controller: reader.u8(),
-        triggering_location: reader.u8(),
+        triggering_location: reader.u8() as OcgLocation,
         triggering_sequence: reader.u32(),
         description: reader.u64(),
         chain_size: reader.u32(),
@@ -515,7 +516,7 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
         player: reader.u8(),
         drawn: Array.from({ length: reader.u32() }, () => ({
           code: reader.u32(),
-          position: reader.u32(),
+          position: reader.u32() as OcgPosition,
         })),
       };
     case OcgMessageType.DAMAGE:
@@ -569,7 +570,7 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
         type,
         counter_type: reader.u16(),
         controller: reader.u8(),
-        location: reader.u8(),
+        location: reader.u8() as OcgLocation,
         sequence: reader.u8(),
         count: reader.u16(),
       };
@@ -578,7 +579,7 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
         type,
         counter_type: reader.u16(),
         controller: reader.u8(),
-        location: reader.u8(),
+        location: reader.u8() as OcgLocation,
         sequence: reader.u8(),
         count: reader.u16(),
       };
@@ -719,11 +720,11 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
         deck_top_card: deck_top_card == 0 ? null : deck_top_card,
         hand: Array.from({ length: hand_length }, () => ({
           code: reader.u32(),
-          position: reader.u32(),
+          position: reader.u32() as OcgPosition,
         })),
         extra: Array.from({ length: extra_size }, () => ({
           code: reader.u32(),
-          position: reader.u32(),
+          position: reader.u32() as OcgPosition,
         })),
       };
     }

@@ -5,6 +5,7 @@ import {
   OcgDuelMode,
   OcgHintType,
   OcgLocation,
+  OcgPhase,
   OcgPosition,
   OcgRace,
   OcgRPS,
@@ -431,7 +432,7 @@ export interface OcgMessageNewTurn {
 
 export interface OcgMessageNewPhase {
   type: OcgMessageType.NEW_PHASE;
-  phase: number;
+  phase: OcgPhase;
 }
 
 export interface OcgMessageConfirmExtratop {
