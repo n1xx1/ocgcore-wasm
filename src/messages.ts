@@ -1,6 +1,30 @@
+import { OcgLocation, OcgPosition } from ".";
 import { BufferReader } from "./internal/buffer";
 import { readField } from "./queries";
-import { OcgFieldPlayer, OcgMessage, OcgMessageType } from "./type_message";
+import { OcgLocPos, OcgMessage, OcgMessageType } from "./type_message";
+
+function parseInfoLocation(reader: BufferReader): OcgLocPos {
+  const controller = reader.u8();
+  const location = reader.u8();
+  const sequence = reader.u32();
+  const position = reader.u32();
+  if (location & OcgLocation.OVERLAY) {
+    return {
+      controller,
+      location: location & ~OcgLocation.OVERLAY,
+      sequence,
+      position: OcgPosition.FACEUP_ATTACK,
+      overlay_sequence: position,
+    };
+  } else {
+    return {
+      controller,
+      location,
+      sequence,
+      position,
+    };
+  }
+}
 
 export function readMessage(reader: BufferReader): OcgMessage | null {
   const type: OcgMessageType = reader.u8();
@@ -95,10 +119,7 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
         type,
         player: reader.u8(),
         code: reader.u32(),
-        controller: reader.u8(),
-        location: reader.u8(),
-        sequence: reader.u32(),
-        position: reader.u32(),
+        ...parseInfoLocation(reader),
         description: reader.u64(),
       };
     case OcgMessageType.SELECT_YESNO:
@@ -122,10 +143,7 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
         max: reader.u32(),
         selects: Array.from({ length: reader.u32() }, () => ({
           code: reader.u32(),
-          controller: reader.u8(),
-          location: reader.u8(),
-          sequence: reader.u32(),
-          position: reader.u32(),
+          ...parseInfoLocation(reader),
         })),
       };
     case OcgMessageType.SELECT_CHAIN:
@@ -138,10 +156,7 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
         hint_timing_other: reader.u32(),
         selects: Array.from({ length: reader.u32() }, () => ({
           code: reader.u32(),
-          controller: reader.u8(),
-          location: reader.u8(),
-          sequence: reader.u32(),
-          position: reader.u32(),
+          ...parseInfoLocation(reader),
           description: reader.u64(),
           client_mode: reader.u8(),
         })),
@@ -251,17 +266,11 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
         max: reader.u32(),
         select_cards: Array.from({ length: reader.u32() }, () => ({
           code: reader.u32(),
-          controller: reader.u8(),
-          location: reader.u8(),
-          sequence: reader.u32(),
-          position: reader.u32(),
+          ...parseInfoLocation(reader),
         })),
         unselect_cards: Array.from({ length: reader.u32() }, () => ({
           code: reader.u32(),
-          controller: reader.u8(),
-          location: reader.u8(),
-          sequence: reader.u32(),
-          position: reader.u32(),
+          ...parseInfoLocation(reader),
         })),
       };
     case OcgMessageType.CONFIRM_DECKTOP:
@@ -325,18 +334,8 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
         type,
         location: reader.u8(),
         cards: Array.from({ length: reader.u32() }, () => ({
-          from: {
-            controller: reader.u8(),
-            location: reader.u8(),
-            sequence: reader.u32(),
-            position: reader.u32(),
-          },
-          to: {
-            controller: reader.u8(),
-            location: reader.u8(),
-            sequence: reader.u32(),
-            position: reader.u32(),
-          },
+          from: parseInfoLocation(reader),
+          to: parseInfoLocation(reader),
         })),
       };
     case OcgMessageType.REVERSE_DECK:
@@ -382,18 +381,8 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
       return {
         type,
         card: reader.u32(),
-        from: {
-          controller: reader.u8(),
-          location: reader.u8(),
-          sequence: reader.u32(),
-          position: reader.u32(),
-        },
-        to: {
-          controller: reader.u8(),
-          location: reader.u8(),
-          sequence: reader.u32(),
-          position: reader.u32(),
-        },
+        from: parseInfoLocation(reader),
+        to: parseInfoLocation(reader),
       };
     case OcgMessageType.POS_CHANGE:
       return {
@@ -409,27 +398,18 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
       return {
         type,
         code: reader.u32(),
-        controller: reader.u8(),
-        location: reader.u8(),
-        sequence: reader.u32(),
-        position: reader.u32(),
+        ...parseInfoLocation(reader),
       };
     case OcgMessageType.SWAP:
       return {
         type,
         card1: {
           code: reader.u32(),
-          controller: reader.u8(),
-          location: reader.u8(),
-          sequence: reader.u32(),
-          position: reader.u32(),
+          ...parseInfoLocation(reader),
         },
         card2: {
           code: reader.u32(),
-          controller: reader.u8(),
-          location: reader.u8(),
-          sequence: reader.u32(),
-          position: reader.u32(),
+          ...parseInfoLocation(reader),
         },
       };
     case OcgMessageType.FIELD_DISABLED:
@@ -441,10 +421,7 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
       return {
         type,
         code: reader.u32(),
-        controller: reader.u8(),
-        location: reader.u8(),
-        sequence: reader.u32(),
-        position: reader.u32(),
+        ...parseInfoLocation(reader),
       };
     case OcgMessageType.SUMMONED:
       return {
@@ -454,10 +431,7 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
       return {
         type,
         code: reader.u32(),
-        controller: reader.u8(),
-        location: reader.u8(),
-        sequence: reader.u32(),
-        position: reader.u32(),
+        ...parseInfoLocation(reader),
       };
     case OcgMessageType.SPSUMMONED:
       return {
@@ -467,10 +441,7 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
       return {
         type,
         code: reader.u32(),
-        controller: reader.u8(),
-        location: reader.u8(),
-        sequence: reader.u32(),
-        position: reader.u32(),
+        ...parseInfoLocation(reader),
       };
     case OcgMessageType.FLIPSUMMONED:
       return {
@@ -480,10 +451,7 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
       return {
         type,
         code: reader.u32(),
-        controller: reader.u8(),
-        location: reader.u8(),
-        sequence: reader.u32(),
-        position: reader.u32(),
+        ...parseInfoLocation(reader),
         triggering_controller: reader.u8(),
         triggering_location: reader.u8(),
         triggering_sequence: reader.u32(),
@@ -522,33 +490,24 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
     case OcgMessageType.CARD_SELECTED:
       return {
         type,
-        cards: Array.from({ length: reader.u32() }, () => ({
-          controller: reader.u8(),
-          location: reader.u8(),
-          sequence: reader.u32(),
-          position: reader.u32(),
-        })),
+        cards: Array.from({ length: reader.u32() }, () =>
+          parseInfoLocation(reader)
+        ),
       };
     case OcgMessageType.RANDOM_SELECTED:
       return {
         type,
         player: reader.u8(),
-        cards: Array.from({ length: reader.u32() }, () => ({
-          controller: reader.u8(),
-          location: reader.u8(),
-          sequence: reader.u32(),
-          position: reader.u32(),
-        })),
+        cards: Array.from({ length: reader.u32() }, () =>
+          parseInfoLocation(reader)
+        ),
       };
     case OcgMessageType.BECOME_TARGET:
       return {
         type,
-        cards: Array.from({ length: reader.u32() }, () => ({
-          controller: reader.u8(),
-          location: reader.u8(),
-          sequence: reader.u32(),
-          position: reader.u32(),
-        })),
+        cards: Array.from({ length: reader.u32() }, () =>
+          parseInfoLocation(reader)
+        ),
       };
     case OcgMessageType.DRAW:
       return {
@@ -574,18 +533,8 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
     case OcgMessageType.EQUIP:
       return {
         type,
-        card: {
-          controller: reader.u8(),
-          location: reader.u8(),
-          sequence: reader.u32(),
-          position: reader.u32(),
-        },
-        target: {
-          controller: reader.u8(),
-          location: reader.u8(),
-          sequence: reader.u32(),
-          position: reader.u32(),
-        },
+        card: parseInfoLocation(reader),
+        target: parseInfoLocation(reader),
       };
     case OcgMessageType.LPUPDATE:
       return {
@@ -600,34 +549,14 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
     case OcgMessageType.CARD_TARGET:
       return {
         type,
-        card: {
-          controller: reader.u8(),
-          location: reader.u8(),
-          sequence: reader.u32(),
-          position: reader.u32(),
-        },
-        target: {
-          controller: reader.u8(),
-          location: reader.u8(),
-          sequence: reader.u32(),
-          position: reader.u32(),
-        },
+        card: parseInfoLocation(reader),
+        target: parseInfoLocation(reader),
       };
     case OcgMessageType.CANCEL_TARGET:
       return {
         type,
-        card: {
-          controller: reader.u8(),
-          location: reader.u8(),
-          sequence: reader.u32(),
-          position: reader.u32(),
-        },
-        target: {
-          controller: reader.u8(),
-          location: reader.u8(),
-          sequence: reader.u32(),
-          position: reader.u32(),
-        },
+        card: parseInfoLocation(reader),
+        target: parseInfoLocation(reader),
       };
     case OcgMessageType.PAY_LPCOST:
       return {
@@ -656,19 +585,17 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
     case OcgMessageType.ATTACK:
       return {
         type,
-        card: {
-          controller: reader.u8(),
-          location: reader.u8(),
-          sequence: reader.u32(),
-          position: reader.u32(),
-        },
+        card: parseInfoLocation(reader),
         target: (() => {
-          const controller = reader.u8();
-          const location = reader.u8();
-          const sequence = reader.u32();
-          const position = reader.u32();
-          if (controller || location || sequence || position) {
-            return { controller, location, sequence, position };
+          const loc = parseInfoLocation(reader);
+          if (
+            loc.controller ||
+            loc.location ||
+            loc.sequence ||
+            loc.position ||
+            loc.overlay_sequence
+          ) {
+            return loc;
           }
           return null;
         })(),
@@ -677,19 +604,13 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
       return {
         type,
         card: {
-          controller: reader.u8(),
-          location: reader.u8(),
-          sequence: reader.u32(),
-          position: reader.u32(),
+          ...parseInfoLocation(reader),
           attack: reader.u32(),
           defense: reader.u32(),
           destroyed: reader.u8() != 0,
         },
         target: {
-          controller: reader.u8(),
-          location: reader.u8(),
-          sequence: reader.u32(),
-          position: reader.u32(),
+          ...parseInfoLocation(reader),
           attack: reader.u32(),
           defense: reader.u32(),
           destroyed: reader.u8() != 0,
@@ -710,10 +631,7 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
     case OcgMessageType.MISSED_EFFECT:
       return {
         type,
-        controller: reader.u8(),
-        location: reader.u8(),
-        sequence: reader.u32(),
-        position: reader.u32(),
+        ...parseInfoLocation(reader),
         code: reader.u32(),
       };
     case OcgMessageType.BE_CHAIN_TARGET:
@@ -782,10 +700,7 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
     case OcgMessageType.CARD_HINT:
       return {
         type,
-        controller: reader.u8(),
-        location: reader.u8(),
-        sequence: reader.u32(),
-        position: reader.u32(),
+        ...parseInfoLocation(reader),
         card_hint: reader.u8(),
         description: reader.u64(),
       };
@@ -846,12 +761,9 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
     case OcgMessageType.REMOVE_CARDS:
       return {
         type,
-        cards: Array.from({ length: reader.u32() }, () => ({
-          controller: reader.u8(),
-          location: reader.u8(),
-          sequence: reader.u32(),
-          position: reader.u32(),
-        })),
+        cards: Array.from({ length: reader.u32() }, () =>
+          parseInfoLocation(reader)
+        ),
       };
     default:
       return null;

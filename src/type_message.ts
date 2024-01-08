@@ -133,7 +133,8 @@ export interface OcgLocPos {
   controller: number;
   location: OcgLocation;
   sequence: number;
-  position: OcgPosition | number; // if location & OcgCardLocation.OVERLAY, then this is actually xyz material sequence
+  position: OcgPosition;
+  overlay_sequence?: number;
 }
 
 export interface OcgCardLoc {
@@ -144,8 +145,8 @@ export interface OcgCardLoc {
 }
 
 export interface OcgCardLocPos extends OcgCardLoc {
-  // if location & OcgCardLocation.OVERLAY, then this is actually xyz material sequence
-  position: number;
+  position: OcgPosition;
+  overlay_sequence?: number;
 }
 
 export interface OcgCardLocBattle extends OcgLocPos {
@@ -414,6 +415,7 @@ export interface OcgMessageDeckTop {
   count: number;
   code: number;
   position: OcgPosition;
+  overlay_sequence?: number;
 }
 
 export interface OcgMessageShuffleExtra {
@@ -520,7 +522,8 @@ export interface OcgMessageChaining {
   controller: number;
   location: OcgLocation;
   sequence: number;
-  position: number;
+  position: OcgPosition;
+  overlay_sequence?: number;
   triggering_controller: number;
   triggering_location: OcgLocation;
   triggering_sequence: number;
@@ -676,7 +679,8 @@ export interface OcgMessageMissedEffect {
   controller: number;
   location: OcgLocation;
   sequence: number;
-  position: number;
+  position: OcgPosition;
+  overlay_sequence?: number;
 }
 
 export interface OcgMessageBeChainTarget {
@@ -744,7 +748,8 @@ export interface OcgMessageCardHint {
   controller: number;
   location: OcgLocation;
   sequence: number;
-  position: number;
+  position: OcgPosition;
+  overlay_sequence?: number;
   card_hint: OcgMessageCardHintType;
   description: bigint;
 }

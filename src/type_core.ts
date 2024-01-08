@@ -80,23 +80,6 @@ export const ocgLocationString = makeMap([
   [OcgLocation.ALL, "all"],
 ]);
 
-const ocgLocationMapElements = [
-  OcgLocation.DECK,
-  OcgLocation.HAND,
-  OcgLocation.MZONE,
-  OcgLocation.SZONE,
-  OcgLocation.GRAVE,
-  OcgLocation.REMOVED,
-  OcgLocation.EXTRA,
-  OcgLocation.OVERLAY,
-  OcgLocation.FZONE,
-  OcgLocation.PZONE,
-] as const;
-
-export function ocgLocationParse(location: OcgLocation) {
-  return ocgLocationMapElements.filter((x) => location & x);
-}
-
 export type OcgType = number;
 
 export const OcgType = {
