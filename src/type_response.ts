@@ -35,7 +35,7 @@ export enum SelectBattleCMDAction {
 export type OcgResponseSelectBattleCMD = {
   type: OcgResponseType.SELECT_BATTLECMD;
   action: SelectBattleCMDAction;
-  index?: number;
+  index: number | null;
 };
 
 export enum SelectIdleCMDAction {
@@ -53,7 +53,7 @@ export enum SelectIdleCMDAction {
 export type OcgResponseSelectIdleCMD = {
   type: OcgResponseType.SELECT_IDLECMD;
   action: SelectIdleCMDAction;
-  index?: number;
+  index: number | null;
 };
 
 export type OcgResponseSelectEffectYN = {
@@ -83,10 +83,7 @@ export type OcgResponseSelectCardCodes = {
 
 export type OcgResponseSelectUnselectCard = {
   type: OcgResponseType.SELECT_UNSELECT_CARD;
-  index: number | null;
-  // null means cancel,
-  // represents select_cards[index] if index >= select_cards.length,
-  // otherwise it's unselect_cards[index - select_cards.length]
+  index: number | null; // index == null -> cancel; index < select_cards.length -> select_cards[index]; index >= select_cards.length -> unselect_cards[index - select_cards.length]
 };
 
 export type SelectFieldPlace = {
@@ -97,7 +94,8 @@ export type SelectFieldPlace = {
 
 export type OcgResponseSelectChain = {
   type: OcgResponseType.SELECT_CHAIN;
-} & ({ cancel: true; index?: never } | { cancel?: false; index: number });
+  index: number | null; // null -> cancel
+};
 
 export type OcgResponseSelectDisfield = {
   type: OcgResponseType.SELECT_DISFIELD;
@@ -116,7 +114,7 @@ export type OcgResponseSelectPosition = {
 
 export type OcgResponseSelectTribute = {
   type: OcgResponseType.SELECT_TRIBUTE;
-  indicies?: number[];
+  indicies: number[] | null; // null -> cancel
 };
 
 export type OcgResponseSelectCounter = {

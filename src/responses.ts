@@ -20,6 +20,8 @@ export function createResponse(response: OcgResponse) {
       writer.i32(response.index);
       break;
     case OcgResponseType.SELECT_CARD:
+    case OcgResponseType.SELECT_TRIBUTE:
+    case OcgResponseType.SELECT_SUM:
       if (response.indicies) {
         writer.i32(0);
         writer.i32(response.indicies.length);
@@ -42,14 +44,8 @@ export function createResponse(response: OcgResponse) {
       }
       break;
     case OcgResponseType.SELECT_UNSELECT_CARD:
-      if (response.index === null) {
-        writer.i32(-1);
-      } else {
-        writer.i32(response.index);
-      }
-      break;
     case OcgResponseType.SELECT_CHAIN:
-      if (response.cancel) {
+      if (response.index === null) {
         writer.i32(-1);
       } else {
         writer.i32(response.index);
@@ -66,27 +62,9 @@ export function createResponse(response: OcgResponse) {
     case OcgResponseType.SELECT_POSITION:
       writer.i32(response.position);
       break;
-    case OcgResponseType.SELECT_TRIBUTE:
-      if (response.indicies) {
-        writer.i32(0);
-        writer.i32(response.indicies.length);
-        for (const i of response.indicies) {
-          writer.i32(i);
-        }
-      } else {
-        writer.i32(-1);
-      }
-      break;
     case OcgResponseType.SELECT_COUNTER:
       for (const count of response.counters) {
         writer.i16(count);
-      }
-      break;
-    case OcgResponseType.SELECT_SUM:
-      writer.i32(0);
-      writer.i32(response.indicies.length);
-      for (const i of response.indicies) {
-        writer.i32(i);
       }
       break;
     case OcgResponseType.SORT_CARD:
