@@ -1,17 +1,12 @@
 import { BufferReader } from "./internal/buffer";
-import { OcgQueryFlags } from "./type_core";
+import { isInfoLocationEmpty, parseInfoLocation } from "./messages";
+import {
+  OcgDuelMode,
+  OcgLocation,
+  OcgPosition,
+  OcgQueryFlags,
+} from "./type_core";
 import { OcgCardQueryInfo, OcgFieldPlayer, OcgFieldState } from "./types";
-
-function readSingleCard(reader: BufferReader) {
-  const controller = reader.u8();
-  const location = reader.u8();
-  const sequence = reader.u32();
-  const position = reader.u32();
-  if (!controller && !location && !sequence && !position) {
-    return null;
-  }
-  return { controller, location, sequence, position };
-}
 
 export function readQuery(reader: BufferReader) {
   const result: Partial<OcgCardQueryInfo> = {};
@@ -34,7 +29,7 @@ export function readQuery(reader: BufferReader) {
     } else if (flag === OcgQueryFlags.CODE && size === 4) {
       result.code = reader.u32();
     } else if (flag === OcgQueryFlags.POSITION && size === 4) {
-      result.position = reader.u32();
+      result.position = reader.u32() as OcgPosition;
     } else if (flag === OcgQueryFlags.ALIAS && size === 4) {
       result.alias = reader.u32();
     } else if (flag === OcgQueryFlags.LEVEL && size === 4) {
@@ -58,17 +53,16 @@ export function readQuery(reader: BufferReader) {
     } else if (flag === OcgQueryFlags.COVER && size === 4) {
       result.cover = reader.u32();
     } else if (flag === OcgQueryFlags.REASON_CARD && size === 10) {
-      result.equipCard = readSingleCard(reader);
-    } else if (flag === OcgQueryFlags.REASON_CARD && size >= 4) {
-      result.targetCards = [];
-      const length = reader.u32();
-      for (let i = 0; i < length; i++) {
-        const card = readSingleCard(reader);
-        if (card) {
-          result.targetCards.push(card);
-        }
+      const card = parseInfoLocation(reader);
+      if (!isInfoLocationEmpty(card)) {
+        result.reasonCard = card;
       }
-    } else if (flag === OcgQueryFlags.REASON_CARD && size >= 4) {
+    } else if (flag === OcgQueryFlags.EQUIP_CARD && size === 10) {
+      const card = parseInfoLocation(reader);
+      if (!isInfoLocationEmpty(card)) {
+        result.equipCard = card;
+      }
+    } else if (flag === OcgQueryFlags.TARGET_CARD && size >= 4) {
       result.overlayCards = [];
       const length = reader.u32();
       for (let i = 0; i < length; i++) {
@@ -117,7 +111,7 @@ export function readQueryLocation(reader: BufferReader) {
 
 export function readField(reader: BufferReader): OcgFieldState {
   return {
-    flags: BigInt(reader.u32()),
+    flags: BigInt(reader.u32()) as OcgDuelMode,
     players: Array.from(
       { length: 2 },
       () =>
@@ -149,12 +143,9 @@ export function readField(reader: BufferReader): OcgFieldState {
     ) as [OcgFieldPlayer, OcgFieldPlayer],
     chain: Array.from({ length: reader.u32() }, () => ({
       code: reader.u32(),
-      controller: reader.u8(),
-      location: reader.u8(),
-      sequence: reader.u32(),
-      position: reader.u32(),
+      ...parseInfoLocation(reader),
       triggering_controller: reader.u8(),
-      triggering_location: reader.u8(),
+      triggering_location: reader.u8() as OcgLocation,
       triggering_sequence: reader.u32(),
       description: reader.u64(),
     })),

@@ -5,7 +5,7 @@ import { BufferReader, BufferWriter } from "./internal/buffer";
 import { readMessage } from "./messages";
 import { readField, readQuery, readQueryLocation } from "./queries";
 import { createResponse } from "./responses";
-import { OcgLocation } from "./type_core";
+import { OcgLocation, OcgLogType } from "./type_core";
 import { OcgMessage } from "./type_message";
 import { OcgResponse } from "./type_response";
 import {
@@ -65,7 +65,7 @@ function createImportMethodsBase(
     },
     handleLogHandler(payload: number, message: string, type: number) {
       const { errorHandler } = callbacks.get(payload)!;
-      errorHandler?.(type, message);
+      errorHandler?.(type as OcgLogType, message);
     },
   };
 }

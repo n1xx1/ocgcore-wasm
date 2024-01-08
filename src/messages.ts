@@ -3,7 +3,7 @@ import { readField } from "./queries";
 import { OcgHintType, OcgLocation, OcgPhase, OcgPosition } from "./type_core";
 import { OcgLocPos, OcgMessage, OcgMessageType } from "./type_message";
 
-function parseInfoLocation(reader: BufferReader): OcgLocPos {
+export function parseInfoLocation(reader: BufferReader): OcgLocPos {
   const controller = reader.u8();
   const location = reader.u8() as OcgLocation;
   const sequence = reader.u32();
@@ -25,6 +25,16 @@ function parseInfoLocation(reader: BufferReader): OcgLocPos {
       position,
     };
   }
+}
+
+export function isInfoLocationEmpty(loc: OcgLocPos) {
+  return (
+    !loc.controller &&
+    !loc.location &&
+    !loc.sequence &&
+    !loc.position &&
+    !loc.overlay_sequence
+  );
 }
 
 export function readMessage(reader: BufferReader): OcgMessage | null {
@@ -589,16 +599,10 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
         card: parseInfoLocation(reader),
         target: (() => {
           const loc = parseInfoLocation(reader);
-          if (
-            loc.controller ||
-            loc.location ||
-            loc.sequence ||
-            loc.position ||
-            loc.overlay_sequence
-          ) {
-            return loc;
+          if (isInfoLocationEmpty(loc)) {
+            return null;
           }
-          return null;
+          return loc;
         })(),
       };
     case OcgMessageType.BATTLE:

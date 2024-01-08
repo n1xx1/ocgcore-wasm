@@ -386,7 +386,10 @@ const duelModeBase2 = {
     duelModeBase.TRIGGER_ONLY_IN_LOCATION,
 } as const;
 
-export type OcgDuelMode = (typeof duelModeBase)[keyof typeof duelModeBase];
+export type OcgDuelMode = (typeof OcgDuelMode)[Exclude<
+  keyof typeof OcgDuelMode,
+  `MODE_${string}`
+>];
 
 export const OcgDuelMode = duelModeBase2;
 
