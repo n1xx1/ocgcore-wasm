@@ -1,6 +1,7 @@
+import { makeMap } from "./internal/utils";
 import { OcgCardData, OcgType } from "./types";
 
-export type OcgOpCode = bigint;
+export type OcgOpCode = (typeof OcgOpCode)[keyof typeof OcgOpCode];
 
 export const OcgOpCode = {
   ADD: 0x4000000000000000n,
@@ -30,6 +31,35 @@ export const OcgOpCode = {
   GETRACE: 0x4000010800000000n,
   GETATTRIBUTE: 0x4000010900000000n,
 };
+
+export const ocgOpCodeString = makeMap([
+  [OcgOpCode.ADD, "add"],
+  [OcgOpCode.SUB, "sub"],
+  [OcgOpCode.MUL, "mul"],
+  [OcgOpCode.DIV, "div"],
+  [OcgOpCode.AND, "and"],
+  [OcgOpCode.OR, "or"],
+  [OcgOpCode.NEG, "neg"],
+  [OcgOpCode.NOT, "not"],
+  [OcgOpCode.BAND, "band"],
+  [OcgOpCode.BOR, "bor"],
+  [OcgOpCode.BNOT, "bnot"],
+  [OcgOpCode.BXOR, "bxor"],
+  [OcgOpCode.LSHIFT, "lshift"],
+  [OcgOpCode.RSHIFT, "rshift"],
+  [OcgOpCode.ALLOW_ALIASES, "allow_aliases"],
+  [OcgOpCode.ALLOW_TOKENS, "allow_tokens"],
+  [OcgOpCode.ISCODE, "iscode"],
+  [OcgOpCode.ISSETCARD, "issetcard"],
+  [OcgOpCode.ISTYPE, "istype"],
+  [OcgOpCode.ISRACE, "israce"],
+  [OcgOpCode.ISATTRIBUTE, "isattribute"],
+  [OcgOpCode.GETCODE, "getcode"],
+  [OcgOpCode.GETSETCARD, "getsetcard"],
+  [OcgOpCode.GETTYPE, "gettype"],
+  [OcgOpCode.GETRACE, "getrace"],
+  [OcgOpCode.GETATTRIBUTE, "getattribute"],
+]);
 
 export function cardMatchesOpcode(card: OcgCardData, opcodes: OcgOpCode[]) {
   const stack: bigint[] = [];
