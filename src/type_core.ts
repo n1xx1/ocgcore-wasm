@@ -168,6 +168,12 @@ export const ocgAttributeString = makeMap([
   [OcgAttribute.DIVINE, "divine"],
 ]);
 
+const ocgAttributeMapElements = Object.values(OcgAttribute);
+
+export function ocgAttributeParse(attribute: OcgAttribute) {
+  return ocgAttributeMapElements.filter((x) => attribute & x);
+}
+
 export type OcgRace = bigint;
 
 export const OcgRace = {
@@ -239,6 +245,12 @@ export const ocgRaceString = makeMap([
   [OcgRace.CELESTIALWARRIOR, "celestial_warrior"],
   [OcgRace.GALAXY, "galaxy"],
 ]);
+
+const ocgRaceMapElements = Object.values(OcgRace);
+
+export function ocgRaceParse(race: OcgRace) {
+  return ocgRaceMapElements.filter((x) => race & x);
+}
 
 export type OcgLinkMarker = number;
 
