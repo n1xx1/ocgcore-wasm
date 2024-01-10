@@ -44,10 +44,10 @@ export function createResponse(response: OcgResponse) {
       }
       break;
     case OcgResponseType.SELECT_UNSELECT_CARD:
-    case OcgResponseType.SELECT_CHAIN:
       if (response.index === null) {
         writer.i32(-1);
       } else {
+        writer.i32(1);
         writer.i32(response.index);
       }
       break;
@@ -57,6 +57,13 @@ export function createResponse(response: OcgResponse) {
         writer.i8(place.player);
         writer.i8(place.location);
         writer.i8(place.sequence);
+      }
+      break;
+    case OcgResponseType.SELECT_CHAIN:
+      if (response.index === null) {
+        writer.i32(-1);
+      } else {
+        writer.i32(response.index);
       }
       break;
     case OcgResponseType.SELECT_POSITION:
