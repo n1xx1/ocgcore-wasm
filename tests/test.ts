@@ -1,27 +1,26 @@
-import { readFile } from "fs/promises";
 import { readFileSync } from "fs";
+import { readFile } from "fs/promises";
 import sqlite3 from "node-sqlite3-wasm";
 import path, { join } from "path";
-import createCore, { OcgResponse, OcgResponseType } from "../src/index";
-import {
+import createCore, {
+  OcgCardData,
+  OcgCardHintType,
+  OcgCardLoc,
   OcgDuelMode,
   OcgHintType,
+  OcgLocPos,
   OcgLocation,
+  OcgMessage,
+  OcgMessageType,
   OcgPhase,
   OcgPosition,
   OcgProcessResult,
+  OcgResponse,
+  OcgResponseType,
   OcgType,
+  ocgMessageTypeStrings,
   ocgPositionParse,
-} from "../src/type_core";
-import {
-  OcgCardData,
-  OcgCardLoc,
-  OcgLocPos,
-  OcgMessage,
-  OcgMessageCardHintType,
-  OcgMessageType,
-  messageTypeStrings,
-} from "../src/types";
+} from "../src/index";
 
 const scriptPath = "C:\\ProjectIgnis\\script";
 const cdbPath = "C:\\ProjectIgnis\\expansions";
@@ -73,7 +72,7 @@ async function testJspi() {
           code,
           alias: 0,
           setcodes: [],
-          type: 0,
+          type: 0 as OcgType,
           level: 0,
           attribute: 0,
           race: 0n,
@@ -217,7 +216,7 @@ async function testSync() {
           code,
           alias: 0,
           setcodes: [],
-          type: 0,
+          type: 0 as OcgType,
           level: 0,
           attribute: 0,
           race: 0n,
@@ -702,7 +701,7 @@ function printMessage(lang: LangData, m: OcgMessage) {
     }
     case OcgMessageType.CARD_HINT: {
       switch (m.card_hint) {
-        case OcgMessageCardHintType.DESC_ADD: {
+        case OcgCardHintType.DESC_ADD: {
           const locpos = stringLocPos(m);
           const hint = lang.system.get(Number(m.description));
           console.log(`\nCard Hint, Description Added for card at ${locpos}`);
@@ -710,7 +709,7 @@ function printMessage(lang: LangData, m: OcgMessage) {
           return;
         }
         default:
-          console.log(`\n${messageTypeStrings.get(m.type)}: unknown`);
+          console.log(`\n${ocgMessageTypeStrings.get(m.type)}: unknown`);
           console.log(m);
           throw "stop";
       }
@@ -729,13 +728,13 @@ function printMessage(lang: LangData, m: OcgMessage) {
           return;
         }
         default:
-          console.log(`\n${messageTypeStrings.get(m.type)}: unknown`);
+          console.log(`\n${ocgMessageTypeStrings.get(m.type)}: unknown`);
           console.log(m);
           throw "stop";
       }
     }
     default: {
-      console.log(`\n${messageTypeStrings.get(m.type)}: unknown`);
+      console.log(`\n${ocgMessageTypeStrings.get(m.type)}: unknown`);
       console.log(m);
       throw "stop";
     }

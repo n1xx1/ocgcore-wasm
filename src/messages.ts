@@ -736,13 +736,19 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
     case OcgMessageType.AI_NAME:
       return {
         type,
+        name: (() => {
+          const name = reader.bytes(reader.u16());
+          return new TextDecoder().decode(name);
+        })(),
       };
-    // debug stuff
     case OcgMessageType.SHOW_HINT:
       return {
         type,
+        hint: (() => {
+          const hint = reader.bytes(reader.u16());
+          return new TextDecoder().decode(hint);
+        })(),
       };
-    // debug stuff
     case OcgMessageType.PLAYER_HINT:
       return {
         type,

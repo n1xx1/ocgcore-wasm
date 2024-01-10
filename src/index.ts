@@ -22,6 +22,7 @@ export * from "./opcodes";
 export * from "./type_core";
 export * from "./type_message";
 export * from "./type_response";
+export * from "./type_serialize";
 export type * from "./types";
 export type {
   InternalMappedMap,

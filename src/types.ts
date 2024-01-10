@@ -21,7 +21,7 @@ export interface OcgCardData {
   code: number;
   alias: number;
   setcodes: number[];
-  type: OcgType;
+  type: OcgType | (number & {});
   level: number;
   attribute: OcgAttribute;
   race: OcgRace;
