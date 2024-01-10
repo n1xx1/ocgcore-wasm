@@ -91,7 +91,6 @@ export enum OcgMessageType {
   RECOVER = 92,
   EQUIP = 93,
   LPUPDATE = 94,
-  UNEQUIP = 95,
   CARD_TARGET = 96,
   CANCEL_TARGET = 97,
   PAY_LPCOST = 100,
@@ -611,10 +610,6 @@ export interface OcgMessageLPUpdate {
   lp: number;
 }
 
-export interface OcgMessageUnequip {
-  type: OcgMessageType.UNEQUIP;
-}
-
 export interface OcgMessageCardTarget {
   type: OcgMessageType.CARD_TARGET;
   card: OcgLocPos;
@@ -902,7 +897,6 @@ export type OcgMessage =
   | OcgMessageRecover
   | OcgMessageEquip
   | OcgMessageLPUpdate
-  | OcgMessageUnequip
   | OcgMessageCardTarget
   | OcgMessageCancelTarget
   | OcgMessagePayLPCost
@@ -1015,7 +1009,6 @@ export const messageTypeStrings = makeMap([
   [OcgMessageType.RECOVER, "recover"],
   [OcgMessageType.EQUIP, "equip"],
   [OcgMessageType.LPUPDATE, "lpupdate"],
-  [OcgMessageType.UNEQUIP, "unequip"],
   [OcgMessageType.CARD_TARGET, "card_target"],
   [OcgMessageType.CANCEL_TARGET, "cancel_target"],
   [OcgMessageType.PAY_LPCOST, "pay_lpcost"],

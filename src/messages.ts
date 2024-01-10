@@ -553,10 +553,6 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
         player: reader.u8(),
         lp: reader.u32(),
       };
-    case OcgMessageType.UNEQUIP:
-      return {
-        type,
-      };
     case OcgMessageType.CARD_TARGET:
       return {
         type,
