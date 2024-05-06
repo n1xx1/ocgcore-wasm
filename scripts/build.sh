@@ -7,43 +7,33 @@ FILES_LUA="./cpp/lua/lapi.c ./cpp/lua/lauxlib.c ./cpp/lua/lbaselib.c ./cpp/lua/l
 
 mkdir -p lib
 
-DEBUG=0
+# debug args: -sSTACK_OVERFLOW_CHECK=1 -sSAFE_HEAP=1 -O1 -g3 -sASSERTIONS=1
 
-ADDITIONAL_ARGS=()
+em++ \
+  -Os -g0 --closure 1 -sASSERTIONS=0 \
+  -sASYNCIFY=2 -sMODULARIZE=1 -DWASM_USE_JSPI -sFILESYSTEM=0 -sALLOW_MEMORY_GROWTH=1 -sMALLOC=emmalloc \
+  -fwasm-exceptions -sSUPPORT_LONGJMP=wasm \
+  -fno-rtti \
+  -sNO_EXIT_RUNTIME=1 \
+  -sASYNCIFY_EXPORTS=ocgapi* \
+  -sEXPORTED_FUNCTIONS=['_malloc','_free'] \
+  -sEXPORTED_RUNTIME_METHODS=['Asyncify','stackSave','stackRestore','stackAlloc','getValue','stringToUTF8','lengthBytesUTF8'] \
+  -I./cpp/lua \
+  $FILES_LUA \
+  $FILES_YGO \
+  ./cpp/wasm.cpp \
+  -o lib/ocgcore.jspi.mjs
 
-if [ $DEBUG ]; then
-    ADDITIONAL_ARGS+=(-sSTACK_OVERFLOW_CHECK=1 -sSAFE_HEAP=1 -O1 -g3)
-else
-    ADDITIONAL_ARGS+=(-O3 -g0)
-fi
-
-em++ "${args[@]}" \
-    "${ADDITIONAL_ARGS[@]}" \
-    -sASYNCIFY=2 -sMODULARIZE=1 -sASSERTIONS=1 -DWASM_USE_JSPI \
-    -sALLOW_MEMORY_GROWTH=1 -sMALLOC=emmalloc \
-    -fwasm-exceptions -sSUPPORT_LONGJMP=wasm \
-    -fno-rtti \
-    -sNO_EXIT_RUNTIME=1 \
-    -sASYNCIFY_EXPORTS=ocgapi* \
-    -sEXPORTED_FUNCTIONS=['_malloc','_free'] \
-    -sEXPORTED_RUNTIME_METHODS=['Asyncify','stackSave','stackRestore','stackAlloc','getValue','stringToUTF8','lengthBytesUTF8'] \
-    -I./cpp/lua \
-    $FILES_LUA \
-    $FILES_YGO \
-    ./cpp/wasm.cpp \
-    -o lib/ocgcore.jspi.mjs
-
-em++ "${args[@]}" \
-    "${ADDITIONAL_ARGS[@]}" \
-    -sMODULARIZE=1 -sASSERTIONS=1 \
-    -sALLOW_MEMORY_GROWTH=1 -sMALLOC=emmalloc \
-    -fwasm-exceptions -sSUPPORT_LONGJMP=wasm \
-    -fno-rtti \
-    -sNO_EXIT_RUNTIME=1 \
-    -sEXPORTED_FUNCTIONS=['_malloc','_free'] \
-    -sEXPORTED_RUNTIME_METHODS=['stackSave','stackRestore','stackAlloc','getValue','stringToUTF8','lengthBytesUTF8'] \
-    -I./cpp/lua \
-    $FILES_LUA \
-    $FILES_YGO \
-    ./cpp/wasm.cpp \
-    -o lib/ocgcore.sync.mjs
+em++ \
+  -Os -g0 --closure 1 -sASSERTIONS=0 \
+  -sMODULARIZE=1 -sALLOW_MEMORY_GROWTH=1 -sMALLOC=emmalloc \
+  -fwasm-exceptions -sSUPPORT_LONGJMP=wasm \
+  -fno-rtti \
+  -sNO_EXIT_RUNTIME=1 \
+  -sEXPORTED_FUNCTIONS=['_malloc','_free'] \
+  -sEXPORTED_RUNTIME_METHODS=['stackSave','stackRestore','stackAlloc','getValue','stringToUTF8','lengthBytesUTF8'] \
+  -I./cpp/lua \
+  $FILES_LUA \
+  $FILES_YGO \
+  ./cpp/wasm.cpp \
+  -o lib/ocgcore.sync.mjs
