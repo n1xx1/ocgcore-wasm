@@ -7,9 +7,10 @@
     "sourceMap": true,
     "baseUrl": ".",
     "strict": true,
+    "checkJs": true,
     "paths": {
       "~/*": ["./*"]
     }
   },
-  "include": ["./src/**/*", "./tests/**/*"]
+  "include": ["./src/**/*", "./tests/**/*", "./scripts/**/*"]
 }

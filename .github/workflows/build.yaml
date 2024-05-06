@@ -116,3 +116,25 @@ jobs:
         uses: JS-DevTools/npm-publish@v2
         with:
           token: ${{ secrets.NPM_TOKEN }}
+
+  release-jsr:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    needs: build
+    if: github.ref == 'refs/heads/release'
+    steps:
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Download Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: package
+
+      - name: Publish on jsr
+        run: npx jsr publish

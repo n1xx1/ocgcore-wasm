@@ -28,7 +28,7 @@ type OcgCardDataPointers =
 export function writeCardData(
   view: DataView,
   data: Omit<OcgCardData, "setcodes"> & OcgCardDataPointers
-) {
+): void {
   // uint32_t code;
   view.setUint32(0, data.code, true);
   // uint32_t alias;
@@ -110,7 +110,7 @@ export function writeDuelOptions(
   > & {
     enableUnsafeLibraries: boolean;
   } & OcgDuelCallbackOptions
-) {
+): void {
   // uint64_t seed[4]
   view.setBigUint64(0, options.seed[0], true);
   view.setBigUint64(8, options.seed[1], true);
@@ -176,7 +176,7 @@ export function writeDuelOptions(
   }
 }
 
-export function writeNewCardInfo(view: DataView, data: OcgNewCardInfo) {
+export function writeNewCardInfo(view: DataView, data: OcgNewCardInfo): void {
   // uint8_t team; /* either 0 or 1 */
   view.setUint8(0, data.team);
   // uint8_t duelist; /* index of original owner */

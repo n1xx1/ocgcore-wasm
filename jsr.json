@@ -1,0 +1,9 @@
+{
+  "name": "@n1xx1/ocgcore-wasm",
+  "version": "0.0.21",
+  "exports": "./mod.ts",
+  "publish": {
+    "include": ["dist/**", "lib/**/*.wasm", "mod.ts"],
+    "exclude": ["!dist", "!lib", "dist/types/**"]
+  }
+}
