@@ -1,6 +1,5 @@
-import { analyzeMetafile, build, transform } from "esbuild";
+import { analyzeMetafile, build } from "esbuild";
 import { readFile, writeFile } from "node:fs/promises";
-import { resolve } from "node:path";
 
 const result = await build({
   entryPoints: ["./src/index.ts"],
