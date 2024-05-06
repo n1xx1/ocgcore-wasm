@@ -55,7 +55,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: lib
-          key: ocgcore-build-${{ hashFiles('build.sh') }}-${{ hashFiles('cpp/wasm.cpp') }}-${{ env.OCGCORE_REV }}-${{ env.LUA_REV }}
+          key: ocgcore-build-${{env.EM_VERSION}}-${{ hashFiles('build.sh') }}-${{ hashFiles('cpp/wasm.cpp') }}-${{ env.OCGCORE_REV }}-${{ env.LUA_REV }}
 
       - name: Cache emsdk
         if: ${{ steps.cache-wasm.outputs.cache-hit != 'true' }}
