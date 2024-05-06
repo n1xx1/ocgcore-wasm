@@ -3,7 +3,7 @@
   "version": "0.0.21",
   "exports": "./mod.ts",
   "publish": {
-    "include": ["dist/**", "lib/**/*.wasm", "mod.ts"],
+    "include": ["dist/**", "lib/**/*.wasm", "mod.ts", "jsr.json"],
     "exclude": ["!dist", "!lib", "dist/types/**"]
   }
 }
