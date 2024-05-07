@@ -18,37 +18,336 @@ import {
   OcgQueryLocation,
 } from "./types";
 
+/**
+ * The initializer to create a core. If both {@link Initializer.locateFile} and
+ * {@link Initializer.wasmBinary} are missing then it will be imported
+ * automatically.
+ */
+export interface Initializer {
+  /** Override the stdout print */
+  print?(str: string): void;
+  /** Override the stderr print */
+  printErr?(str: string): void;
+  /** {@link https://emscripten.org/docs/api_reference/module.html#Module.locateFile} */
+  locateFile?(url: string, scriptDirectory: string): string;
+  /** The binary of the wasm module */
+  wasmBinary?: ArrayBuffer;
+  sync?: boolean;
+}
+
+/** Initialize async version */
+export type InitializerAsync = Omit<Initializer, "sync"> & { sync?: false };
+
+/** Initialize sync version */
+export type InitializerSync = Omit<Initializer, "sync"> & { sync: true };
+
+/**
+ * Instantiate the basic interface to use ygocore.
+ * @param options - Options. sync: Whether to use the sync interface or not. Defaults to false (async).
+ */
+export default async function createCore(
+  options?: InitializerAsync
+): Promise<OcgCore>;
+
+/**
+ * Instantiate the basic interface to use ygocore.
+ * @param options - Options. sync: Whether to use the sync interface or not. Defaults to false (async).
+ */
+export default async function createCore(
+  options: InitializerSync
+): Promise<OcgCoreSync>;
+
+export default async function createCore(
+  init?: Initializer
+): Promise<OcgCore | OcgCoreSync> {
+  const sync = init?.sync ?? false;
+  return sync
+    ? await createCoreSync(init ?? {})
+    : await createCoreJspi(init ?? {});
+}
+
 export * from "./opcodes";
+
 export * from "./type_core";
+
 export * from "./type_message";
+
 export * from "./type_response";
+
 export * from "./type_serialize";
+
 export type * from "./types";
+
 export type {
   InternalMappedMap,
   InternalDepromisifyFunction,
 } from "./internal/utils";
 
-export interface Initializer {
-  print?(str: string): void;
-  printErr?(str: string): void;
-  locateFile?(url: string, scriptDirectory: string): string;
-  wasmBinary?: ArrayBuffer;
+async function createCoreSync({ ...init }: Initializer): Promise<OcgCoreSync> {
+  const shouldImportWasm = !!init.wasmBinary || !!init.locateFile;
+  const [factory, wasmBinary] = await Promise.all([
+    importFactorySync(),
+    shouldImportWasm ? importWasmSync() : init.wasmBinary,
+  ]);
+
+  if (wasmBinary) {
+    init.wasmBinary = wasmBinary;
+  }
+
+  let lastCallbackId = 0;
+  const callbacks = new Map<
+    number,
+    {
+      cardReader: OcgDuelOptionsSync["cardReader"];
+      scriptReader: OcgDuelOptionsSync["scriptReader"];
+      errorHandler: OcgDuelOptionsSync["errorHandler"];
+    }
+  >();
+
+  let m: OcgCoreModuleSync = undefined!;
+
+  const heap = (offset?: number, length?: number) =>
+    heapAt(m.HEAP8, offset, length);
+
+  m = await factory({
+    ...createImportMethodsBase(callbacks),
+    ...init,
+    handleDataReader(payload, code, data) {
+      const { cardReader } = callbacks.get(payload)!;
+      const cardData = cardReader(code);
+
+      const setCodesArr = new Uint16Array([...cardData.setcodes, 0]);
+      const setCodes = m._malloc(setCodesArr.byteLength);
+      copyArray(heap(), setCodesArr, setCodes);
+
+      writeCardData(heap(data), {
+        ...cardData,
+        ptrSize: 4,
+        setcodes: setCodes,
+      });
+    },
+    handleScriptReader(payload, duel, name) {
+      const { scriptReader } = callbacks.get(payload)!;
+      return scriptReader(name);
+    },
+  });
+
+  return {
+    ...createMethodsBase(m),
+    createDuel(options) {
+      const callback = ++lastCallbackId;
+      callbacks.set(callback, {
+        cardReader: options.cardReader,
+        errorHandler: options.errorHandler,
+        scriptReader: options.scriptReader,
+      });
+
+      const stack = m.stackSave();
+
+      const duelPtr = m.stackAlloc(4);
+
+      const buf = m.stackAlloc(104);
+      writeDuelOptions(heap(buf), {
+        ...options,
+        ptrSize: 4,
+        cardReader: 0,
+        cardReaderPayload: callback,
+        cardReaderDone: 0,
+        cardReaderDonePayload: 0,
+        errorHandler: 0,
+        errorHandlerPayload: callback,
+        scriptReader: 0,
+        scriptReaderPayload: callback,
+        enableUnsafeLibraries: true,
+      });
+
+      const res = m._ocgapiCreateDuel(duelPtr, buf);
+      if (res != 0) {
+        return null;
+      }
+      const duelHandle = m.getValue(duelPtr, "i32");
+      m.stackRestore(stack);
+      return { [DuelHandleSymbol]: duelHandle };
+    },
+    duelNewCard({ [DuelHandleSymbol]: handle }, cardInfo) {
+      const stack = m.stackSave();
+      const buf = m.stackAlloc(24);
+
+      writeNewCardInfo(heap(buf), cardInfo);
+
+      m._ocgapiDuelNewCard(handle, buf);
+      m.stackRestore(stack);
+    },
+    startDuel({ [DuelHandleSymbol]: handle }) {
+      m._ocgapiStartDuel(handle);
+    },
+    duelProcess({ [DuelHandleSymbol]: handle }) {
+      return m._ocgapiDuelProcess(handle);
+    },
+    loadScript({ [DuelHandleSymbol]: handle }, name, content) {
+      const stack = m.stackSave();
+
+      const contentLength = m.lengthBytesUTF8(content);
+      const contentPtr = m._malloc(contentLength + 1);
+      m.stringToUTF8(content, contentPtr, contentLength + 1);
+
+      const nameLength = m.lengthBytesUTF8(name);
+      const namePtr = m.stackAlloc(nameLength + 1);
+      m.stringToUTF8(name, namePtr, nameLength + 1);
+
+      try {
+        return (
+          m._ocgapiLoadScript(handle, contentPtr, contentLength, namePtr) == 1
+        );
+      } finally {
+        m._free(contentPtr);
+        m.stackRestore(stack);
+      }
+    },
+  };
 }
 
-export default async function createCore(options?: {
-  sync: false;
-}): Promise<OcgCore>;
+async function createCoreJspi({ ...init }: Initializer): Promise<OcgCore> {
+  if (!("Suspender" in WebAssembly) || !("Function" in WebAssembly)) {
+    throw new Error("jspi not supported");
+  }
 
-export default async function createCore(options: {
-  sync: true;
-}): Promise<OcgCoreSync>;
+  const shouldImportWasm = !!init.wasmBinary || !!init.locateFile;
+  const [factory, wasmBinary] = await Promise.all([
+    importFactoryJspi(),
+    shouldImportWasm ? importWasmJspi() : init.wasmBinary,
+  ]);
 
-export default async function createCore(options?: {
-  sync: boolean;
-}): Promise<OcgCore | OcgCoreSync> {
-  const sync = options?.sync ?? false;
-  return sync ? await createCoreSync() : await createCoreJspi();
+  if (wasmBinary) {
+    init.wasmBinary = wasmBinary;
+  }
+
+  let lastCallbackId = 0;
+  const callbacks = new Map<
+    number,
+    {
+      cardReader: OcgDuelOptions["cardReader"];
+      scriptReader: OcgDuelOptions["scriptReader"];
+      errorHandler: OcgDuelOptions["errorHandler"];
+    }
+  >();
+
+  let m: OcgCoreModuleJspi = undefined!;
+
+  const heap = (offset?: number, length?: number) =>
+    heapAt(m.HEAP8, offset, length);
+
+  m = await factory({
+    ...createImportMethodsBase(callbacks),
+    ...init,
+    async handleDataReader(payload, code, data) {
+      const { cardReader } = callbacks.get(payload)!;
+      const cardData = await cardReader(code);
+
+      const setCodesArr = new Uint16Array([...cardData.setcodes, 0]);
+      const setCodes = m._malloc(setCodesArr.byteLength);
+      copyArray(heap(), setCodesArr, setCodes);
+
+      writeCardData(heap(data), {
+        ...cardData,
+        ptrSize: 4,
+        setcodes: setCodes,
+      });
+    },
+    async handleScriptReader(payload, duel, name) {
+      const { scriptReader } = callbacks.get(payload)!;
+      return await scriptReader(name);
+    },
+  });
+
+  return {
+    ...createMethodsBase(m),
+    async createDuel(options) {
+      const callback = ++lastCallbackId;
+      callbacks.set(callback, {
+        cardReader: options.cardReader,
+        errorHandler: options.errorHandler,
+        scriptReader: options.scriptReader,
+      });
+
+      const stack = m.stackSave();
+
+      const duelPtr = m.stackAlloc(4);
+
+      const buf = m.stackAlloc(104);
+      writeDuelOptions(heap(buf), {
+        ...options,
+        ptrSize: 4,
+        cardReader: 0,
+        cardReaderPayload: callback,
+        cardReaderDone: 0,
+        cardReaderDonePayload: 0,
+        errorHandler: 0,
+        errorHandlerPayload: callback,
+        scriptReader: 0,
+        scriptReaderPayload: callback,
+        enableUnsafeLibraries: true,
+      });
+
+      try {
+        const res = await m._ocgapiCreateDuel(duelPtr, buf);
+        if (res != 0) {
+          return null;
+        }
+        const duelHandle = m.getValue(duelPtr, "i32");
+        return { [DuelHandleSymbol]: duelHandle };
+      } finally {
+        m.stackRestore(stack);
+      }
+    },
+    async duelNewCard({ [DuelHandleSymbol]: handle }, cardInfo) {
+      const stack = m.stackSave();
+      const buf = m.stackAlloc(24);
+
+      writeNewCardInfo(heap(buf), cardInfo);
+
+      try {
+        await m._ocgapiDuelNewCard(handle, buf);
+      } finally {
+        m.stackRestore(stack);
+      }
+    },
+    async startDuel({ [DuelHandleSymbol]: handle }) {
+      await m._ocgapiStartDuel(handle);
+    },
+    async duelProcess({ [DuelHandleSymbol]: handle }) {
+      return await m._ocgapiDuelProcess(handle);
+    },
+    async loadScript(
+      { [DuelHandleSymbol]: handle },
+      name: string,
+      content: string
+    ) {
+      const stack = m.stackSave();
+
+      const contentLength = m.lengthBytesUTF8(content);
+      const contentPtr = m._malloc(contentLength + 1);
+      m.stringToUTF8(content, contentPtr, contentLength + 1);
+
+      const nameLength = m.lengthBytesUTF8(name);
+      const namePtr = m.stackAlloc(nameLength + 1);
+      m.stringToUTF8(name, namePtr, nameLength + 1);
+
+      try {
+        return (
+          (await m._ocgapiLoadScript(
+            handle,
+            contentPtr,
+            contentLength,
+            namePtr
+          )) == 1
+        );
+      } finally {
+        m._free(contentPtr);
+        m.stackRestore(stack);
+      }
+    },
+  };
 }
 
 function createImportMethodsBase(
@@ -232,263 +531,6 @@ function createMethodsBase(
         const reader = new BufferReader(heap(buffer, bufferLength));
         return readField(reader);
       } finally {
-        m.stackRestore(stack);
-      }
-    },
-  };
-}
-
-async function createCoreSync(): Promise<OcgCoreSync> {
-  const [factory, wasmBinary] = await Promise.all([
-    importFactorySync(),
-    importWasmSync(),
-  ]);
-
-  let lastCallbackId = 0;
-  const callbacks = new Map<
-    number,
-    {
-      cardReader: OcgDuelOptionsSync["cardReader"];
-      scriptReader: OcgDuelOptionsSync["scriptReader"];
-      errorHandler: OcgDuelOptionsSync["errorHandler"];
-    }
-  >();
-
-  let m: OcgCoreModuleSync = undefined!;
-
-  const heap = (offset?: number, length?: number) =>
-    heapAt(m.HEAP8, offset, length);
-
-  m = await factory({
-    wasmBinary,
-    ...createImportMethodsBase(callbacks),
-    handleDataReader(payload, code, data) {
-      const { cardReader } = callbacks.get(payload)!;
-      const cardData = cardReader(code);
-
-      const setCodesArr = new Uint16Array([...cardData.setcodes, 0]);
-      const setCodes = m._malloc(setCodesArr.byteLength);
-      copyArray(heap(), setCodesArr, setCodes);
-
-      writeCardData(heap(data), {
-        ...cardData,
-        ptrSize: 4,
-        setcodes: setCodes,
-      });
-    },
-    handleScriptReader(payload, duel, name) {
-      const { scriptReader } = callbacks.get(payload)!;
-      return scriptReader(name);
-    },
-  });
-
-  return {
-    ...createMethodsBase(m),
-    createDuel(options) {
-      const callback = ++lastCallbackId;
-      callbacks.set(callback, {
-        cardReader: options.cardReader,
-        errorHandler: options.errorHandler,
-        scriptReader: options.scriptReader,
-      });
-
-      const stack = m.stackSave();
-
-      const duelPtr = m.stackAlloc(4);
-
-      const buf = m.stackAlloc(104);
-      writeDuelOptions(heap(buf), {
-        ...options,
-        ptrSize: 4,
-        cardReader: 0,
-        cardReaderPayload: callback,
-        cardReaderDone: 0,
-        cardReaderDonePayload: 0,
-        errorHandler: 0,
-        errorHandlerPayload: callback,
-        scriptReader: 0,
-        scriptReaderPayload: callback,
-        enableUnsafeLibraries: true,
-      });
-
-      const res = m._ocgapiCreateDuel(duelPtr, buf);
-      if (res != 0) {
-        return null;
-      }
-      const duelHandle = m.getValue(duelPtr, "i32");
-      m.stackRestore(stack);
-      return { [DuelHandleSymbol]: duelHandle };
-    },
-    duelNewCard({ [DuelHandleSymbol]: handle }, cardInfo) {
-      const stack = m.stackSave();
-      const buf = m.stackAlloc(24);
-
-      writeNewCardInfo(heap(buf), cardInfo);
-
-      m._ocgapiDuelNewCard(handle, buf);
-      m.stackRestore(stack);
-    },
-    startDuel({ [DuelHandleSymbol]: handle }) {
-      m._ocgapiStartDuel(handle);
-    },
-    duelProcess({ [DuelHandleSymbol]: handle }) {
-      return m._ocgapiDuelProcess(handle);
-    },
-    loadScript({ [DuelHandleSymbol]: handle }, name, content) {
-      const stack = m.stackSave();
-
-      const contentLength = m.lengthBytesUTF8(content);
-      const contentPtr = m._malloc(contentLength + 1);
-      m.stringToUTF8(content, contentPtr, contentLength + 1);
-
-      const nameLength = m.lengthBytesUTF8(name);
-      const namePtr = m.stackAlloc(nameLength + 1);
-      m.stringToUTF8(name, namePtr, nameLength + 1);
-
-      try {
-        return (
-          m._ocgapiLoadScript(handle, contentPtr, contentLength, namePtr) == 1
-        );
-      } finally {
-        m._free(contentPtr);
-        m.stackRestore(stack);
-      }
-    },
-  };
-}
-
-async function createCoreJspi(): Promise<OcgCore> {
-  if (!("Suspender" in WebAssembly) || !("Function" in WebAssembly)) {
-    throw new Error("jspi not supported");
-  }
-
-  const [factory, wasmBinary] = await Promise.all([
-    importFactoryJspi(),
-    importWasmJspi(),
-  ]);
-
-  let lastCallbackId = 0;
-  const callbacks = new Map<
-    number,
-    {
-      cardReader: OcgDuelOptions["cardReader"];
-      scriptReader: OcgDuelOptions["scriptReader"];
-      errorHandler: OcgDuelOptions["errorHandler"];
-    }
-  >();
-
-  let m: OcgCoreModuleJspi = undefined!;
-
-  const heap = (offset?: number, length?: number) =>
-    heapAt(m.HEAP8, offset, length);
-
-  m = await factory({
-    wasmBinary,
-    ...createImportMethodsBase(callbacks),
-    async handleDataReader(payload, code, data) {
-      const { cardReader } = callbacks.get(payload)!;
-      const cardData = await cardReader(code);
-
-      const setCodesArr = new Uint16Array([...cardData.setcodes, 0]);
-      const setCodes = m._malloc(setCodesArr.byteLength);
-      copyArray(heap(), setCodesArr, setCodes);
-
-      writeCardData(heap(data), {
-        ...cardData,
-        ptrSize: 4,
-        setcodes: setCodes,
-      });
-    },
-    async handleScriptReader(payload, duel, name) {
-      const { scriptReader } = callbacks.get(payload)!;
-      return await scriptReader(name);
-    },
-  });
-
-  return {
-    ...createMethodsBase(m),
-    async createDuel(options) {
-      const callback = ++lastCallbackId;
-      callbacks.set(callback, {
-        cardReader: options.cardReader,
-        errorHandler: options.errorHandler,
-        scriptReader: options.scriptReader,
-      });
-
-      const stack = m.stackSave();
-
-      const duelPtr = m.stackAlloc(4);
-
-      const buf = m.stackAlloc(104);
-      writeDuelOptions(heap(buf), {
-        ...options,
-        ptrSize: 4,
-        cardReader: 0,
-        cardReaderPayload: callback,
-        cardReaderDone: 0,
-        cardReaderDonePayload: 0,
-        errorHandler: 0,
-        errorHandlerPayload: callback,
-        scriptReader: 0,
-        scriptReaderPayload: callback,
-        enableUnsafeLibraries: true,
-      });
-
-      try {
-        const res = await m._ocgapiCreateDuel(duelPtr, buf);
-        if (res != 0) {
-          return null;
-        }
-        const duelHandle = m.getValue(duelPtr, "i32");
-        return { [DuelHandleSymbol]: duelHandle };
-      } finally {
-        m.stackRestore(stack);
-      }
-    },
-    async duelNewCard({ [DuelHandleSymbol]: handle }, cardInfo) {
-      const stack = m.stackSave();
-      const buf = m.stackAlloc(24);
-
-      writeNewCardInfo(heap(buf), cardInfo);
-
-      try {
-        await m._ocgapiDuelNewCard(handle, buf);
-      } finally {
-        m.stackRestore(stack);
-      }
-    },
-    async startDuel({ [DuelHandleSymbol]: handle }) {
-      await m._ocgapiStartDuel(handle);
-    },
-    async duelProcess({ [DuelHandleSymbol]: handle }) {
-      return await m._ocgapiDuelProcess(handle);
-    },
-    async loadScript(
-      { [DuelHandleSymbol]: handle },
-      name: string,
-      content: string
-    ) {
-      const stack = m.stackSave();
-
-      const contentLength = m.lengthBytesUTF8(content);
-      const contentPtr = m._malloc(contentLength + 1);
-      m.stringToUTF8(content, contentPtr, contentLength + 1);
-
-      const nameLength = m.lengthBytesUTF8(name);
-      const namePtr = m.stackAlloc(nameLength + 1);
-      m.stringToUTF8(name, namePtr, nameLength + 1);
-
-      try {
-        return (
-          (await m._ocgapiLoadScript(
-            handle,
-            contentPtr,
-            contentLength,
-            namePtr
-          )) == 1
-        );
-      } finally {
-        m._free(contentPtr);
         m.stackRestore(stack);
       }
     },

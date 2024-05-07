@@ -1,10 +1,19 @@
+import type { OcgCore } from "./types";
+
+/**
+ * The result of each call to {@link OcgCore#duelProcess}.
+ */
 export type OcgProcessResult = number;
+
 export const OcgProcessResult = {
   END: 0,
   WAITING: 1,
   CONTINUE: 2,
 } as const;
 
+/**
+ * Position (faceup or facedown and defense or attack) of a card.
+ */
 export type OcgPosition = (typeof OcgPosition)[keyof typeof OcgPosition];
 
 export const OcgPosition = {
@@ -23,12 +32,21 @@ const ocgPositionMapElements = [
   OcgPosition.FACEDOWN_ATTACK,
   OcgPosition.FACEUP_DEFENSE,
   OcgPosition.FACEDOWN_DEFENSE,
-];
+] as const;
 
-export function ocgPositionParse(position: OcgPosition) {
-  return ocgPositionMapElements.filter((x) => position & x);
+/**
+ * Parse a position mask and returns the list of actual positions it matches.
+ * @param positionMask - The mask to parse
+ */
+export function ocgPositionParse(
+  positionMask: OcgPosition
+): Extract<OcgPosition, 0x1 | 0x2 | 0x4 | 0x8>[] {
+  return ocgPositionMapElements.filter((x) => positionMask & x);
 }
 
+/**
+ * Location of a card.
+ */
 export type OcgLocation = (typeof OcgLocation)[keyof typeof OcgLocation];
 
 export const OcgLocation = {
@@ -46,6 +64,9 @@ export const OcgLocation = {
   ALL: 0x3ff,
 } as const;
 
+/**
+ * Card type (monster/spell/trap and additional properties in case of a monster)
+ */
 export type OcgType = (typeof OcgType)[keyof typeof OcgType];
 
 export const OcgType = {
@@ -79,10 +100,17 @@ export const OcgType = {
 
 const ocgTypeMapElements = Object.values(OcgType);
 
+/**
+ * Parse a OcgType mask and return the matching types.
+ * @param type - The mask to parse.
+ */
 export function ocgTypeParse(type: OcgType) {
   return ocgTypeMapElements.filter((x) => type & x);
 }
 
+/**
+ * Monster card attribute.
+ */
 export type OcgAttribute = number;
 
 export const OcgAttribute = {
@@ -97,10 +125,17 @@ export const OcgAttribute = {
 
 const ocgAttributeMapElements = Object.values(OcgAttribute);
 
+/**
+ * Parse a {@link (OcgAttribute:type)} mask and return the matching attributes.
+ * @param attribute - The mask to parse.
+ */
 export function ocgAttributeParse(attribute: OcgAttribute) {
   return ocgAttributeMapElements.filter((x) => attribute & x);
 }
 
+/**
+ * Monster card race.
+ */
 export type OcgRace = bigint;
 
 export const OcgRace = {
@@ -140,10 +175,17 @@ export const OcgRace = {
 
 const ocgRaceMapElements = Object.values(OcgRace);
 
+/**
+ * Parse a {@link (OcgRace:type)} mask and return the matching races.
+ * @param race - The mask to parse.
+ */
 export function ocgRaceParse(race: OcgRace) {
   return ocgRaceMapElements.filter((x) => race & x);
 }
 
+/**
+ * Link monster markers positions.
+ */
 export type OcgLinkMarker = number;
 
 export const OcgLinkMarker = {
@@ -159,10 +201,17 @@ export const OcgLinkMarker = {
 
 const ocgLinkMarkerMapElements = Object.values(OcgLinkMarker);
 
+/**
+ * Parse a {@link (OcgLinkMarker:type)} mask and return the matching markers.
+ * @param marker - The mask to parse.
+ */
 export function ocgLinkMarkerParse(marker: OcgLinkMarker) {
   return ocgLinkMarkerMapElements.filter((x) => marker & x);
 }
 
+/**
+ * Rock paper scissor.
+ */
 export type OcgRPS = number;
 
 export const OcgRPS = {
@@ -273,6 +322,9 @@ const duelModeBase2 = {
     duelModeBase.TRIGGER_ONLY_IN_LOCATION,
 } as const;
 
+/**
+ * Duel creation options.
+ */
 export type OcgDuelMode = (typeof OcgDuelMode)[Exclude<
   keyof typeof OcgDuelMode,
   `MODE_${string}`
@@ -282,6 +334,10 @@ export const OcgDuelMode = duelModeBase2;
 
 const ocgDuelModeMapElements = Object.values(duelModeBase);
 
+/**
+ * Parse a {@link (OcgDuelMode:type)} mask and return the matching options.
+ * @param mode - The mask to parse.
+ */
 export function ocgDuelModeParse(mode: OcgDuelMode): OcgDuelMode[] {
   return ocgDuelModeMapElements.filter((x) => mode & x);
 }

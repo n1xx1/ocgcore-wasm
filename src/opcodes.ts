@@ -1,6 +1,10 @@
 import { makeMap } from "./internal/utils";
 import { OcgCardData, OcgType } from "./types";
+import type { OcgMessageAnnounceCard } from "./type_message";
 
+/**
+ * Opcode used in querying, used in {@link OcgMessageAnnounceCard}.
+ */
 export type OcgOpCode = (typeof OcgOpCode)[keyof typeof OcgOpCode];
 
 export const OcgOpCode = {
@@ -32,6 +36,9 @@ export const OcgOpCode = {
   GETATTRIBUTE: 0x4000010900000000n,
 };
 
+/**
+ * Convert a {@link (OcgOpCode:type)} to its string representation.
+ */
 export const ocgOpCodeString = makeMap([
   [OcgOpCode.ADD, "add"],
   [OcgOpCode.SUB, "sub"],
@@ -61,6 +68,11 @@ export const ocgOpCodeString = makeMap([
   [OcgOpCode.GETATTRIBUTE, "getattribute"],
 ]);
 
+/**
+ * Utility function to check if the specified card matches the opcode sequence.
+ * @param card - The card to check against
+ * @param opcodes - The opcode sequence
+ */
 export function cardMatchesOpcode(card: OcgCardData, opcodes: OcgOpCode[]) {
   const stack: bigint[] = [];
   let alias = false;

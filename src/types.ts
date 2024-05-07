@@ -1,7 +1,6 @@
 import { InternalDepromisifyFunction } from "./internal/utils";
 import {
   OcgAttribute,
-  OcgDuelMode,
   OcgLinkMarker,
   OcgLocation,
   OcgLogType,
@@ -14,8 +13,8 @@ import {
 import { OcgFieldState, OcgMessage } from "./type_message";
 import { OcgResponse } from "./type_response";
 
-export * from "./type_message";
 export * from "./type_core";
+export * from "./type_message";
 
 export interface OcgCardData {
   code: number;
