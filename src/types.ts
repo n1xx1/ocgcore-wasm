@@ -88,7 +88,9 @@ export interface OcgDuelOptions {
   /** Team 2 settings. */
   team2: OcgDuelOptionsTeam;
   /** Requests card infos for the given passcode. */
-  cardReader: (card: number) => Promise<OcgCardData> | OcgCardData;
+  cardReader: (
+    card: number
+  ) => Promise<OcgCardData | null> | OcgCardData | null;
   /** Requests the script contents for the given path. */
   scriptReader: (name: string) => Promise<string> | string;
   /** Handle script or core errors. */

@@ -1,8 +1,8 @@
 import { OcgCardData, OcgDuelOptions, OcgNewCardInfo } from "./types";
 
 type OcgCardDataPointers =
-  | { ptrSize: 8; setcodes: bigint }
-  | { ptrSize: 4; setcodes: number };
+  | { ptrSize: 8; setcodes?: bigint }
+  | { ptrSize: 4; setcodes?: number };
 
 // | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 32BIT
 // | ----------------------------- |
@@ -27,54 +27,54 @@ type OcgCardDataPointers =
 
 export function writeCardData(
   view: DataView,
-  data: Omit<OcgCardData, "setcodes"> & OcgCardDataPointers
+  data: Partial<Omit<OcgCardData, "setcodes">> & OcgCardDataPointers
 ): void {
   // uint32_t code;
-  view.setUint32(0, data.code, true);
+  view.setUint32(0, data.code ?? 0, true);
   // uint32_t alias;
-  view.setUint32(4, data.alias, true);
+  view.setUint32(4, data.alias ?? 0, true);
   if (data.ptrSize === 4) {
     // uint16_t* setcodes;
-    view.setUint32(8, data.setcodes, true);
+    view.setUint32(8, data.setcodes ?? 0, true);
     // uint32_t type;
-    view.setUint32(12, data.type, true);
+    view.setUint32(12, data.type ?? 0, true);
     // uint32_t level;
-    view.setUint32(16, data.level, true);
+    view.setUint32(16, data.level ?? 0, true);
     // uint32_t attribute;
-    view.setUint32(20, data.attribute, true);
+    view.setUint32(20, data.attribute ?? 0, true);
     // uint64_t race;
-    view.setBigUint64(24, data.race, true);
+    view.setBigUint64(24, data.race ?? 0n, true);
     // int32_t attack;
-    view.setInt32(32, data.attack, true);
+    view.setInt32(32, data.attack ?? 0, true);
     // int32_t defense;
-    view.setInt32(36, data.defense, true);
+    view.setInt32(36, data.defense ?? 0, true);
     // uint32_t lscale;
-    view.setUint32(40, data.lscale, true);
+    view.setUint32(40, data.lscale ?? 0, true);
     // uint32_t rscale;
-    view.setUint32(48, data.rscale, true);
+    view.setUint32(48, data.rscale ?? 0, true);
     // uint32_t link_marker;
-    view.setUint32(52, data.link_marker, true);
+    view.setUint32(52, data.link_marker ?? 0, true);
   } else {
     // uint16_t* setcodes;
-    view.setBigUint64(8, data.setcodes, true);
+    view.setBigUint64(8, data.setcodes ?? 0n, true);
     // uint32_t type;
-    view.setUint32(16, data.type, true);
+    view.setUint32(16, data.type ?? 0, true);
     // uint32_t level;
-    view.setUint32(20, data.level, true);
+    view.setUint32(20, data.level ?? 0, true);
     // uint32_t attribute;
-    view.setUint32(24, data.attribute, true);
+    view.setUint32(24, data.attribute ?? 0, true);
     // uint64_t race;
-    view.setBigUint64(32, data.race, true);
+    view.setBigUint64(32, data.race ?? 0n, true);
     // int32_t attack;
-    view.setInt32(36, data.attack, true);
+    view.setInt32(36, data.attack ?? 0, true);
     // int32_t defense;
-    view.setInt32(40, data.defense, true);
+    view.setInt32(40, data.defense ?? 0, true);
     // uint32_t lscale;
-    view.setUint32(44, data.lscale, true);
+    view.setUint32(44, data.lscale ?? 0, true);
     // uint32_t rscale;
-    view.setUint32(48, data.rscale, true);
+    view.setUint32(48, data.rscale ?? 0, true);
     // uint32_t link_marker;
-    view.setUint32(52, data.link_marker, true);
+    view.setUint32(52, data.link_marker ?? 0, true);
   }
 }
 

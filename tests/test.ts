@@ -67,22 +67,7 @@ async function testJspi() {
       if (!card) {
         console.warn("missing card: ", code);
       }
-      return (
-        card ?? {
-          code,
-          alias: 0,
-          setcodes: [],
-          type: 0 as OcgType,
-          level: 0,
-          attribute: 0,
-          race: 0n,
-          attack: 0,
-          defense: 0,
-          lscale: 0,
-          rscale: 0,
-          link_marker: 0,
-        }
-      );
+      return card ?? null;
     },
     scriptReader: async (script) => {
       const filePath = script.match(/c\d+\.lua/)
@@ -120,7 +105,7 @@ async function testJspi() {
   );
 
   const addCard = async (
-    team: number,
+    team: 0 | 1,
     code: number,
     location: OcgLocation,
     position: OcgPosition
@@ -211,22 +196,7 @@ async function testSync() {
       if (!card) {
         console.warn("missing card: ", code);
       }
-      return (
-        card ?? {
-          code,
-          alias: 0,
-          setcodes: [],
-          type: 0 as OcgType,
-          level: 0,
-          attribute: 0,
-          race: 0n,
-          attack: 0,
-          defense: 0,
-          lscale: 0,
-          rscale: 0,
-          link_marker: 0,
-        }
-      );
+      return card ?? null;
     },
     scriptReader: (script) => {
       const filePath = script.match(/c\d+\.lua/)
@@ -264,7 +234,7 @@ async function testSync() {
   );
 
   const addCard = (
-    team: number,
+    team: 0 | 1,
     code: number,
     location: OcgLocation,
     position: OcgPosition

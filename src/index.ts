@@ -75,6 +75,16 @@ export type {
   InternalDepromisifyFunction,
 } from "./internal/utils";
 
+function allocateSetCodes(
+  m: Pick<OcgCoreModuleBase, "_malloc" | "HEAP8">,
+  setcodes: number[]
+) {
+  const setCodesArr = new Uint16Array([...setcodes, 0]);
+  const setCodes = m._malloc(setCodesArr.byteLength);
+  copyArray(heapAt(m.HEAP8, undefined, length), setCodesArr, setCodes);
+  return setCodes;
+}
+
 async function createCoreSync({ ...init }: Initializer): Promise<OcgCoreSync> {
   const shouldImportWasm = !!init.wasmBinary || !!init.locateFile;
   const [factory, wasmBinary] = await Promise.all([
@@ -108,13 +118,13 @@ async function createCoreSync({ ...init }: Initializer): Promise<OcgCoreSync> {
       const { cardReader } = callbacks.get(payload)!;
       const cardData = cardReader(code);
 
-      const setCodesArr = new Uint16Array([...cardData.setcodes, 0]);
-      const setCodes = m._malloc(setCodesArr.byteLength);
-      copyArray(heap(), setCodesArr, setCodes);
+      const setCodes = cardData?.setcodes
+        ? allocateSetCodes(m, cardData.setcodes)
+        : 0;
 
       writeCardData(heap(data), {
-        ...cardData,
         ptrSize: 4,
+        ...cardData,
         setcodes: setCodes,
       });
     },
@@ -236,9 +246,9 @@ async function createCoreJspi({ ...init }: Initializer): Promise<OcgCore> {
       const { cardReader } = callbacks.get(payload)!;
       const cardData = await cardReader(code);
 
-      const setCodesArr = new Uint16Array([...cardData.setcodes, 0]);
-      const setCodes = m._malloc(setCodesArr.byteLength);
-      copyArray(heap(), setCodesArr, setCodes);
+      const setCodes = cardData?.setcodes
+        ? allocateSetCodes(m, cardData.setcodes)
+        : 0;
 
       writeCardData(heap(data), {
         ...cardData,
