@@ -374,7 +374,7 @@ export const ocgDuelModeString = makeMap([
   [OcgDuelMode.EMZONE, "emzone"],
   [OcgDuelMode.FSX_MMZONE, "fsx_mmzone"],
   [OcgDuelMode.TRAP_MONSTERS_NOT_USE_ZONE, "trap_monsters_not_use_zone"],
-  [OcgDuelMode.RETURN_TO_EXTRA_DECK_TRIGGERS, "return_to_extra_deck_triggers"],
+  [OcgDuelMode.RETURN_TO_DECK_TRIGGERS, "return_to_extra_deck_triggers"],
   [OcgDuelMode.TRIGGER_ONLY_IN_LOCATION, "trigger_only_in_location"],
   [OcgDuelMode.SPSUMMON_ONCE_OLD_NEGATE, "spsummon_once_old_negate"],
   [OcgDuelMode.CANNOT_SUMMON_OATH_OLD, "cannot_summon_oath_old"],

@@ -5,11 +5,10 @@ import { BufferReader, BufferWriter } from "./internal/buffer";
 import { readMessage } from "./messages";
 import { readField, readQuery, readQueryLocation } from "./queries";
 import { createResponse } from "./responses";
-import { OcgLocation, OcgLogType } from "./type_core";
+import { OcgLocation, OcgLogType, OcgProcessResult } from "./type_core";
 import { OcgMessage } from "./type_message";
 import { OcgResponse } from "./type_response";
 import {
-  DuelHandleSymbol,
   OcgCore,
   OcgCoreSync,
   OcgDuelOptions,
@@ -17,6 +16,7 @@ import {
   OcgQuery,
   OcgQueryLocation,
 } from "./types";
+import { DuelHandleSymbol } from "./type_handle";
 
 /**
  * The initializer to create a core. If both {@link Initializer.locateFile} and
@@ -68,15 +68,7 @@ export default async function createCore(
 
 export * from "./opcodes";
 
-export * from "./type_core";
-
-export * from "./type_message";
-
-export * from "./type_response";
-
-export * from "./type_serialize";
-
-export type * from "./types";
+export * from "./types";
 
 export type {
   InternalMappedMap,
@@ -182,7 +174,7 @@ async function createCoreSync({ ...init }: Initializer): Promise<OcgCoreSync> {
       m._ocgapiStartDuel(handle);
     },
     duelProcess({ [DuelHandleSymbol]: handle }) {
-      return m._ocgapiDuelProcess(handle);
+      return m._ocgapiDuelProcess(handle) as OcgProcessResult;
     },
     loadScript({ [DuelHandleSymbol]: handle }, name, content) {
       const stack = m.stackSave();
@@ -316,7 +308,7 @@ async function createCoreJspi({ ...init }: Initializer): Promise<OcgCore> {
       await m._ocgapiStartDuel(handle);
     },
     async duelProcess({ [DuelHandleSymbol]: handle }) {
-      return await m._ocgapiDuelProcess(handle);
+      return (await m._ocgapiDuelProcess(handle)) as OcgProcessResult;
     },
     async loadScript(
       { [DuelHandleSymbol]: handle },

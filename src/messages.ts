@@ -1,6 +1,13 @@
 import { BufferReader } from "./internal/buffer";
 import { readField } from "./queries";
-import { OcgHintType, OcgLocation, OcgPhase, OcgPosition } from "./type_core";
+import {
+  OcgAttribute,
+  OcgHintType,
+  OcgLocation,
+  OcgPhase,
+  OcgPosition,
+  OcgRace,
+} from "./type_core";
 import { OcgLocPos, OcgMessage, OcgMessageType } from "./type_message";
 
 export function parseInfoLocation(reader: BufferReader): OcgLocPos {
@@ -677,14 +684,14 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
         type,
         player: reader.u8(),
         count: reader.u8(),
-        available: reader.u64(),
+        available: reader.u64() as OcgRace,
       };
     case OcgMessageType.ANNOUNCE_ATTRIB:
       return {
         type,
         player: reader.u8(),
         count: reader.u8(),
-        available: reader.u8(),
+        available: reader.u8() as OcgAttribute,
       };
     case OcgMessageType.ANNOUNCE_CARD:
       return {

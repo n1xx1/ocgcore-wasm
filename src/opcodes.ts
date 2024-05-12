@@ -2,37 +2,62 @@ import { makeMap } from "./internal/utils";
 import { OcgCardData, OcgType } from "./types";
 import type { OcgMessageAnnounceCard } from "./type_message";
 
-/**
- * Opcode used in querying, used in {@link OcgMessageAnnounceCard}.
- */
+/** Opcode for the stack based card announcing process, used in {@link OcgMessageAnnounceCard}. */
 export type OcgOpCode = (typeof OcgOpCode)[keyof typeof OcgOpCode];
 
+/** Available Opcodes, any value that isn't a Opcode is added to the stack. */
 export const OcgOpCode = {
+  /** stack in: ... (A) (B); stack out: ... (A + B) */
   ADD: 0x4000000000000000n,
+  /** stack in: ... (A) (B); stack out: ... (A - B) */
   SUB: 0x4000000100000000n,
+  /** stack in: ... (A) (B); stack out: ... (A * B) */
   MUL: 0x4000000200000000n,
+  /** stack in: ... (A) (B); stack out: ... (A / B) */
   DIV: 0x4000000300000000n,
+  /** stack in: ... (A) (B); stack out: ... (A && B) */
   AND: 0x4000000400000000n,
+  /** stack in: ... (A) (B); stack out: ... (A || B) */
   OR: 0x4000000500000000n,
+  /** stack in: ... (A); stack out: ... (-A) */
   NEG: 0x4000000600000000n,
+  /** stack in: ... (A); stack out: ... (!A) */
   NOT: 0x4000000700000000n,
+  /** stack in: ... (A) (B); stack out: ... (A & B) */
   BAND: 0x4000000800000000n,
+  /** stack in: ... (A) (B); stack out: ... (A | B) */
   BOR: 0x4000000900000000n,
+  /** stack in: ... (A); stack out: ... (~A) */
   BNOT: 0x4000001000000000n,
+  /** stack in: ... (A) (B); stack out: ... (A ^ B) */
   BXOR: 0x4000001100000000n,
+  /** stack in: ... (A) (B); stack out: ... (A \<\< B) */
   LSHIFT: 0x4000001200000000n,
+  /** stack in: ... (A) (B); stack out: ... (A \>\> B) */
   RSHIFT: 0x4000001300000000n,
+  /** stack in: ...; stack out: ... */
   ALLOW_ALIASES: 0x4000001400000000n,
+  /** stack in: ...; stack out: ... */
   ALLOW_TOKENS: 0x4000001500000000n,
+  /** stack in: ... (A); stack out: ... (A == code) */
   ISCODE: 0x4000010000000000n,
+  /** stack in: ... (A); stack out: ... (setcodes includes A) */
   ISSETCARD: 0x4000010100000000n,
+  /** stack in: ... (A); stack out: ... (A == type) */
   ISTYPE: 0x4000010200000000n,
+  /** stack in: ... (A); stack out: ... (A == race) */
   ISRACE: 0x4000010300000000n,
+  /** stack in: ... (A); stack out: ... (A == attribute) */
   ISATTRIBUTE: 0x4000010400000000n,
+  /** stack in: ...; stack out: ... (code) */
   GETCODE: 0x4000010500000000n,
+  /** @deprecated Does nothing. */
   GETSETCARD: 0x4000010600000000n,
+  /** stack in: ...; stack out: ... (type) */
   GETTYPE: 0x4000010700000000n,
+  /** stack in: ...; stack out: ... (race) */
   GETRACE: 0x4000010800000000n,
+  /** stack in: ...; stack out: ... (attribute) */
   GETATTRIBUTE: 0x4000010900000000n,
 };
 
@@ -239,12 +264,13 @@ export function cardMatchesOpcode(card: OcgCardData, opcodes: OcgOpCode[]) {
         break;
       default:
         stack.push(opcode);
+        break;
     }
   }
   if (stack.length != 1 || stack[0] == 0n) {
     return false;
   }
-  if (card.code == 78734254 || card.code == 13857930) {
+  if (card.code == cardMarineDolphin || card.code == cardTwinkleMoss) {
     // always return for true for Neo-Spacian Marine Dolphin and Neo-Spacian Twinkle Moss
     return true;
   }
@@ -259,3 +285,6 @@ export function cardMatchesOpcode(card: OcgCardData, opcodes: OcgOpCode[]) {
   }
   return true;
 }
+
+const cardMarineDolphin = 78734254;
+const cardTwinkleMoss = 13857930;

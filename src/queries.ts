@@ -1,10 +1,12 @@
 import { BufferReader } from "./internal/buffer";
 import { isInfoLocationEmpty, parseInfoLocation } from "./messages";
 import {
+  OcgAttribute,
   OcgDuelMode,
   OcgLocation,
   OcgPosition,
   OcgQueryFlags,
+  OcgRace,
 } from "./type_core";
 import { OcgCardQueryInfo, OcgFieldPlayer, OcgFieldState } from "./types";
 
@@ -37,9 +39,9 @@ export function readQuery(reader: BufferReader) {
     } else if (flag === OcgQueryFlags.RANK && size === 4) {
       result.rank = reader.u32();
     } else if (flag === OcgQueryFlags.ATTRIBUTE && size === 4) {
-      result.attribute = reader.u32();
+      result.attribute = reader.u32() as OcgAttribute;
     } else if (flag === OcgQueryFlags.RACE && size === 8) {
-      result.race = reader.u64();
+      result.race = reader.u64() as OcgRace;
     } else if (flag === OcgQueryFlags.ATTACK && size === 4) {
       result.attack = reader.u32();
     } else if (flag === OcgQueryFlags.DEFENSE && size === 4) {
