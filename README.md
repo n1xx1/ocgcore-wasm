@@ -41,8 +41,6 @@ const handle = lib.createDuel({
       ? path.join(scriptPath, "official", script)
       : path.join(scriptPath, script);
 
-    // console.log(`loading script: ${script}`);
-
     try {
       return readFileSync(filePath, "utf-8");
     } catch (e) {
@@ -57,5 +55,28 @@ const handle = lib.createDuel({
 
 if (!handle) {
   throw new Error("failed to create");
+}
+```
+
+### Processing
+
+```ts
+await lib.startDuel(handle);
+
+while (true) {
+  const status = await lib.duelProcess(handle);
+
+  const data = lib.duelGetMessage(handle);
+  data.forEach((d) => console.log(d));
+
+  if (status === OcgProcessResult.END) {
+    break;
+  }
+  if (status === OcgProcessResult.CONTINUE) {
+    continue;
+  }
+
+  // send response
+  lib.duelSetResponse(handle, getNextResponse());
 }
 ```
