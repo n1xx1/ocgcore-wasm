@@ -80,7 +80,6 @@ function allocateSetCodes(
   setcodes: number[]
 ) {
   const setCodesArr = new Uint16Array([...setcodes, 0]);
-  const length = setCodesArr.byteLength;
   const setCodes = m._malloc(setCodesArr.byteLength);
   copyArray(heapAt(m.HEAP8), setCodesArr, setCodes);
   return setCodes;
