@@ -1,4 +1,3 @@
-import { makeMap } from "./internal/utils";
 import { OcgOpCode } from "./opcodes";
 import {
   OcgAttribute,
@@ -32,6 +31,7 @@ export enum OcgPlayerHintType {
   DESC_REMOVE = 7,
 }
 
+/** Message type enum. */
 export enum OcgMessageType {
   RETRY = 1,
   HINT = 2,
@@ -129,11 +129,13 @@ export enum OcgMessageType {
   REMOVE_CARDS = 190,
 }
 
+/** Card passcode and position. */
 export interface OcgCardPos {
   code: number;
   position: OcgPosition;
 }
 
+/** Location and position. */
 export interface OcgLocPos {
   controller: number;
   location: OcgLocation;
@@ -142,6 +144,7 @@ export interface OcgLocPos {
   overlay_sequence?: number;
 }
 
+/** Card passcode, location. */
 export interface OcgCardLoc {
   code: number;
   controller: number;
@@ -149,43 +152,52 @@ export interface OcgCardLoc {
   sequence: number;
 }
 
+/** Card passcode, location, position. */
 export interface OcgCardLocPos extends OcgCardLoc {
   position: OcgPosition;
   overlay_sequence?: number;
 }
 
+/** Card passcode, location, battle stats. */
 export interface OcgCardLocBattle extends OcgLocPos {
   attack: number;
   defense: number;
   destroyed: boolean;
 }
 
+/** Card passcode, location, effect activation info. */
 export interface OcgCardLocActive extends OcgCardLoc {
   description: bigint;
   client_mode: OcgEffectClientMode;
 }
 
+/** Card passcode, location, tribute info. */
 export interface OcgCardLocTribute extends OcgCardLoc {
   release_param: number;
 }
 
+/** Card passcode, location, position, activation info. */
 export interface OcgCardLocPosActive extends OcgCardLocPos {
   description: bigint;
   client_mode: OcgEffectClientMode;
 }
 
+/** Card passcode, location, attack info. */
 export interface OcgCardLocAttack extends OcgCardLoc {
   can_direct: boolean;
 }
 
+/** Card passcode, location, counter info. */
 export interface OcgCardLocCounter extends OcgCardLoc {
   count: number;
 }
 
+/** Card passcode, location, sum info */
 export interface OcgCardLocSum extends OcgCardLoc {
   amount: number;
 }
 
+/** Card passcode, location, position, chain info. */
 export interface OcgChain extends OcgCardLocPos {
   triggering_controller: number;
   triggering_location: OcgLocation;
@@ -193,10 +205,12 @@ export interface OcgChain extends OcgCardLocPos {
   description: bigint;
 }
 
+/** Sent when an invalid response was provided. */
 export interface OcgMessageRetry {
   type: OcgMessageType.RETRY;
 }
 
+/** Additional information, usually card specific or for things that don't belong to a specific message. */
 export interface OcgMessageHint {
   type: OcgMessageType.HINT;
   hint_type: OcgHintType;
@@ -204,52 +218,73 @@ export interface OcgMessageHint {
   hint: bigint;
 }
 
+/** Provide a response. */
 export interface OcgMessageWaiting {
   type: OcgMessageType.WAITING;
 }
 
+/** Duel start. */
 export interface OcgMessageStart {
   type: OcgMessageType.START;
 }
 
+/** Duel win. */
 export interface OcgMessageWin {
   type: OcgMessageType.WIN;
   player: number;
   reason: number;
 }
 
+/** @deprecated Not used. */
 export interface OcgMessageUpdateData {
   type: OcgMessageType.UPDATE_DATA;
 }
 
+/** @deprecated Not used. */
 export interface OcgMessageUpdateCard {
   type: OcgMessageType.UPDATE_CARD;
 }
 
+/** @deprecated Not used. */
 export interface OcgMessageRequestDeck {
   type: OcgMessageType.REQUEST_DECK;
 }
 
+/** Available battle step actions. */
 export interface OcgMessageSelectBattleCMD {
   type: OcgMessageType.SELECT_BATTLECMD;
   player: number;
+  /** Activatable cards. */
   chains: OcgCardLocActive[];
+  /** Cards that can attack. */
   attacks: OcgCardLocAttack[];
+  /** Can go to main phase 2. */
   to_m2: boolean;
+  /** Can go to end phase. */
   to_ep: boolean;
 }
 
+/** Available main phase actions. */
 export interface OcgMessageSelectIdlecmd {
   type: OcgMessageType.SELECT_IDLECMD;
   player: number;
+  /** Summonable cards. */
   summons: OcgCardLoc[];
+  /** Special summonable cards. */
   special_summons: OcgCardLoc[];
+  /** Cards that can change battle position. */
   pos_changes: OcgCardLoc[];
+  /** Settable monster cards. */
   monster_sets: OcgCardLoc[];
+  /** Settable spell/trap cards. */
   spell_sets: OcgCardLoc[];
+  /** Activatable cards. */
   activates: OcgCardLocActive[];
+  /** Can go to battle phase. */
   to_bp: boolean;
+  /** Can go to end phase. */
   to_ep: boolean;
+  /** Can manually shuffle. */
   shuffle: boolean;
 }
 
