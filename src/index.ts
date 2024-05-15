@@ -80,8 +80,9 @@ function allocateSetCodes(
   setcodes: number[]
 ) {
   const setCodesArr = new Uint16Array([...setcodes, 0]);
+  const length = setCodesArr.byteLength;
   const setCodes = m._malloc(setCodesArr.byteLength);
-  copyArray(heapAt(m.HEAP8, undefined, length), setCodesArr, setCodes);
+  copyArray(heapAt(m.HEAP8), setCodesArr, setCodes);
   return setCodes;
 }
 
@@ -118,7 +119,7 @@ async function createCoreSync({ ...init }: Initializer): Promise<OcgCoreSync> {
       const { cardReader } = callbacks.get(payload)!;
       const cardData = cardReader(code);
 
-      const setCodes = cardData?.setcodes
+      const setCodes = cardData?.setcodes.length
         ? allocateSetCodes(m, cardData.setcodes)
         : 0;
 
@@ -246,7 +247,7 @@ async function createCoreJspi({ ...init }: Initializer): Promise<OcgCore> {
       const { cardReader } = callbacks.get(payload)!;
       const cardData = await cardReader(code);
 
-      const setCodes = cardData?.setcodes
+      const setCodes = cardData?.setcodes.length
         ? allocateSetCodes(m, cardData.setcodes)
         : 0;
 
