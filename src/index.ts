@@ -86,7 +86,7 @@ function allocateSetCodes(
 }
 
 async function createCoreSync({ ...init }: Initializer): Promise<OcgCoreSync> {
-  const shouldImportWasm = !!init.wasmBinary && !!init.locateFile;
+  const shouldImportWasm = !init.wasmBinary && !init.locateFile;
   const [factory, wasmBinary] = await Promise.all([
     importFactorySync(),
     shouldImportWasm ? importWasmSync() : init.wasmBinary,
@@ -214,7 +214,7 @@ async function createCoreJspi({ ...init }: Initializer): Promise<OcgCore> {
     throw new Error("jspi not supported");
   }
 
-  const shouldImportWasm = !!init.wasmBinary || !!init.locateFile;
+  const shouldImportWasm = !init.wasmBinary && !init.locateFile;
   const [factory, wasmBinary] = await Promise.all([
     importFactoryJspi(),
     shouldImportWasm ? importWasmJspi() : init.wasmBinary,

@@ -1,6 +1,6 @@
 {
   "name": "@n1xx1/ocgcore-wasm",
-  "version": "0.0.25",
+  "version": "0.0.26",
   "exports": "./mod.ts",
   "publish": {
     "include": ["dist/**", "lib/**/*.wasm", "mod.ts", "jsr.json", "README.md"],
