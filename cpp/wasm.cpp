@@ -7,7 +7,7 @@
 
 EM_ASYNC_JS(void, ocgapiHandleDataReader, (void* payload, uint32_t code, OCG_CardData* data), {
     try {
-        await Module.handleDataReader(payload, code, data);
+        await Module["handleDataReader"](payload, code, data);
     } catch(e) {
         console.warn(e);
     }
@@ -15,7 +15,7 @@ EM_ASYNC_JS(void, ocgapiHandleDataReader, (void* payload, uint32_t code, OCG_Car
 
 EM_ASYNC_JS(int, ocgapiHandleScriptReader, (void* payload, OCG_Duel duel, const char* name), {
     try {
-        const contents = await Module.handleScriptReader(payload, duel, UTF8ToString(name));
+        const contents = await Module["handleScriptReader"](payload, duel, UTF8ToString(name));
 
         const contentLength = lengthBytesUTF8(contents);
         const contentPtr = _malloc(contentLength + 1);
@@ -37,7 +37,7 @@ EM_ASYNC_JS(int, ocgapiHandleScriptReader, (void* payload, OCG_Duel duel, const 
 
 EM_JS(void, ocgapiHandleDataReader, (void* payload, uint32_t code, OCG_CardData* data), {
     try {
-        Module.handleDataReader(payload, code, data);
+        Module["handleDataReader"](payload, code, data);
     } catch(e) {
         console.warn(e);
     }
@@ -45,7 +45,7 @@ EM_JS(void, ocgapiHandleDataReader, (void* payload, uint32_t code, OCG_CardData*
 
 EM_JS(int, ocgapiHandleScriptReader, (void* payload, OCG_Duel duel, const char* name), {
     try {
-        const contents = Module.handleScriptReader(payload, duel, UTF8ToString(name));
+        const contents = Module["handleScriptReader"](payload, duel, UTF8ToString(name));
 
         const contentLength = lengthBytesUTF8(contents);
         const contentPtr = _malloc(contentLength + 1);
@@ -66,7 +66,7 @@ EM_JS(int, ocgapiHandleScriptReader, (void* payload, OCG_Duel duel, const char* 
 #endif
 
 EM_JS(void, ocgapiHandleLogHandler, (void* payload, const char* string, int type), {
-    Module.handleLogHandler(payload, UTF8ToString(string), type);
+    Module["handleLogHandler"](payload, UTF8ToString(string), type);
 })
 
 extern "C" {
