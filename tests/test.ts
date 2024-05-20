@@ -722,7 +722,7 @@ function parseFieldMask(mask: number) {
   type OcgLoc = Omit<OcgLocPos, "position">;
   function parseFieldMaskPlayer(
     m: number,
-    controller: number,
+    controller: 0 | 1,
     places: OcgLoc[]
   ) {
     for (let i = 0; i < 7; i++) {

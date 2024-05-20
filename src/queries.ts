@@ -146,7 +146,7 @@ export function readField(reader: BufferReader): OcgFieldState {
     chain: Array.from({ length: reader.u32() }, () => ({
       code: reader.u32(),
       ...parseInfoLocation(reader),
-      triggering_controller: reader.u8(),
+      triggering_controller: reader.u8() as 0 | 1,
       triggering_location: reader.u8() as OcgLocation,
       triggering_sequence: reader.u32(),
       description: reader.u64(),

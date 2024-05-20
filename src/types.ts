@@ -123,7 +123,7 @@ export interface OcgQuery {
   /** Informations to requests. */
   flags: OcgQueryFlags;
   /** Controller of the card. */
-  controller: number;
+  controller: 0 | 1;
   /** Card location. */
   location: OcgLocation;
   /** Index sequence in location.  */
@@ -197,7 +197,7 @@ export type OcgCardQueryInfo = {
 /** Returned cards by {@link OcgCardQueryInfo}. */
 export interface OcgCardQueryInfoCard {
   /** Controller. */
-  controller: number;
+  controller: 0 | 1;
   /** Location. */
   location: OcgLocation;
   /** Sequence. */

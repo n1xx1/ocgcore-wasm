@@ -137,7 +137,7 @@ export interface OcgCardPos {
 
 /** Location and position. */
 export interface OcgLocPos {
-  controller: number;
+  controller: 0 | 1;
   location: OcgLocation;
   sequence: number;
   position: OcgPosition;
@@ -147,7 +147,7 @@ export interface OcgLocPos {
 /** Card passcode, location. */
 export interface OcgCardLoc {
   code: number;
-  controller: number;
+  controller: 0 | 1;
   location: OcgLocation;
   sequence: number;
 }
@@ -199,7 +199,7 @@ export interface OcgCardLocSum extends OcgCardLoc {
 
 /** Card passcode, location, position, chain info. */
 export interface OcgChain extends OcgCardLocPos {
-  triggering_controller: number;
+  triggering_controller: 0 | 1;
   triggering_location: OcgLocation;
   triggering_sequence: number;
   description: bigint;
@@ -292,7 +292,7 @@ export interface OcgMessageSelectEffectYN {
   type: OcgMessageType.SELECT_EFFECTYN;
   player: number;
   code: number;
-  controller: number;
+  controller: 0 | 1;
   location: OcgLocation;
   sequence: number;
   position: OcgPosition;
@@ -491,7 +491,7 @@ export interface OcgMessageMove {
 export interface OcgMessagePosChange {
   type: OcgMessageType.POS_CHANGE;
   code: number;
-  controller: number;
+  controller: 0 | 1;
   location: OcgLocation;
   sequence: number;
   prev_position: OcgPosition;
@@ -501,7 +501,7 @@ export interface OcgMessagePosChange {
 export interface OcgMessageSet {
   type: OcgMessageType.SET;
   code: number;
-  controller: number;
+  controller: 0 | 1;
   location: OcgLocation;
   sequence: number;
   position: OcgPosition;
@@ -521,7 +521,7 @@ export interface OcgMessageFieldDisabled {
 export interface OcgMessageSummoning {
   type: OcgMessageType.SUMMONING;
   code: number;
-  controller: number;
+  controller: 0 | 1;
   location: OcgLocation;
   sequence: number;
   position: OcgPosition;
@@ -534,7 +534,7 @@ export interface OcgMessageSummoned {
 export interface OcgMessageSpsummoning {
   type: OcgMessageType.SPSUMMONING;
   code: number;
-  controller: number;
+  controller: 0 | 1;
   location: OcgLocation;
   sequence: number;
   position: OcgPosition;
@@ -547,7 +547,7 @@ export interface OcgMessageSpsummoned {
 export interface OcgMessageFlipsummoning {
   type: OcgMessageType.FLIPSUMMONING;
   code: number;
-  controller: number;
+  controller: 0 | 1;
   location: OcgLocation;
   sequence: number;
   position: OcgPosition;
@@ -560,12 +560,12 @@ export interface OcgMessageFlipsummoned {
 export interface OcgMessageChaining {
   type: OcgMessageType.CHAINING;
   code: number;
-  controller: number;
+  controller: 0 | 1;
   location: OcgLocation;
   sequence: number;
   position: OcgPosition;
   overlay_sequence?: number;
-  triggering_controller: number;
+  triggering_controller: 0 | 1;
   triggering_location: OcgLocation;
   triggering_sequence: number;
   description: bigint;
@@ -671,7 +671,7 @@ export interface OcgMessagePayLPCost {
 export interface OcgMessageAddCounter {
   type: OcgMessageType.ADD_COUNTER;
   counter_type: number;
-  controller: number;
+  controller: 0 | 1;
   location: OcgLocation;
   sequence: number;
   count: number;
@@ -680,7 +680,7 @@ export interface OcgMessageAddCounter {
 export interface OcgMessageRemoveCounter {
   type: OcgMessageType.REMOVE_COUNTER;
   counter_type: number;
-  controller: number;
+  controller: 0 | 1;
   location: OcgLocation;
   sequence: number;
   count: number;
@@ -713,7 +713,7 @@ export interface OcgMessageDamageStepEnd {
 export interface OcgMessageMissedEffect {
   type: OcgMessageType.MISSED_EFFECT;
   code: number;
-  controller: number;
+  controller: 0 | 1;
   location: OcgLocation;
   sequence: number;
   position: OcgPosition;
@@ -782,7 +782,7 @@ export interface OcgMessageAnnounceNumber {
 
 export interface OcgMessageCardHint {
   type: OcgMessageType.CARD_HINT;
-  controller: number;
+  controller: 0 | 1;
   location: OcgLocation;
   sequence: number;
   position: OcgPosition;
