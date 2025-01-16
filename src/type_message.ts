@@ -2,6 +2,7 @@ import { OcgOpCode } from "./opcodes";
 import {
   OcgAttribute,
   OcgDuelMode,
+  OcgHintTiming,
   OcgHintType,
   OcgLocation,
   OcgPhase,
@@ -326,8 +327,8 @@ export interface OcgMessageSelectChain {
   player: number;
   spe_count: number;
   forced: boolean;
-  hint_timing: number;
-  hint_timing_other: number;
+  hint_timing: OcgHintTiming;
+  hint_timing_other: OcgHintTiming;
   selects: OcgCardLocPosActive[];
 }
 

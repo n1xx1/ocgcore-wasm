@@ -2,6 +2,7 @@ import { BufferReader } from "./internal/buffer";
 import { readField } from "./queries";
 import {
   OcgAttribute,
+  OcgHintTiming,
   OcgHintType,
   OcgLocation,
   OcgPhase,
@@ -170,8 +171,8 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
         player: reader.u8(),
         spe_count: reader.u8(),
         forced: reader.u8() != 0,
-        hint_timing: reader.u32(),
-        hint_timing_other: reader.u32(),
+        hint_timing: reader.u32() as OcgHintTiming,
+        hint_timing_other: reader.u32() as OcgHintTiming,
         selects: Array.from({ length: reader.u32() }, () => ({
           code: reader.u32(),
           ...parseInfoLocation(reader),

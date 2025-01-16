@@ -157,7 +157,7 @@ const ocgTypeMapElements = Object.values(OcgType);
  * Parse a OcgType mask and return the matching types.
  * @param type - The mask to parse.
  */
-export function ocgTypeParse(type: OcgType) {
+export function ocgTypeParse(type: OcgType): OcgType[] {
   return ocgTypeMapElements.filter((x) => type & x);
 }
 
@@ -188,7 +188,7 @@ const ocgAttributeMapElements = Object.values(OcgAttribute);
  * Parse a {@link (OcgAttribute:type)} mask and return the matching attributes.
  * @param attribute - The mask to parse.
  */
-export function ocgAttributeParse(attribute: OcgAttribute) {
+export function ocgAttributeParse(attribute: OcgAttribute): OcgAttribute[] {
   return ocgAttributeMapElements.filter((x) => attribute & x);
 }
 
@@ -269,7 +269,7 @@ const ocgRaceMapElements = Object.values(OcgRace);
  * Parse a {@link (OcgRace:type)} mask and return the matching races.
  * @param race - The mask to parse.
  */
-export function ocgRaceParse(race: OcgRace) {
+export function ocgRaceParse(race: OcgRace): OcgRace[] {
   return ocgRaceMapElements.filter((x) => race & x);
 }
 
@@ -294,7 +294,7 @@ const ocgLinkMarkerMapElements = Object.values(OcgLinkMarker);
  * Parse a {@link (OcgLinkMarker:type)} mask and return the matching markers.
  * @param marker - The mask to parse.
  */
-export function ocgLinkMarkerParse(marker: OcgLinkMarker) {
+export function ocgLinkMarkerParse(marker: OcgLinkMarker): OcgLinkMarker[] {
   return ocgLinkMarkerMapElements.filter((x) => marker & x);
 }
 
@@ -632,3 +632,76 @@ export const OcgHintType = {
   /** Zone. */
   ZONE: 11,
 } as const;
+
+/** Timing hints */
+export type OcgHintTiming = (typeof OcgHintTiming)[keyof typeof OcgHintTiming];
+
+/** Timing hints */
+export const OcgHintTiming = {
+  /** In draw phase */
+  DRAW_PHASE: 0x1,
+  /** In standby phase */
+  STANDBY_PHASE: 0x2,
+  /** Before end of main */
+  MAIN_END: 0x4,
+  /** In battle phase */
+  BATTLE_START: 0x8,
+  /** After battle */
+  BATTLE_END: 0x10,
+  /** In end phase */
+  END_PHASE: 0x20,
+  /** After summon */
+  SUMMON: 0x40,
+  /** After special summon */
+  SPSUMMON: 0x80,
+  /** After flip summon */
+  FLIPSUMMON: 0x100,
+  /** After monster set */
+  MSET: 0x200,
+  /** After spell set */
+  SSET: 0x400,
+  /** After pos change */
+  POS_CHANGE: 0x800,
+  /** In attack declaration */
+  ATTACK: 0x1000,
+  /** In damage step */
+  DAMAGE_STEP: 0x2000,
+  /** In damage calculation */
+  DAMAGE_CAL: 0x4000,
+  /** After chain resolved */
+  CHAIN_END: 0x8000,
+  /** After card draw */
+  DRAW: 0x10000,
+  /** After damage */
+  DAMAGE: 0x20000,
+  /** After recover */
+  RECOVER: 0x40000,
+  /** After destroy */
+  DESTROY: 0x80000,
+  /** After banis */
+  REMOVE: 0x100000,
+  /** After card added to the hand */
+  TOHAND: 0x200000,
+  /** After card sent to the deck */
+  TODECK: 0x400000,
+  /** After card sent to the graveyard */
+  TOGRAVE: 0x800000,
+  /** Battle phase */
+  BATTLE_PHASE: 0x1000000,
+  /** After equip */
+  EQUIP: 0x2000000,
+  /** Battle step end */
+  BATTLE_STEP_END: 0x4000000,
+  /** Battled */
+  BATTLED: 0x8000000,
+} as const;
+
+const ocgHintTimingMapElements = Object.values(OcgHintTiming);
+
+/**
+ * Parse a {@link (OcgHintTiming:type)} mask and return the matching timings.
+ * @param timing - The mask to parse.
+ */
+export function ocgHintTimingParse(timing: OcgHintTiming): OcgHintTiming[] {
+  return ocgHintTimingMapElements.filter((x) => timing & x);
+}
