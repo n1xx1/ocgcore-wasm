@@ -28,12 +28,18 @@ import {
   SelectIdleCMDAction,
 } from "./type_response";
 
+/**
+ * Convert a {@link (OcgEffectClientMode:type)} to its string representation.
+ */
 export const ocgEffectClientModeStrings = makeMap([
   [OcgEffectClientMode.NORMAL, "normal"],
   [OcgEffectClientMode.RESOLVE, "resolve"],
   [OcgEffectClientMode.RESET, "reset"],
 ]);
 
+/**
+ * Convert a {@link (OcgCardHintType:type)} to its string representation.
+ */
 export const ocgCardHintTypeStrings = makeMap([
   [OcgCardHintType.TURN, "turn"],
   [OcgCardHintType.CARD, "card"],
@@ -44,11 +50,17 @@ export const ocgCardHintTypeStrings = makeMap([
   [OcgCardHintType.DESC_REMOVE, "desc_remove"],
 ]);
 
+/**
+ * Convert a {@link (OcgPlayerHintType:type)} to its string representation.
+ */
 export const ocgPlayerHintTypeStrings = makeMap([
   [OcgPlayerHintType.DESC_ADD, "desc_add"],
   [OcgPlayerHintType.DESC_REMOVE, "desc_remove"],
 ]);
 
+/**
+ * Convert a {@link (OcgMessageType:type)} to its string representation.
+ */
 export const ocgMessageTypeStrings = makeMap([
   [OcgMessageType.RETRY, "retry"],
   [OcgMessageType.HINT, "hint"],
@@ -146,6 +158,9 @@ export const ocgMessageTypeStrings = makeMap([
   [OcgMessageType.REMOVE_CARDS, "remove_cards"],
 ]);
 
+/**
+ * Convert a {@link (OcgResponseType:type)} to its string representation.
+ */
 export const responseTypeStrings = makeMap([
   [OcgResponseType.SELECT_BATTLECMD, "select_battlecmd"],
   [OcgResponseType.SELECT_IDLECMD, "select_idlecmd"],
@@ -170,6 +185,9 @@ export const responseTypeStrings = makeMap([
   [OcgResponseType.ROCK_PAPER_SCISSORS, "rock_paper_scissors"],
 ]);
 
+/**
+ * Convert a {@link (SelectBattleCMDAction:type)} to its string representation.
+ */
 export const selectBattleCMDActionStrings = makeMap([
   [SelectBattleCMDAction.SELECT_CHAIN, "select_chain"],
   [SelectBattleCMDAction.SELECT_BATTLE, "select_battle"],
@@ -177,6 +195,9 @@ export const selectBattleCMDActionStrings = makeMap([
   [SelectBattleCMDAction.TO_EP, "to_ep"],
 ]);
 
+/**
+ * Convert a {@link (SelectIdleCMDAction:type)} to its string representation.
+ */
 export const selectIdleCMDActionStrings = makeMap([
   [SelectIdleCMDAction.SELECT_SUMMON, "select_summon"],
   [SelectIdleCMDAction.SELECT_SPECIAL_SUMMON, "select_special_summon"],
@@ -189,6 +210,9 @@ export const selectIdleCMDActionStrings = makeMap([
   [SelectIdleCMDAction.SHUFFLE, "shuffle"],
 ]);
 
+/**
+ * Convert a {@link (OcgQueryFlags:type)} to its string representation.
+ */
 export const ocgQueryFlagsString = makeMap([
   [OcgQueryFlags.CODE, "code"],
   [OcgQueryFlags.POSITION, "position"],
@@ -218,6 +242,9 @@ export const ocgQueryFlagsString = makeMap([
   [OcgQueryFlags.COVER, "cover"],
 ]);
 
+/**
+ * Convert a {@link (OcgScope:type)} to its string representation.
+ */
 export const ocgScopeString = makeMap([
   [OcgScope.OCG, "ocg"],
   [OcgScope.TCG, "tcg"],
@@ -232,12 +259,18 @@ export const ocgScopeString = makeMap([
   [OcgScope.HIDDEN, "hidden"],
 ]);
 
+/**
+ * Convert a {@link (OcgProcessResult:type)} to its string representation.
+ */
 export const ocgProcessResultString = makeMap([
   [OcgProcessResult.END, "end"],
   [OcgProcessResult.WAITING, "waiting"],
   [OcgProcessResult.CONTINUE, "continue"],
 ]);
 
+/**
+ * Convert a {@link (OcgPosition:type)} to its string representation.
+ */
 export const ocgPositionString = makeMap([
   [OcgPosition.FACEUP_ATTACK, "faceup_attack"],
   [OcgPosition.FACEDOWN_ATTACK, "facedown_attack"],
@@ -249,6 +282,9 @@ export const ocgPositionString = makeMap([
   [OcgPosition.DEFENSE, "defense"],
 ]);
 
+/**
+ * Convert a {@link (OcgLocation:type)} to its string representation.
+ */
 export const ocgLocationString = makeMap([
   [OcgLocation.DECK, "deck"],
   [OcgLocation.HAND, "hand"],
@@ -264,6 +300,9 @@ export const ocgLocationString = makeMap([
   [OcgLocation.ALL, "all"],
 ]);
 
+/**
+ * Convert a {@link (OcgType:type)} to its string representation.
+ */
 export const ocgTypeString = makeMap([
   [OcgType.MONSTER, "monster"],
   [OcgType.SPELL, "spell"],
@@ -293,6 +332,9 @@ export const ocgTypeString = makeMap([
   [OcgType.LINK, "link"],
 ]);
 
+/**
+ * Convert a {@link (OcgAttribute:type)} to its string representation.
+ */
 export const ocgAttributeString = makeMap([
   [OcgAttribute.EARTH, "earth"],
   [OcgAttribute.WATER, "water"],
@@ -303,6 +345,9 @@ export const ocgAttributeString = makeMap([
   [OcgAttribute.DIVINE, "divine"],
 ]);
 
+/**
+ * Convert a {@link (OcgRace:type)} to its string representation.
+ */
 export const ocgRaceString = makeMap([
   [OcgRace.WARRIOR, "warrior"],
   [OcgRace.SPELLCASTER, "spellcaster"],
@@ -338,6 +383,9 @@ export const ocgRaceString = makeMap([
   [OcgRace.GALAXY, "galaxy"],
 ]);
 
+/**
+ * Convert a {@link (OcgLinkMarker:type)} to its string representation.
+ */
 export const ocgLinkMarkerString = makeMap([
   [OcgLinkMarker.BOTTOM_LEFT, "bottom_left"],
   [OcgLinkMarker.BOTTOM, "bottom"],
@@ -349,12 +397,18 @@ export const ocgLinkMarkerString = makeMap([
   [OcgLinkMarker.TOP_RIGHT, "top_right"],
 ]);
 
+/**
+ * Convert a {@link (OcgRPS:type)} to its string representation.
+ */
 export const ocgRPSString = makeMap([
   [OcgRPS.SCISSORS, "scissors"],
   [OcgRPS.ROCK, "rock"],
   [OcgRPS.PAPER, "paper"],
 ]);
 
+/**
+ * Convert a {@link (OcgDuelMode:type)} to its string representation.
+ */
 export const ocgDuelModeString = makeMap([
   [OcgDuelMode.TEST_MODE, "test_mode"],
   [OcgDuelMode.ATTACK_FIRST_TURN, "attack_first_turn"],
@@ -408,6 +462,9 @@ export const ocgDuelModeString = makeMap([
   [OcgDuelMode.MODE_MR5, "mode_mr5"],
 ]);
 
+/**
+ * Convert a {@link (OcgLogType:type)} to its string representation.
+ */
 export const ocgLogTypeString = makeMap([
   [OcgLogType.ERROR, "error"],
   [OcgLogType.FROM_SCRIPT, "from_script"],
@@ -415,6 +472,9 @@ export const ocgLogTypeString = makeMap([
   [OcgLogType.UNDEFINED, "undefined"],
 ]);
 
+/**
+ * Convert a {@link (OcgPhase:type)} to its string representation.
+ */
 export const ocgPhaseString = makeMap([
   [OcgPhase.DRAW, "draw"],
   [OcgPhase.STANDBY, "standby"],
@@ -428,6 +488,9 @@ export const ocgPhaseString = makeMap([
   [OcgPhase.END, "end"],
 ]);
 
+/**
+ * Convert a {@link (OcgHintType:type)} to its string representation.
+ */
 export const ocgHintString = makeMap([
   [OcgHintType.EVENT, "event"],
   [OcgHintType.MESSAGE, "message"],
@@ -442,6 +505,9 @@ export const ocgHintString = makeMap([
   [OcgHintType.ZONE, "zone"],
 ]);
 
+/**
+ * Convert a {@link (OcgHintTiming:type)} to its string representation.
+ */
 export const ocgHintTimingString = makeMap([
   [OcgHintTiming.DRAW_PHASE, "draw_phase"],
   [OcgHintTiming.STANDBY_PHASE, "standby_phase"],

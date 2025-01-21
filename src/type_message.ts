@@ -265,7 +265,7 @@ export interface OcgMessageSelectBattleCMD {
   to_ep: boolean;
 }
 
-/** Available main phase actions. */
+/** Choose a main phase (1 or 2) action. */
 export interface OcgMessageSelectIdlecmd {
   type: OcgMessageType.SELECT_IDLECMD;
   player: number;
@@ -289,6 +289,7 @@ export interface OcgMessageSelectIdlecmd {
   shuffle: boolean;
 }
 
+/** Select a response (yes or no) to a card effect. */
 export interface OcgMessageSelectEffectYN {
   type: OcgMessageType.SELECT_EFFECTYN;
   player: number;
@@ -301,18 +302,21 @@ export interface OcgMessageSelectEffectYN {
   description: bigint;
 }
 
+/** Select a response (yes or no). */
 export interface OcgMessageSelectYesno {
   type: OcgMessageType.SELECT_YESNO;
   player: number;
   description: bigint;
 }
 
+/** Select an option. */
 export interface OcgMessageSelectOption {
   type: OcgMessageType.SELECT_OPTION;
   player: number;
   options: bigint[];
 }
 
+/** Select a card. */
 export interface OcgMessageSelectCard {
   type: OcgMessageType.SELECT_CARD;
   player: number;
@@ -322,6 +326,7 @@ export interface OcgMessageSelectCard {
   selects: OcgCardLocPos[];
 }
 
+/** Select to chain in response (if possible). */
 export interface OcgMessageSelectChain {
   type: OcgMessageType.SELECT_CHAIN;
   player: number;
@@ -332,6 +337,7 @@ export interface OcgMessageSelectChain {
   selects: OcgCardLocPosActive[];
 }
 
+/** Select a place on the field. */
 export interface OcgMessageSelectPlace {
   type: OcgMessageType.SELECT_PLACE;
   player: number;
@@ -339,6 +345,7 @@ export interface OcgMessageSelectPlace {
   field_mask: number;
 }
 
+/** Select a possible position from the mask. */
 export interface OcgMessageSelectPosition {
   type: OcgMessageType.SELECT_POSITION;
   player: number;
@@ -346,6 +353,7 @@ export interface OcgMessageSelectPosition {
   positions: OcgPosition;
 }
 
+/** Select a list of tributes. */
 export interface OcgMessageSelectTribute {
   type: OcgMessageType.SELECT_TRIBUTE;
   player: number;
@@ -355,12 +363,14 @@ export interface OcgMessageSelectTribute {
   selects: OcgCardLocTribute[];
 }
 
+/** Select how to sort the chain. */
 export interface OcgMessageSortChain {
   type: OcgMessageType.SORT_CHAIN;
   player: number;
   cards: OcgCardLoc[];
 }
 
+/** Select counters from cards on the field. */
 export interface OcgMessageSelectCounter {
   type: OcgMessageType.SELECT_COUNTER;
   player: number;
@@ -369,6 +379,7 @@ export interface OcgMessageSelectCounter {
   cards: OcgCardLocCounter[];
 }
 
+/** Select a specific amount from cards. */
 export interface OcgMessageSelectSum {
   type: OcgMessageType.SELECT_SUM;
   player: number;
@@ -380,6 +391,7 @@ export interface OcgMessageSelectSum {
   selects: OcgCardLocSum[];
 }
 
+/** Select a place on the field to disable. */
 export interface OcgMessageSelectDisfield {
   type: OcgMessageType.SELECT_DISFIELD;
   player: number;
@@ -387,12 +399,14 @@ export interface OcgMessageSelectDisfield {
   field_mask: number;
 }
 
+/** Select an order for the list of cards. */
 export interface OcgMessageSortCard {
   type: OcgMessageType.SORT_CARD;
   player: number;
   cards: OcgCardLoc[];
 }
 
+/** Select or unselect cards until the condition is satisfied. */
 export interface OcgMessageSelectUnselectCard {
   type: OcgMessageType.SELECT_UNSELECT_CARD;
   player: number;
@@ -404,33 +418,39 @@ export interface OcgMessageSelectUnselectCard {
   unselect_cards: OcgCardLocPos[];
 }
 
+/** Confirm the list of excavated cards. */
 export interface OcgMessageConfirmDeckTop {
   type: OcgMessageType.CONFIRM_DECKTOP;
   player: number;
   cards: OcgCardLoc[];
 }
 
+/** Confirm the list of cards before they go into unknown locations. */
 export interface OcgMessageConfirmCards {
   type: OcgMessageType.CONFIRM_CARDS;
   player: number;
   cards: OcgCardLoc[];
 }
 
+/** Deck of player was shuffled. */
 export interface OcgMessageShuffleDeck {
   type: OcgMessageType.SHUFFLE_DECK;
   player: number;
 }
 
+/** Hand of player was shuffled. */
 export interface OcgMessageShuffleHand {
   type: OcgMessageType.SHUFFLE_HAND;
   player: number;
   cards: number[];
 }
 
+/** @deprecated Not used. */
 export interface OcgMessageRefreshDeck {
   type: OcgMessageType.REFRESH_DECK;
 }
 
+/** Deck and grave of player were swapped. */
 export interface OcgMessageSwapGraveDeck {
   type: OcgMessageType.SWAP_GRAVE_DECK;
   player: number;

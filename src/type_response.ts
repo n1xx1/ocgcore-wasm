@@ -1,6 +1,7 @@
-import { makeMap } from "./internal/utils";
 import { OcgAttribute, OcgLocation, OcgPosition, OcgRace } from "./type_core";
+import { OcgMessageSelectUnselectCard } from "./type_message";
 
+/** Response type enum. */
 export enum OcgResponseType {
   SELECT_BATTLECMD,
   SELECT_IDLECMD,
@@ -83,7 +84,14 @@ export type OcgResponseSelectCardCodes = {
 
 export type OcgResponseSelectUnselectCard = {
   type: OcgResponseType.SELECT_UNSELECT_CARD;
-  index: number | null; // index == null -> cancel; index < select_cards.length -> select_cards[index]; index >= select_cards.length -> unselect_cards[index - select_cards.length]
+  /**
+   * If index is null: cancel the selection. If index is less then the length of
+   * {@link OcgMessageSelectUnselectCard#select_cards}: select the card at the
+   * specified index. Otherwise unselect a card of
+   * {@link OcgMessageSelectUnselectCard#unselect_cards} at index -
+   * {@link OcgMessageSelectUnselectCard#select_cards}.length
+   */
+  index: number | null;
 };
 
 export type SelectFieldPlace = {
@@ -94,7 +102,11 @@ export type SelectFieldPlace = {
 
 export type OcgResponseSelectChain = {
   type: OcgResponseType.SELECT_CHAIN;
-  index: number | null; // null -> cancel
+  /**
+   * If the index is null: cancel the selection. Otherwise chain the card
+   * at that index from {@link OcgMessageSelectChain#selects}.
+   */
+  index: number | null;
 };
 
 export type OcgResponseSelectDisfield = {
