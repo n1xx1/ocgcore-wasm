@@ -29,7 +29,7 @@ import {
 } from "./type_response";
 
 /**
- * Convert a {@link (OcgEffectClientMode:type)} to its string representation.
+ * Convert a {@link OcgEffectClientMode} to its string representation.
  */
 export const ocgEffectClientModeStrings = makeMap([
   [OcgEffectClientMode.NORMAL, "normal"],
@@ -38,7 +38,7 @@ export const ocgEffectClientModeStrings = makeMap([
 ]);
 
 /**
- * Convert a {@link (OcgCardHintType:type)} to its string representation.
+ * Convert a {@link OcgCardHintType} to its string representation.
  */
 export const ocgCardHintTypeStrings = makeMap([
   [OcgCardHintType.TURN, "turn"],
@@ -51,7 +51,7 @@ export const ocgCardHintTypeStrings = makeMap([
 ]);
 
 /**
- * Convert a {@link (OcgPlayerHintType:type)} to its string representation.
+ * Convert a {@link OcgPlayerHintType} to its string representation.
  */
 export const ocgPlayerHintTypeStrings = makeMap([
   [OcgPlayerHintType.DESC_ADD, "desc_add"],
@@ -59,7 +59,7 @@ export const ocgPlayerHintTypeStrings = makeMap([
 ]);
 
 /**
- * Convert a {@link (OcgMessageType:type)} to its string representation.
+ * Convert a {@link OcgMessageType} to its string representation.
  */
 export const ocgMessageTypeStrings = makeMap([
   [OcgMessageType.RETRY, "retry"],
@@ -159,7 +159,7 @@ export const ocgMessageTypeStrings = makeMap([
 ]);
 
 /**
- * Convert a {@link (OcgResponseType:type)} to its string representation.
+ * Convert a {@link OcgResponseType} to its string representation.
  */
 export const responseTypeStrings = makeMap([
   [OcgResponseType.SELECT_BATTLECMD, "select_battlecmd"],
@@ -186,7 +186,7 @@ export const responseTypeStrings = makeMap([
 ]);
 
 /**
- * Convert a {@link (SelectBattleCMDAction:type)} to its string representation.
+ * Convert a {@link SelectBattleCMDAction} to its string representation.
  */
 export const selectBattleCMDActionStrings = makeMap([
   [SelectBattleCMDAction.SELECT_CHAIN, "select_chain"],
@@ -196,7 +196,7 @@ export const selectBattleCMDActionStrings = makeMap([
 ]);
 
 /**
- * Convert a {@link (SelectIdleCMDAction:type)} to its string representation.
+ * Convert a {@link SelectIdleCMDAction} to its string representation.
  */
 export const selectIdleCMDActionStrings = makeMap([
   [SelectIdleCMDAction.SELECT_SUMMON, "select_summon"],

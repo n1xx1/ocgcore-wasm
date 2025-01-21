@@ -25,9 +25,10 @@
     "./package.json": "./package.json"
   },
   "files": [
-    "dist/*",
-    "lib/*",
-    "src"
+    "dist/**",
+    "lib/**",
+    "!dist/types/**",
+    "README.md"
   ],
   "browser": {
     "module": false
