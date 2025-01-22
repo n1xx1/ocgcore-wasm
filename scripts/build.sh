@@ -16,6 +16,7 @@ em++ \
   -fno-rtti \
   -sNO_EXIT_RUNTIME=1 \
   -sASYNCIFY_EXPORTS=ocgapi* \
+  -sUSE_ES6_IMPORT_META=0 -sENVIRONMENT=web \
   -sEXPORTED_FUNCTIONS=['_malloc','_free'] \
   -sEXPORTED_RUNTIME_METHODS=['Asyncify','stackSave','stackRestore','stackAlloc','getValue','stringToUTF8','lengthBytesUTF8'] \
   -I./cpp/lua \
@@ -30,6 +31,7 @@ em++ \
   -fwasm-exceptions -sSUPPORT_LONGJMP=wasm \
   -fno-rtti \
   -sNO_EXIT_RUNTIME=1 \
+  -sUSE_ES6_IMPORT_META=0 -sENVIRONMENT=web \
   -sEXPORTED_FUNCTIONS=['_malloc','_free'] \
   -sEXPORTED_RUNTIME_METHODS=['stackSave','stackRestore','stackAlloc','getValue','stringToUTF8','lengthBytesUTF8'] \
   -I./cpp/lua \
