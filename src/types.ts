@@ -92,7 +92,7 @@ export interface OcgDuelOptions {
     card: number
   ) => Promise<OcgCardData | null> | OcgCardData | null;
   /** Requests the script contents for the given path. */
-  scriptReader: (name: string) => Promise<string> | string;
+  scriptReader: (name: string) => Promise<string | null> | string | null;
   /** Handle script or core errors. */
   errorHandler?: (type: OcgLogType, text: string) => void;
 }

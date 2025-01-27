@@ -93,7 +93,7 @@ interface OcgCoreModuleBase extends EmscriptenModule {
     payload: number,
     duel: number,
     name: string
-  ): Promise<string>;
+  ): Promise<string | null>;
 
   handleLogHandler(payload: number, message: string, type: number): void;
 }

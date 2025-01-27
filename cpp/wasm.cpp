@@ -16,17 +16,18 @@ EM_ASYNC_JS(void, ocgapiHandleDataReader, (void* payload, uint32_t code, OCG_Car
 EM_ASYNC_JS(int, ocgapiHandleScriptReader, (void* payload, OCG_Duel duel, const char* name), {
     try {
         const contents = await Module["handleScriptReader"](payload, duel, UTF8ToString(name));
+        if (contents) {
+            const contentLength = lengthBytesUTF8(contents);
+            const contentPtr = _malloc(contentLength + 1);
+            stringToUTF8(contents, contentPtr, contentLength + 1);
 
-        const contentLength = lengthBytesUTF8(contents);
-        const contentPtr = _malloc(contentLength + 1);
-        stringToUTF8(contents, contentPtr, contentLength + 1);
-
-        try {
-            await _ocgapiLoadScript(duel, contentPtr, contentLength, name);
-        } finally {
-            _free(contentPtr);
+            try {
+                return await _ocgapiLoadScript(duel, contentPtr, contentLength, name);
+            } finally {
+                _free(contentPtr);
+            }
         }
-        return 1;
+        return 0;
     } catch(e) {
         console.warn(e);
         return 0;
@@ -46,17 +47,18 @@ EM_JS(void, ocgapiHandleDataReader, (void* payload, uint32_t code, OCG_CardData*
 EM_JS(int, ocgapiHandleScriptReader, (void* payload, OCG_Duel duel, const char* name), {
     try {
         const contents = Module["handleScriptReader"](payload, duel, UTF8ToString(name));
+        if (contents) {
+            const contentLength = lengthBytesUTF8(contents);
+            const contentPtr = _malloc(contentLength + 1);
+            stringToUTF8(contents, contentPtr, contentLength + 1);
 
-        const contentLength = lengthBytesUTF8(contents);
-        const contentPtr = _malloc(contentLength + 1);
-        stringToUTF8(contents, contentPtr, contentLength + 1);
-
-        try {
-            _ocgapiLoadScript(duel, contentPtr, contentLength, name);
-        } finally {
-            _free(contentPtr);
+            try {
+                return _ocgapiLoadScript(duel, contentPtr, contentLength, name);
+            } finally {
+                _free(contentPtr);
+            }
         }
-        return 1;
+        return 0;
     } catch(e) {
         console.warn(e);
         return 0;
