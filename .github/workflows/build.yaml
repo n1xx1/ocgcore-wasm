@@ -85,7 +85,7 @@ jobs:
         run: pnpm run build:types
 
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: package
           path: |
