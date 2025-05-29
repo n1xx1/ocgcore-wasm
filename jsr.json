@@ -1,7 +1,7 @@
 {
   "name": "@n1xx1/ocgcore-wasm",
   "license": "MIT",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "exports": "./mod.ts",
   "publish": {
     "include": ["dist/**", "lib/**/*.wasm", "mod.ts", "jsr.json", "README.md"],

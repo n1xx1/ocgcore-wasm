@@ -12,6 +12,8 @@ const result = await build({
   sourcemap: true,
   loader: { ".wasm": "binary" },
   metafile: true,
+  define: { "import.meta.url": "import_meta_url" },
+  inject: ["./scripts/inject-import-meta-url.js"],
 });
 
 const [entryPointOut] =
