@@ -86,7 +86,7 @@ int EMSCRIPTEN_KEEPALIVE ocgapiCreateDuel(OCG_Duel* duel, OCG_DuelOptions option
             free(data->setcodes);
         }
     };
-    return OCG_CreateDuel(duel, options);
+    return OCG_CreateDuel(duel, &options);
 }
 
 void EMSCRIPTEN_KEEPALIVE ocgapiDestroyDuel(OCG_Duel duel) {
@@ -94,7 +94,7 @@ void EMSCRIPTEN_KEEPALIVE ocgapiDestroyDuel(OCG_Duel duel) {
 }
 
 void EMSCRIPTEN_KEEPALIVE ocgapiDuelNewCard(OCG_Duel duel, OCG_NewCardInfo* info) {
-    OCG_DuelNewCard(duel, *info);
+    OCG_DuelNewCard(duel, info);
 }
 
 void EMSCRIPTEN_KEEPALIVE ocgapiStartDuel(OCG_Duel duel) {
@@ -122,11 +122,11 @@ uint32_t EMSCRIPTEN_KEEPALIVE ocgapiDuelQueryCount(OCG_Duel duel, uint8_t team, 
 }
 
 void* EMSCRIPTEN_KEEPALIVE ocgapiDuelQuery(OCG_Duel duel, uint32_t* length, OCG_QueryInfo* info) {
-    return OCG_DuelQuery(duel, length, *info);
+    return OCG_DuelQuery(duel, length, info);
 }
 
 void* EMSCRIPTEN_KEEPALIVE ocgapiDuelQueryLocation(OCG_Duel duel, uint32_t* length, OCG_QueryInfo* info) {
-    return OCG_DuelQueryLocation(duel, length, *info);
+    return OCG_DuelQueryLocation(duel, length, info);
 }
 
 void* EMSCRIPTEN_KEEPALIVE ocgapiDuelQueryField(OCG_Duel duel, uint32_t* length) {

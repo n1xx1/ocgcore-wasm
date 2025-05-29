@@ -210,7 +210,7 @@ async function createCoreSync({ ...init }: Initializer): Promise<OcgCoreSync> {
 }
 
 async function createCoreJspi({ ...init }: Initializer): Promise<OcgCore> {
-  if (!("Suspender" in WebAssembly) || !("Function" in WebAssembly)) {
+  if (!("Suspending" in WebAssembly)) {
     throw new Error("jspi not supported");
   }
 

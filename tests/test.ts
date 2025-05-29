@@ -29,7 +29,7 @@ const stringsPath = "C:\\ProjectIgnis\\config\\strings.conf";
 Error.stackTraceLimit = Infinity;
 
 async function main() {
-  testSync();
+  await testSync();
   await testJspi();
 }
 
@@ -72,6 +72,8 @@ async function testJspi() {
     scriptReader: async (script) => {
       const filePath = script.match(/c\d+\.lua/)
         ? path.join(scriptPath, "official", script)
+        : script.match(/proc_unofficial.lua/)
+        ? path.join(scriptPath, "unofficial", script)
         : path.join(scriptPath, script);
 
       // console.log(`loading script: ${script}`);
@@ -153,7 +155,7 @@ async function testJspi() {
 
     const response = messagesToSend.shift();
     if (response === undefined) {
-      console.log("no more programmed responses");
+      console.log("no more programmed responses\n\n");
       break;
     }
     if (response) {
@@ -282,7 +284,7 @@ async function testSync() {
 
     const response = messagesToSend.shift();
     if (response === undefined) {
-      console.log("no more programmed responses");
+      console.log("no more programmed responses\n\n");
       break;
     }
     if (response) {

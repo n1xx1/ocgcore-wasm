@@ -3,7 +3,7 @@ on:
   push:
 
 env:
-  EM_VERSION: 3.1.59
+  EM_VERSION: 4.0.9
   EM_CACHE_FOLDER: "emsdk-cache"
 
 jobs:
@@ -67,7 +67,7 @@ jobs:
 
       - name: Setup emsdk
         if: ${{ steps.cache-wasm.outputs.cache-hit != 'true' }}
-        uses: mymindstorm/setup-emsdk@v12
+        uses: mymindstorm/setup-emsdk@v14
         with:
           version: ${{env.EM_VERSION}}
           actions-cache-folder: ${{env.EM_CACHE_FOLDER}}

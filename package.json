@@ -1,6 +1,6 @@
 {
   "name": "ocgcore-wasm",
-  "version": "0.0.34",
+  "version": "0.1.0",
   "type": "module",
   "author": {
     "name": "n1xx1"
@@ -40,14 +40,14 @@
     "build:emscripten": "chmod a+x ./scripts/build.sh && ./scripts/build.sh",
     "clear:tests": "rm -rf tests/dist/*.js tests/*.js.map",
     "build:tests": "esbuild ./tests/test.ts --analyze --bundle --platform=node --loader:.wasm=binary --format=esm --target=es2020 --external:node-sqlite3-wasm --splitting --minify --sourcemap --outdir=tests/dist",
-    "start:tests": "npm run build:tests && node --enable-source-maps --experimental-wasm-stack-switching tests/dist/test.js",
+    "start:tests": "npm run build:tests && node --enable-source-maps --experimental-wasm-jspi tests/dist/test.js",
     "build:types": "tsc --project tsconfig.types.json && api-extractor run",
     "build": "npm run build:emscripten && npm run build:lib && npm run build:types"
   },
   "packageManager": "pnpm@9.0.6",
   "devDependencies": {
     "@microsoft/api-extractor": "^7.39.1",
-    "@types/emscripten": "^1.39.7",
+    "@types/emscripten": "^1.40.1",
     "@types/node": "^20.5.9",
     "esbuild": "^0.19.2",
     "esno": "^0.17.0",

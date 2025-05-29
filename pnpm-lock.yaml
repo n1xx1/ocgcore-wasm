@@ -12,8 +12,8 @@ importers:
         specifier: ^7.39.1
         version: 7.39.1(@types/node@20.5.9)
       '@types/emscripten':
-        specifier: ^1.39.7
-        version: 1.39.7
+        specifier: ^1.40.1
+        version: 1.40.1
       '@types/node':
         specifier: ^20.5.9
         version: 20.5.9
@@ -360,8 +360,8 @@ packages:
   '@types/argparse@1.0.38':
     resolution: {integrity: sha512-ebDJ9b0e702Yr7pWgB0jzm+CX4Srzz8RcXtLJDJB+BSccqMa36uyH/zUsSYao5+BD1ytv3k3rPYCq4mAE1hsXA==}
 
-  '@types/emscripten@1.39.7':
-    resolution: {integrity: sha512-tLqYV94vuqDrXh515F/FOGtBcRMTPGvVV1LzLbtYDcQmmhtpf/gLYf+hikBbQk8MzOHNz37wpFfJbYAuSn8HqA==}
+  '@types/emscripten@1.40.1':
+    resolution: {integrity: sha512-sr53lnYkQNhjHNN0oJDdUm5564biioI5DuOpycufDVK7D3y+GR3oUswe2rlwY1nPNyusHbrJ9WoTyIHl4/Bpwg==}
 
   '@types/node@20.5.9':
     resolution: {integrity: sha512-PcGNd//40kHAS3sTlzKB9C9XL4K0sTup8nbG5lC14kzEteTNuAFh9u5nA0o5TWnSG2r/JNPRXFVcHJIIeRlmqQ==}
@@ -1137,7 +1137,7 @@ snapshots:
 
   '@types/argparse@1.0.38': {}
 
-  '@types/emscripten@1.39.7': {}
+  '@types/emscripten@1.40.1': {}
 
   '@types/node@20.5.9': {}
 
