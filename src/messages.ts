@@ -45,6 +45,19 @@ export function isInfoLocationEmpty(loc: OcgLocPos) {
   );
 }
 
+const INFO_LOCATION_BYTE_LENGTH = 10;
+
+function readTrailingInfoLocations(reader: BufferReader): OcgLocPos[] {
+  if (!reader.avail || reader.avail % INFO_LOCATION_BYTE_LENGTH !== 0) {
+    return [];
+  }
+
+  return Array.from(
+    { length: reader.avail / INFO_LOCATION_BYTE_LENGTH },
+    () => parseInfoLocation(reader),
+  );
+}
+
 export function readMessage(reader: BufferReader): OcgMessage | null {
   const type: OcgMessageType = reader.u8();
   switch (type) {
@@ -561,6 +574,11 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
         player: reader.u8(),
         lp: reader.u32(),
       };
+    case OcgMessageType.UNEQUIP:
+      return {
+        type,
+        card: parseInfoLocation(reader),
+      };
     case OcgMessageType.CARD_TARGET:
       return {
         type,
@@ -644,17 +662,42 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
         code: reader.u32(),
       };
     case OcgMessageType.BE_CHAIN_TARGET:
-      return {
-        type,
-      };
+      return (() => {
+        // Older cores send this as an empty packet. Keep supporting that shape,
+        // but accept trailing info-location payloads when a core build includes
+        // them so the browser bridge can forward real coordinates.
+        const cards = readTrailingInfoLocations(reader);
+        return cards.length ? { type, cards } : { type };
+      })();
     case OcgMessageType.CREATE_RELATION:
-      return {
-        type,
-      };
     case OcgMessageType.RELEASE_RELATION:
-      return {
-        type,
-      };
+      return (() => {
+        // The local core build currently appears to emit this without explicit
+        // relation endpoints, but accept optional trailing locations so newer
+        // protocol variants can expose source/target coordinates.
+        const cards = readTrailingInfoLocations(reader);
+
+        if (cards.length >= 2) {
+          return {
+            type,
+            source: cards[0],
+            target: cards[1],
+            cards,
+          };
+        }
+
+        if (cards.length === 1) {
+          return {
+            type,
+            source: cards[0],
+            cards,
+          };
+        }
+
+        return {
+          type,
+        };
+      })();
     case OcgMessageType.TOSS_COIN:
       return {
         type,

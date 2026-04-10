@@ -65,6 +65,15 @@ export function readQuery(reader: BufferReader) {
         result.equipCard = card;
       }
     } else if (flag === OcgQueryFlags.TARGET_CARD && size >= 4) {
+      result.targetCards = [];
+      const length = reader.u32();
+      for (let i = 0; i < length; i++) {
+        const card = parseInfoLocation(reader);
+        if (!isInfoLocationEmpty(card)) {
+          result.targetCards.push(card);
+        }
+      }
+    } else if (flag === OcgQueryFlags.OVERLAY_CARD && size >= 4) {
       result.overlayCards = [];
       const length = reader.u32();
       for (let i = 0; i < length; i++) {

@@ -125,6 +125,7 @@ export const ocgMessageTypeStrings = makeMap([
   [OcgMessageType.RECOVER, "recover"],
   [OcgMessageType.EQUIP, "equip"],
   [OcgMessageType.LPUPDATE, "lpupdate"],
+  [OcgMessageType.UNEQUIP, "unequip"],
   [OcgMessageType.CARD_TARGET, "card_target"],
   [OcgMessageType.CANCEL_TARGET, "cancel_target"],
   [OcgMessageType.PAY_LPCOST, "pay_lpcost"],

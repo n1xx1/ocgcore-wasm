@@ -97,6 +97,7 @@ export enum OcgMessageType {
   RECOVER = 92,
   EQUIP = 93,
   LPUPDATE = 94,
+  UNEQUIP = 95,
   CARD_TARGET = 96,
   CANCEL_TARGET = 97,
   PAY_LPCOST = 100,
@@ -671,6 +672,11 @@ export interface OcgMessageLPUpdate {
   lp: number;
 }
 
+export interface OcgMessageUnequip {
+  type: OcgMessageType.UNEQUIP;
+  card: OcgLocPos;
+}
+
 export interface OcgMessageCardTarget {
   type: OcgMessageType.CARD_TARGET;
   card: OcgLocPos;
@@ -743,14 +749,21 @@ export interface OcgMessageMissedEffect {
 
 export interface OcgMessageBeChainTarget {
   type: OcgMessageType.BE_CHAIN_TARGET;
+  cards?: OcgLocPos[];
 }
 
 export interface OcgMessageCreateRelation {
   type: OcgMessageType.CREATE_RELATION;
+  source?: OcgLocPos;
+  target?: OcgLocPos;
+  cards?: OcgLocPos[];
 }
 
 export interface OcgMessageReleaseRelation {
   type: OcgMessageType.RELEASE_RELATION;
+  source?: OcgLocPos;
+  target?: OcgLocPos;
+  cards?: OcgLocPos[];
 }
 
 export interface OcgMessageTossCoin {
@@ -960,6 +973,7 @@ export type OcgMessage =
   | OcgMessageRecover
   | OcgMessageEquip
   | OcgMessageLPUpdate
+  | OcgMessageUnequip
   | OcgMessageCardTarget
   | OcgMessageCancelTarget
   | OcgMessagePayLPCost
