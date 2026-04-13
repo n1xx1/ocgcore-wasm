@@ -65,6 +65,15 @@ export function readQuery(reader: BufferReader) {
         result.equipCard = card;
       }
     } else if (flag === OcgQueryFlags.TARGET_CARD && size >= 4) {
+      result.targetCards = [];
+      const length = reader.u32();
+      for (let i = 0; i < length; i++) {
+        const card = parseInfoLocation(reader);
+        if (!isInfoLocationEmpty(card)) {
+          result.targetCards.push(card);
+        }
+      }
+    } else if (flag === OcgQueryFlags.OVERLAY_CARD && size >= 4) {
       result.overlayCards = [];
       const length = reader.u32();
       for (let i = 0; i < length; i++) {
@@ -125,7 +134,7 @@ export function readField(reader: BufferReader): OcgFieldState {
                   position: reader.u8(),
                   materials: reader.u32(),
                 }
-              : null
+              : null,
           ) as OcgFieldPlayer["monsters"],
           spells: Array.from({ length: 8 }, () =>
             reader.u8() != 0
@@ -133,7 +142,7 @@ export function readField(reader: BufferReader): OcgFieldState {
                   position: reader.u8(),
                   materials: reader.u32(),
                 }
-              : null
+              : null,
           ) as OcgFieldPlayer["spells"],
           deck_size: reader.u32(),
           hand_size: reader.u32(),
@@ -141,7 +150,7 @@ export function readField(reader: BufferReader): OcgFieldState {
           banish_size: reader.u32(),
           extra_size: reader.u32(),
           extra_faceup_count: reader.u32(),
-        } as OcgFieldPlayer)
+        }) as OcgFieldPlayer,
     ) as [OcgFieldPlayer, OcgFieldPlayer],
     chain: Array.from({ length: reader.u32() }, () => ({
       code: reader.u32(),

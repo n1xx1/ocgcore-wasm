@@ -27,7 +27,7 @@ type OcgCardDataPointers =
 
 export function writeCardData(
   view: DataView,
-  data: Partial<Omit<OcgCardData, "setcodes">> & OcgCardDataPointers
+  data: Partial<Omit<OcgCardData, "setcodes">> & OcgCardDataPointers,
 ): void {
   // uint32_t code;
   view.setUint32(0, data.code ?? 0, true);
@@ -109,7 +109,7 @@ export function writeDuelOptions(
     "cardReader" | "scriptReader" | "errorHandler"
   > & {
     enableUnsafeLibraries: boolean;
-  } & OcgDuelCallbackOptions
+  } & OcgDuelCallbackOptions,
 ): void {
   // uint64_t seed[4]
   view.setBigUint64(0, options.seed[0], true);
@@ -128,11 +128,11 @@ export function writeDuelOptions(
   // }
   // OCG_Player team2 {
   //    uint32_t startingLP
-  view.setUint32(52, options.team1.startingLP, true);
+  view.setUint32(52, options.team2.startingLP, true);
   //    uint32_t startingDrawCount
-  view.setUint32(56, options.team1.startingDrawCount, true);
+  view.setUint32(56, options.team2.startingDrawCount, true);
   //    uint32_t drawCountPerTurn
-  view.setUint32(60, options.team1.drawCountPerTurn, true);
+  view.setUint32(60, options.team2.drawCountPerTurn, true);
   // }
 
   if (options.ptrSize === 4) {
