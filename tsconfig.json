@@ -6,6 +6,7 @@
     "esModuleInterop": true,
     "sourceMap": true,
     "strict": true,
+    "rootDir": "./",
     "outDir": "./dist/types",
     "paths": {
       "~/*": ["./*"]
