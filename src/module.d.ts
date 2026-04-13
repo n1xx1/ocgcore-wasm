@@ -6,7 +6,7 @@ declare module "~/lib/ocgcore.jspi.mjs" {
 }
 
 declare module "~/lib/ocgcore.jspi.wasm" {
-  const wasm: Uint8Array;
+  const wasm: Uint8Array<ArrayBuffer>;
   export default wasm;
 }
 
@@ -16,7 +16,15 @@ declare module "~/lib/ocgcore.sync.mjs" {
     : Fn;
 
   export type OcgCoreModule = {
-    [F in keyof OcgCoreModuleBase]: DepromisifyFunction<OcgCoreModuleBase[F]>;
+    [F in Exclude<
+      keyof OcgCoreModuleBase,
+      PromisifiedOcgCoreFunctions
+    >]: OcgCoreModuleBase[F];
+  } & {
+    [F in Extract<
+      keyof OcgCoreModuleBase,
+      PromisifiedOcgCoreFunctions
+    >]: DepromisifyFunction<OcgCoreModuleBase[F]>;
   };
 
   const Module: EmscriptenModuleFactory<OcgCoreModule>;
@@ -24,9 +32,19 @@ declare module "~/lib/ocgcore.sync.mjs" {
 }
 
 declare module "~/lib/ocgcore.sync.wasm" {
-  const wasm: Uint8Array;
+  const wasm: Uint8Array<ArrayBuffer>;
   export default wasm;
 }
+
+type PromisifiedOcgCoreFunctions =
+  | "_ocgapiCreateDuel"
+  | "_ocgapiDestroyDuel"
+  | "_ocgapiDuelNewCard"
+  | "_ocgapiStartDuel"
+  | "_ocgapiDuelProcess"
+  | "_ocgapiLoadScript"
+  | "handleDataReader"
+  | "handleScriptReader";
 
 interface OcgCoreModuleBase extends EmscriptenModule {
   stackAlloc: typeof stackAlloc;
@@ -42,7 +60,7 @@ interface OcgCoreModuleBase extends EmscriptenModule {
   //int OCG_CreateDuel(OCG_Duel* duel, OCG_DuelOptions options)
   _ocgapiCreateDuel(
     duelPtr: number,
-    optionsData: number
+    optionsData: number,
   ): number | Promise<number>;
 
   //void OCG_DestroyDuel(OCG_Duel duel)
@@ -68,7 +86,7 @@ interface OcgCoreModuleBase extends EmscriptenModule {
     duel: number,
     bufferPtr: number,
     length: number,
-    nameString: number
+    nameString: number,
   ): number | Promise<number>;
 
   //uint32_t OCG_DuelQueryCount(OCG_Duel duel, uint8_t team, uint32_t loc)
@@ -81,7 +99,7 @@ interface OcgCoreModuleBase extends EmscriptenModule {
   _ocgapiDuelQueryLocation(
     duel: number,
     lengthPtr: number,
-    infoData: number
+    infoData: number,
   ): number;
 
   //void* OCG_DuelQueryField(OCG_Duel duel, uint32_t* length)
@@ -92,7 +110,7 @@ interface OcgCoreModuleBase extends EmscriptenModule {
   handleScriptReader(
     payload: number,
     duel: number,
-    name: string
+    name: string,
   ): Promise<string | null>;
 
   handleLogHandler(payload: number, message: string, type: number): void;

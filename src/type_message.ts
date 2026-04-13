@@ -458,6 +458,7 @@ export interface OcgMessageSwapGraveDeck {
   returned_to_extra: number[];
 }
 
+/** The specified cards were shuffled face down. */
 export interface OcgMessageShuffleSetCard {
   type: OcgMessageType.SHUFFLE_SET_CARD;
   location: OcgLocation;
@@ -467,10 +468,12 @@ export interface OcgMessageShuffleSetCard {
   }[];
 }
 
+/** Deck order was reversed for both players. */
 export interface OcgMessageReverseDeck {
   type: OcgMessageType.REVERSE_DECK;
 }
 
+/** Card on top of the deck changed. */
 export interface OcgMessageDeckTop {
   type: OcgMessageType.DECK_TOP;
   player: number;

@@ -26,6 +26,7 @@ export enum OcgResponseType {
   ROCK_PAPER_SCISSORS,
 }
 
+/** Battle command enum, used in {@link OcgResponseSelectBattleCMD}. */
 export enum SelectBattleCMDAction {
   SELECT_CHAIN,
   SELECT_BATTLE,
@@ -39,6 +40,7 @@ export type OcgResponseSelectBattleCMD = {
   index: number | null;
 };
 
+/** Idle command enum, used in {@link OcgResponseSelectIdleCMD}. */
 export enum SelectIdleCMDAction {
   SELECT_SUMMON,
   SELECT_SPECIAL_SUMMON,

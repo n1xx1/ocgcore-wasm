@@ -26,7 +26,7 @@ const scriptPath = "C:\\ProjectIgnis\\script";
 const cdbPath = "C:\\ProjectIgnis\\expansions";
 const stringsPath = "C:\\ProjectIgnis\\config\\strings.conf";
 
-Error.stackTraceLimit = Infinity;
+(Error as any).stackTraceLimit = Infinity;
 
 async function main() {
   await testSync();
@@ -73,8 +73,8 @@ async function testJspi() {
       const filePath = script.match(/c\d+\.lua/)
         ? path.join(scriptPath, "official", script)
         : script.match(/proc_unofficial.lua/)
-        ? path.join(scriptPath, "unofficial", script)
-        : path.join(scriptPath, script);
+          ? path.join(scriptPath, "unofficial", script)
+          : path.join(scriptPath, script);
 
       // console.log(`loading script: ${script}`);
 
@@ -97,20 +97,20 @@ async function testJspi() {
   await lib.loadScript(
     handle,
     "constant.lua",
-    await readFile(path.join(scriptPath, "constant.lua"), "utf8")
+    await readFile(path.join(scriptPath, "constant.lua"), "utf8"),
   );
 
   await lib.loadScript(
     handle,
     "utility.lua",
-    await readFile(path.join(scriptPath, "utility.lua"), "utf8")
+    await readFile(path.join(scriptPath, "utility.lua"), "utf8"),
   );
 
   const addCard = async (
     team: 0 | 1,
     code: number,
     location: OcgLocation,
-    position: OcgPosition
+    position: OcgPosition,
   ) => {
     await lib.duelNewCard(handle, {
       code,
@@ -226,20 +226,20 @@ async function testSync() {
   lib.loadScript(
     handle,
     "constant.lua",
-    readFileSync(path.join(scriptPath, "constant.lua"), "utf8")
+    readFileSync(path.join(scriptPath, "constant.lua"), "utf8"),
   );
 
   lib.loadScript(
     handle,
     "utility.lua",
-    readFileSync(path.join(scriptPath, "utility.lua"), "utf8")
+    readFileSync(path.join(scriptPath, "utility.lua"), "utf8"),
   );
 
   const addCard = (
     team: 0 | 1,
     code: number,
     location: OcgLocation,
-    position: OcgPosition
+    position: OcgPosition,
   ) => {
     lib.duelNewCard(handle, {
       code,
@@ -513,13 +513,13 @@ function printMessage(lang: LangData, m: OcgMessage) {
             const name = stringCardName(lang, d.code);
             return `${name} (${stringPosition(d.position)})`;
           })
-          .join("; ")}`
+          .join("; ")}`,
       );
       return;
     case OcgMessageType.SELECT_CHAIN: {
       if (m.spe_count == 0x7f) {
         console.log(
-          `\nP${m.player + 1} is selecting a trigger effect to chain.`
+          `\nP${m.player + 1} is selecting a trigger effect to chain.`,
         );
       } else if (m.selects.length == 0) {
         console.log(`\nP${m.player + 1} has nothing to chain.`);
@@ -534,7 +534,7 @@ function printMessage(lang: LangData, m: OcgMessage) {
               const locpos = stringLocPos(c);
               return `${name} [${locpos}]`;
             })
-            .join("; ")}`
+            .join("; ")}`,
         );
       }
       return;
@@ -586,7 +586,7 @@ function printMessage(lang: LangData, m: OcgMessage) {
       const options = parseFieldMask(m.field_mask);
       console.log(`\nP${m.player + 1} is selecting a zone.`);
       console.log(
-        `Options: ${options.map((o) => stringLocationField(o)).join("; ")}`
+        `Options: ${options.map((o) => stringLocationField(o)).join("; ")}`,
       );
       return;
     }
@@ -600,13 +600,13 @@ function printMessage(lang: LangData, m: OcgMessage) {
             const locpos = stringLocPos(s);
             return `${name} [${locpos}]`;
           })
-          .join("; ")}`
+          .join("; ")}`,
       );
       return;
     }
     case OcgMessageType.SELECT_POSITION: {
       const positions = ocgPositionParse(m.positions).map((x) =>
-        stringPosition(x)
+        stringPosition(x),
       );
       const name = stringCardName(lang, m.code);
       console.log(`\nP${m.player + 1} is selecting a position for ${name}`);
@@ -695,7 +695,7 @@ function printMessage(lang: LangData, m: OcgMessage) {
         }
         case OcgHintType.SELECTMSG: {
           console.log(
-            `\nHint for Player ${m.player + 1} (select message): ${m.hint}`
+            `\nHint for Player ${m.player + 1} (select message): ${m.hint}`,
           );
           return;
         }
@@ -725,7 +725,7 @@ function parseFieldMask(mask: number) {
   function parseFieldMaskPlayer(
     m: number,
     controller: 0 | 1,
-    places: OcgLoc[]
+    places: OcgLoc[],
   ) {
     for (let i = 0; i < 7; i++) {
       // 5 mm, 2 em
@@ -789,7 +789,7 @@ function loadTexts(db: sqlite3.Database) {
       name: datum.name,
       strings: Array.from(
         { length: 16 },
-        (_, i) => datum[`str${i + 1}` as Indexes]
+        (_, i) => datum[`str${i + 1}` as Indexes],
       ),
     });
   }

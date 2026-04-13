@@ -32,33 +32,34 @@ export interface Initializer {
   locateFile?(url: string, scriptDirectory: string): string;
   /** The binary of the wasm module */
   wasmBinary?: ArrayBuffer;
+  /** Whether to use the sync interface or not. Defaults to false (async). */
   sync?: boolean;
 }
 
-/** Initialize async version */
+/** Initializer for the async version */
 export type InitializerAsync = Omit<Initializer, "sync"> & { sync?: false };
 
-/** Initialize sync version */
+/** Initializer for the sync version */
 export type InitializerSync = Omit<Initializer, "sync"> & { sync: true };
 
 /**
- * Instantiate the basic interface to use ygocore.
- * @param options - Options. sync: Whether to use the sync interface or not. Defaults to false (async).
+ * Instantiate the basic interface to use ocgcore.
+ * @param options - Options.
  */
 export default async function createCore(
-  options?: InitializerAsync
+  options?: InitializerAsync,
 ): Promise<OcgCore>;
 
-/**
- * Instantiate the basic interface to use ygocore.
- * @param options - Options. sync: Whether to use the sync interface or not. Defaults to false (async).
- */
 export default async function createCore(
-  options: InitializerSync
+  options: InitializerSync,
 ): Promise<OcgCoreSync>;
 
+/**
+ * Instantiate the basic interface to use ocgcore.
+ * @param options - Options
+ */
 export default async function createCore(
-  init?: Initializer
+  init?: Initializer,
 ): Promise<OcgCore | OcgCoreSync> {
   const sync = init?.sync ?? false;
   return sync
@@ -77,7 +78,7 @@ export type {
 
 function allocateSetCodes(
   m: Pick<OcgCoreModuleBase, "_malloc" | "HEAP8">,
-  setcodes: number[]
+  setcodes: number[],
 ) {
   const setCodesArr = new Uint16Array([...setcodes, 0]);
   const setCodes = m._malloc(setCodesArr.byteLength);
@@ -323,7 +324,7 @@ async function createCoreJspi({ ...init }: Initializer): Promise<OcgCore> {
     async loadScript(
       { [DuelHandleSymbol]: handle },
       name: string,
-      content: string
+      content: string,
     ) {
       const stack = m.stackSave();
 
@@ -341,7 +342,7 @@ async function createCoreJspi({ ...init }: Initializer): Promise<OcgCore> {
             handle,
             contentPtr,
             contentLength,
-            namePtr
+            namePtr,
           )) == 1
         );
       } finally {
@@ -353,7 +354,7 @@ async function createCoreJspi({ ...init }: Initializer): Promise<OcgCore> {
 }
 
 function createImportMethodsBase(
-  callbacks: Map<number, { errorHandler: OcgDuelOptions["errorHandler"] }>
+  callbacks: Map<number, { errorHandler: OcgDuelOptions["errorHandler"] }>,
 ): Pick<
   OcgCoreModuleJspi & OcgCoreModuleSync,
   "print" | "printErr" | "handleLogHandler"
@@ -373,7 +374,7 @@ function createImportMethodsBase(
 }
 
 function createMethodsBase(
-  m: OcgCoreModuleJspi | OcgCoreModuleSync
+  m: OcgCoreModuleJspi | OcgCoreModuleSync,
 ): Pick<
   OcgCore & OcgCoreSync,
   | "getVersion"
@@ -393,6 +394,9 @@ function createMethodsBase(
       const stack = m.stackSave();
       const majorPtr = m.stackAlloc(4);
       const minorPtr = m.stackAlloc(4);
+
+      const t = m.getValue<"i32">(majorPtr, "i32");
+
       try {
         m._ocgapiGetVersion(majorPtr, minorPtr);
         return [
@@ -416,7 +420,7 @@ function createMethodsBase(
       m.stackRestore(stack);
 
       const reader = new BufferReader(
-        new DataView(m.HEAP8.buffer, buffer, bufferLength)
+        new DataView(m.HEAP8.buffer, buffer, bufferLength),
       );
 
       const messages: OcgMessage[] = [];
@@ -452,7 +456,7 @@ function createMethodsBase(
     duelQueryCount(
       { [DuelHandleSymbol]: handle },
       team: number,
-      location: OcgLocation
+      location: OcgLocation,
     ) {
       return m._ocgapiDuelQueryCount(handle, team, location);
     },
@@ -543,7 +547,7 @@ function heapAt(heap: Int8Array, offset = 0, length = -1) {
   return new DataView(
     heap.buffer,
     heap.byteOffset + offset,
-    length < 0 ? heap.length - offset : length
+    length < 0 ? heap.length - offset : length,
   );
 }
 
@@ -556,7 +560,7 @@ function copyArray(
     | Int16Array
     | Int32Array
     | BigInt64Array,
-  off: number
+  off: number,
 ) {
   if (x instanceof Uint16Array) {
     x.forEach((v, i) => view.setUint16(off + i * 2, v, true));
@@ -578,7 +582,7 @@ async function importFactoryJspi() {
 }
 
 async function importWasmJspi() {
-  return (await import("~/lib/ocgcore.jspi.wasm")).default;
+  return (await import("~/lib/ocgcore.jspi.wasm")).default.buffer;
 }
 
 async function importFactorySync() {
@@ -586,5 +590,5 @@ async function importFactorySync() {
 }
 
 async function importWasmSync() {
-  return (await import("~/lib/ocgcore.sync.wasm")).default;
+  return (await import("~/lib/ocgcore.sync.wasm")).default.buffer;
 }

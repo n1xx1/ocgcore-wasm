@@ -5,12 +5,12 @@
     "moduleResolution": "Bundler",
     "esModuleInterop": true,
     "sourceMap": true,
-    "baseUrl": ".",
     "strict": true,
     "outDir": "./dist/types",
     "paths": {
       "~/*": ["./*"]
-    }
+    },
+    "types": ["node", "emscripten"]
   },
   "include": ["./src/**/*", "./tests/**/*", "./scripts/**/*"]
 }
