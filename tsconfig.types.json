@@ -8,7 +8,7 @@
     "declarationMap": true,
     "emitDeclarationOnly": true,
     "strict": true,
-    "rootDir": "./",
+    "rootDir": "./src",
     "outDir": "./dist/types",
     "types": ["node", "emscripten"]
   },
