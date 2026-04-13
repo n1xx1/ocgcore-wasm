@@ -9,7 +9,8 @@
     "emitDeclarationOnly": true,
     "strict": true,
     "rootDir": "./",
-    "outDir": "./dist/types"
+    "outDir": "./dist/types",
+    "types": ["node", "emscripten"]
   },
   "include": ["./src/**/*"]
 }
