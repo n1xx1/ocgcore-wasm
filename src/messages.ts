@@ -242,18 +242,14 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
         amount: reader.u32(),
         min: reader.u32(),
         max: reader.u32(),
-        selects: Array.from({ length: reader.u32() }, () => ({
-          code: reader.u32(),
-          controller: reader.u8() as 0 | 1,
-          location: reader.u8() as OcgLocation,
-          sequence: reader.u32(),
-          amount: reader.u32(),
-        })),
         selects_must: Array.from({ length: reader.u32() }, () => ({
           code: reader.u32(),
-          controller: reader.u8() as 0 | 1,
-          location: reader.u8() as OcgLocation,
-          sequence: reader.u32(),
+          ...parseInfoLocation(reader),
+          amount: reader.u32(),
+        })),
+        selects: Array.from({ length: reader.u32() }, () => ({
+          code: reader.u32(),
+          ...parseInfoLocation(reader),
           amount: reader.u32(),
         })),
       };
@@ -340,7 +336,7 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
           const ret: number[] = [];
           const bytes = reader.bytes(reader.u32());
           for (let i = 0; i < deck_size; i++) {
-            const value = bytes[Math.floor(i / 8)] & (1 << i % 8);
+            const value = bytes[Math.floor(i / 8)] & (1 << (i % 8));
             if (value) {
               ret.push(i);
             }
@@ -510,7 +506,7 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
       return {
         type,
         cards: Array.from({ length: reader.u32() }, () =>
-          parseInfoLocation(reader)
+          parseInfoLocation(reader),
         ),
       };
     case OcgMessageType.RANDOM_SELECTED:
@@ -518,14 +514,14 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
         type,
         player: reader.u8(),
         cards: Array.from({ length: reader.u32() }, () =>
-          parseInfoLocation(reader)
+          parseInfoLocation(reader),
         ),
       };
     case OcgMessageType.BECOME_TARGET:
       return {
         type,
         cards: Array.from({ length: reader.u32() }, () =>
-          parseInfoLocation(reader)
+          parseInfoLocation(reader),
         ),
       };
     case OcgMessageType.DRAW:
@@ -777,7 +773,7 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
       return {
         type,
         cards: Array.from({ length: reader.u32() }, () =>
-          parseInfoLocation(reader)
+          parseInfoLocation(reader),
         ),
       };
     default:
