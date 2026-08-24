@@ -51,9 +51,9 @@ export function writeCardData(
     // uint32_t lscale;
     view.setUint32(40, data.lscale ?? 0, true);
     // uint32_t rscale;
-    view.setUint32(48, data.rscale ?? 0, true);
+    view.setUint32(44, data.rscale ?? 0, true);
     // uint32_t link_marker;
-    view.setUint32(52, data.link_marker ?? 0, true);
+    view.setUint32(48, data.link_marker ?? 0, true);
   } else {
     // uint16_t* setcodes;
     view.setBigUint64(8, data.setcodes ?? 0n, true);
@@ -66,15 +66,15 @@ export function writeCardData(
     // uint64_t race;
     view.setBigUint64(32, data.race ?? 0n, true);
     // int32_t attack;
-    view.setInt32(36, data.attack ?? 0, true);
+    view.setInt32(40, data.attack ?? 0, true);
     // int32_t defense;
-    view.setInt32(40, data.defense ?? 0, true);
+    view.setInt32(44, data.defense ?? 0, true);
     // uint32_t lscale;
-    view.setUint32(44, data.lscale ?? 0, true);
+    view.setUint32(48, data.lscale ?? 0, true);
     // uint32_t rscale;
-    view.setUint32(48, data.rscale ?? 0, true);
+    view.setUint32(52, data.rscale ?? 0, true);
     // uint32_t link_marker;
-    view.setUint32(52, data.link_marker ?? 0, true);
+    view.setUint32(56, data.link_marker ?? 0, true);
   }
 }
 
