@@ -42,7 +42,8 @@
     "build:tests": "esbuild ./tests/test.ts --analyze --bundle --platform=node --loader:.wasm=binary --format=esm --target=es2020 --external:node-sqlite3-wasm --splitting --minify --sourcemap --outdir=tests/dist",
     "start:tests": "npm run build:tests && node --enable-source-maps --experimental-wasm-jspi tests/dist/test.js",
     "build:types": "tsc --project tsconfig.types.json && api-extractor run",
-    "build": "npm run build:emscripten && npm run build:lib && npm run build:types"
+    "build": "npm run build:emscripten && npm run build:lib && npm run build:types",
+    "test:data": "esno tests/data.ts"
   },
   "packageManager": "pnpm@9.0.6",
   "devDependencies": {
