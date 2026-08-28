@@ -11,38 +11,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
         with:
           submodules: "true"
 
-      - name: Install Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-          registry-url: "https://registry.npmjs.org"
-
       - name: Install pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/setup@v2
         with:
-          version: 8.1.0
-          run_install: false
-
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
-
-      - name: Setup pnpm cache
-        uses: actions/cache@v3
-        with:
-          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - name: Install dependencies
-        run: pnpm install
+          cache: true
 
       - name: Get subrepo revisions
         shell: bash
@@ -100,22 +76,23 @@ jobs:
     needs: build
     if: github.ref == 'refs/heads/release'
     steps:
-      - name: Install Node.js
-        uses: actions/setup-node@v3
+      - name: Install pnpm
+        uses: pnpm/setup@v2
         with:
-          node-version: 18
-          registry-url: "https://registry.npmjs.org"
+          install: false
+          cache: true
+
+      - name: Configure pnpm
+        run: |
+          pnpm config set -- "//npm.pkg.github.com/:_authToken" "${{ secrets.NPM_TOKEN }}"
 
       - name: Download Artifacts
         uses: actions/download-artifact@v4
         with:
           name: package
 
-      - name: Publish on npm
-        id: publish
-        uses: JS-DevTools/npm-publish@v2
-        with:
-          token: ${{ secrets.NPM_TOKEN }}
+      - name: pnpm Publish
+        run: pnpm publish
 
   release-jsr:
     runs-on: ubuntu-latest
@@ -126,12 +103,12 @@ jobs:
     if: github.ref == 'refs/heads/release'
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
 
       - name: Install Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v7
         with:
-          node-version: 18
+          node-version: 22
           registry-url: "https://registry.npmjs.org"
 
       - name: Download Artifacts
