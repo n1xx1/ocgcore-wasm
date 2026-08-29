@@ -94,7 +94,7 @@ jobs:
           name: package
 
       - name: pnpm Publish
-        run: pnpm publish --publish-branch release
+        run: pnpm publish --publish-branch release --provenance
 
   release-jsr:
     runs-on: ubuntu-latest
