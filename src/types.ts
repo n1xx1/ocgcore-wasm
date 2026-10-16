@@ -1,5 +1,6 @@
-import { InternalDepromisifyFunction } from "./internal/utils";
-import {
+import type { OcgCoreInternal } from ".";
+import type { InternalDepromisifyFunction } from "./internal/utils";
+import type {
   OcgAttribute,
   OcgDuelMode,
   OcgLinkMarker,
@@ -11,9 +12,11 @@ import {
   OcgRace,
   OcgType,
 } from "./type_core";
-import { OcgDuelHandle } from "./type_handle";
-import { OcgFieldState, OcgMessage } from "./type_message";
-import { OcgResponse } from "./type_response";
+import type { OcgDuelHandle } from "./type_handle";
+import type { OcgFieldState, OcgMessage } from "./type_message";
+import type { OcgResponse } from "./type_response";
+import type { OcgCoreModule as OcgCoreModuleJspi } from "~/lib/ocgcore.jspi.mjs";
+import type { OcgCoreModule as OcgCoreModuleSync } from "~/lib/ocgcore.sync.mjs";
 
 export type { OcgDuelHandle };
 
@@ -89,7 +92,7 @@ export interface OcgDuelOptions {
   team2: OcgDuelOptionsTeam;
   /** Requests card infos for the given passcode. */
   cardReader: (
-    card: number
+    card: number,
   ) => Promise<OcgCardData | null> | OcgCardData | null;
   /** Requests the script contents for the given path. */
   scriptReader: (name: string) => Promise<string | null> | string | null;
@@ -273,7 +276,7 @@ export interface OcgCore {
   loadScript(
     handle: OcgDuelHandle,
     name: string,
-    content: string
+    content: string,
   ): Promise<boolean>;
   /**
    * Counts the number of card of the specified player and location.
@@ -285,7 +288,7 @@ export interface OcgCore {
   duelQueryCount(
     handle: OcgDuelHandle,
     team: number,
-    location: OcgLocation
+    location: OcgLocation,
   ): number;
   /**
    * Queries a specific card pulling only the requested informations ({@link OcgQuery#flags})
@@ -295,7 +298,7 @@ export interface OcgCore {
    */
   duelQuery(
     handle: OcgDuelHandle,
-    query: OcgQuery
+    query: OcgQuery,
   ): Partial<OcgCardQueryInfo> | null;
   /**
    * Like {@link OcgCore.duelQuery} but for all the cards in the specified location.
@@ -305,7 +308,7 @@ export interface OcgCore {
    */
   duelQueryLocation(
     handle: OcgDuelHandle,
-    query: OcgQueryLocation
+    query: OcgQueryLocation,
   ): (Partial<OcgCardQueryInfo> | null)[];
   /**
    * Queries the current field state.
@@ -313,13 +316,38 @@ export interface OcgCore {
    * @returns The current field state.
    */
   duelQueryField(handle: OcgDuelHandle): OcgFieldState;
+
+  /**
+   * @internal
+   */
+  [OcgCoreInternal]: {
+    module: OcgCoreModuleJspi;
+    callbacks: Map<
+      number,
+      Pick<OcgDuelOptions, "cardReader" | "scriptReader" | "errorHandler">
+    >;
+  };
 }
 
 export type OcgCoreSync = {
-  [F in keyof Omit<OcgCore, "createDuel">]: InternalDepromisifyFunction<
-    OcgCore[F]
-  >;
-} & { createDuel: (options: OcgDuelOptionsSync) => OcgDuelHandle | null };
+  [F in keyof Omit<
+    OcgCore,
+    "createDuel" | typeof OcgCoreInternal
+  >]: InternalDepromisifyFunction<OcgCore[F]>;
+} & {
+  createDuel: (options: OcgDuelOptionsSync) => OcgDuelHandle | null;
+
+  /**
+   * @internal
+   */
+  [OcgCoreInternal]: {
+    module: OcgCoreModuleSync;
+    callbacks: Map<
+      number,
+      Pick<OcgDuelOptionsSync, "cardReader" | "scriptReader" | "errorHandler">
+    >;
+  };
+};
 
 export * from "./type_core";
 

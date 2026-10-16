@@ -8,7 +8,7 @@ import { createResponse } from "./responses";
 import { OcgLocation, OcgLogType, OcgProcessResult } from "./type_core";
 import { OcgMessage } from "./type_message";
 import { OcgResponse } from "./type_response";
-import {
+import type {
   OcgCore,
   OcgCoreSync,
   OcgDuelOptions,
@@ -17,6 +17,8 @@ import {
   OcgQueryLocation,
 } from "./types";
 import { DuelHandleSymbol } from "./type_handle";
+
+export const OcgCoreInternal = Symbol.for("OcgCoreInternal");
 
 /**
  * The initializer to create a core. If both {@link Initializer.locateFile} and
@@ -36,11 +38,20 @@ export interface Initializer {
   sync?: boolean;
 }
 
+interface ModuleImports {
+  instantiateWasm?: EmscriptenModule["instantiateWasm"];
+  wasmMemory?: WebAssembly.Memory;
+}
+
 /** Initializer for the async version */
-export type InitializerAsync = Omit<Initializer, "sync"> & { sync?: false };
+export type InitializerAsync = Omit<Initializer, "sync"> & {
+  sync?: false;
+} & ModuleImports;
 
 /** Initializer for the sync version */
-export type InitializerSync = Omit<Initializer, "sync"> & { sync: true };
+export type InitializerSync = Omit<Initializer, "sync"> & {
+  sync: true;
+} & ModuleImports;
 
 /**
  * Instantiate the basic interface to use ocgcore.
@@ -137,8 +148,12 @@ async function createCoreSync({ ...init }: Initializer): Promise<OcgCoreSync> {
 
   return {
     ...createMethodsBase(m),
+    [OcgCoreInternal]: {
+      module: m,
+      callbacks,
+    },
     createDuel(options) {
-      const callback = ++lastCallbackId;
+      let callback = ++lastCallbackId;
       callbacks.set(callback, {
         cardReader: options.cardReader,
         errorHandler: options.errorHandler,
@@ -168,11 +183,11 @@ async function createCoreSync({ ...init }: Initializer): Promise<OcgCoreSync> {
       if (res != 0) {
         return null;
       }
-      const duelHandle = m.getValue(duelPtr, "i32");
+      const handle = m.getValue(duelPtr, "i32");
       m.stackRestore(stack);
-      return { [DuelHandleSymbol]: duelHandle };
+      return { [DuelHandleSymbol]: { handle, callback } };
     },
-    duelNewCard({ [DuelHandleSymbol]: handle }, cardInfo) {
+    duelNewCard({ [DuelHandleSymbol]: { handle } }, cardInfo) {
       const stack = m.stackSave();
       const buf = m.stackAlloc(24);
 
@@ -181,13 +196,13 @@ async function createCoreSync({ ...init }: Initializer): Promise<OcgCoreSync> {
       m._ocgapiDuelNewCard(handle, buf);
       m.stackRestore(stack);
     },
-    startDuel({ [DuelHandleSymbol]: handle }) {
+    startDuel({ [DuelHandleSymbol]: { handle } }) {
       m._ocgapiStartDuel(handle);
     },
-    duelProcess({ [DuelHandleSymbol]: handle }) {
+    duelProcess({ [DuelHandleSymbol]: { handle } }) {
       return m._ocgapiDuelProcess(handle) as OcgProcessResult;
     },
-    loadScript({ [DuelHandleSymbol]: handle }, name, content) {
+    loadScript({ [DuelHandleSymbol]: { handle } }, name, content) {
       const stack = m.stackSave();
 
       const contentLength = m.lengthBytesUTF8(content);
@@ -265,6 +280,10 @@ async function createCoreJspi({ ...init }: Initializer): Promise<OcgCore> {
 
   return {
     ...createMethodsBase(m),
+    [OcgCoreInternal]: {
+      module: m,
+      callbacks,
+    },
     async createDuel(options) {
       const callback = ++lastCallbackId;
       callbacks.set(callback, {
@@ -298,12 +317,12 @@ async function createCoreJspi({ ...init }: Initializer): Promise<OcgCore> {
           return null;
         }
         const duelHandle = m.getValue(duelPtr, "i32");
-        return { [DuelHandleSymbol]: duelHandle };
+        return { [DuelHandleSymbol]: { handle: duelHandle, callback } };
       } finally {
         m.stackRestore(stack);
       }
     },
-    async duelNewCard({ [DuelHandleSymbol]: handle }, cardInfo) {
+    async duelNewCard({ [DuelHandleSymbol]: { handle } }, cardInfo) {
       const stack = m.stackSave();
       const buf = m.stackAlloc(24);
 
@@ -315,14 +334,14 @@ async function createCoreJspi({ ...init }: Initializer): Promise<OcgCore> {
         m.stackRestore(stack);
       }
     },
-    async startDuel({ [DuelHandleSymbol]: handle }) {
+    async startDuel({ [DuelHandleSymbol]: { handle } }) {
       await m._ocgapiStartDuel(handle);
     },
-    async duelProcess({ [DuelHandleSymbol]: handle }) {
+    async duelProcess({ [DuelHandleSymbol]: { handle } }) {
       return (await m._ocgapiDuelProcess(handle)) as OcgProcessResult;
     },
     async loadScript(
-      { [DuelHandleSymbol]: handle },
+      { [DuelHandleSymbol]: { handle } },
       name: string,
       content: string,
     ) {
@@ -407,10 +426,10 @@ function createMethodsBase(
         m.stackRestore(stack);
       }
     },
-    destroyDuel({ [DuelHandleSymbol]: handle }) {
+    destroyDuel({ [DuelHandleSymbol]: { handle } }) {
       m._ocgapiDestroyDuel(handle);
     },
-    duelGetMessage({ [DuelHandleSymbol]: handle }) {
+    duelGetMessage({ [DuelHandleSymbol]: { handle } }) {
       const stack = m.stackSave();
 
       const lenPtr = m.stackAlloc(4);
@@ -440,7 +459,7 @@ function createMethodsBase(
 
       return messages;
     },
-    duelSetResponse({ [DuelHandleSymbol]: handle }, response: OcgResponse) {
+    duelSetResponse({ [DuelHandleSymbol]: { handle } }, response: OcgResponse) {
       const buffer = createResponse(response);
 
       const stack = m.stackSave();
@@ -454,13 +473,13 @@ function createMethodsBase(
       }
     },
     duelQueryCount(
-      { [DuelHandleSymbol]: handle },
+      { [DuelHandleSymbol]: { handle } },
       team: number,
       location: OcgLocation,
     ) {
       return m._ocgapiDuelQueryCount(handle, team, location);
     },
-    duelQuery({ [DuelHandleSymbol]: handle }, query: OcgQuery) {
+    duelQuery({ [DuelHandleSymbol]: { handle } }, query: OcgQuery) {
       const queryBuffer = new BufferWriter(6 * 4, true);
       // uint32_t flags;
       queryBuffer.u32(query.flags);
@@ -492,7 +511,10 @@ function createMethodsBase(
         m.stackRestore(stack);
       }
     },
-    duelQueryLocation({ [DuelHandleSymbol]: handle }, query: OcgQueryLocation) {
+    duelQueryLocation(
+      { [DuelHandleSymbol]: { handle } },
+      query: OcgQueryLocation,
+    ) {
       const queryBuffer = new BufferWriter(6 * 4, true);
       // uint32_t flags;
       queryBuffer.u32(query.flags);
@@ -524,7 +546,7 @@ function createMethodsBase(
         m.stackRestore(stack);
       }
     },
-    duelQueryField({ [DuelHandleSymbol]: handle }) {
+    duelQueryField({ [DuelHandleSymbol]: { handle } }) {
       const stack = m.stackSave();
 
       try {
