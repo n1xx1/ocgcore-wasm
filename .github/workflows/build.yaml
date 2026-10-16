@@ -17,7 +17,7 @@ jobs:
           submodules: "true"
 
       - name: Install pnpm
-        uses: pnpm/setup@v2
+        uses: pnpm/setup@v3
         with:
           cache: true
 
@@ -29,7 +29,7 @@ jobs:
 
       - name: Cache wasm build
         id: cache-wasm
-        uses: actions/cache@v3
+        uses: actions/cache@v6
         with:
           path: lib
           key: ocgcore-build-${{env.EM_VERSION}}-${{ hashFiles('scripts/build.sh') }}-${{ hashFiles('cpp/wasm.cpp') }}-${{ env.OCGCORE_REV }}-${{ env.LUA_REV }}
@@ -37,14 +37,14 @@ jobs:
       - name: Cache emsdk
         if: ${{ steps.cache-wasm.outputs.cache-hit != 'true' }}
         id: cache-emsdk
-        uses: actions/cache@v3
+        uses: actions/cache@v6
         with:
           path: ${{env.EM_CACHE_FOLDER}}
           key: ${{env.EM_VERSION}}-${{ runner.os }}
 
       - name: Setup emsdk
         if: ${{ steps.cache-wasm.outputs.cache-hit != 'true' }}
-        uses: mymindstorm/setup-emsdk@v14
+        uses: emscripten-core/setup-emsdk@v16
         with:
           version: ${{env.EM_VERSION}}
           actions-cache-folder: ${{env.EM_CACHE_FOLDER}}
