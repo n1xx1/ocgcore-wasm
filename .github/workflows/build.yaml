@@ -25,14 +25,13 @@ jobs:
         shell: bash
         run: |
           echo "OCGCORE_REV=$(git -C cpp/ygo rev-parse HEAD)" >> $GITHUB_ENV
-          echo "LUA_REV=$(git -C cpp/lua rev-parse HEAD)" >> $GITHUB_ENV
 
       - name: Cache wasm build
         id: cache-wasm
         uses: actions/cache@v6
         with:
           path: lib
-          key: ocgcore-build-${{env.EM_VERSION}}-${{ hashFiles('scripts/build.sh') }}-${{ hashFiles('cpp/wasm.cpp') }}-${{ env.OCGCORE_REV }}-${{ env.LUA_REV }}
+          key: ocgcore-build-${{env.EM_VERSION}}-${{ hashFiles('scripts/build.sh') }}-${{ hashFiles('cpp/wasm.cpp') }}-${{ env.OCGCORE_REV }}
 
       - name: Cache emsdk
         if: ${{ steps.cache-wasm.outputs.cache-hit != 'true' }}
