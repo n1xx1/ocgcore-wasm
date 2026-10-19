@@ -348,7 +348,7 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
       return {
         type,
         location: reader.u8() as OcgLocation,
-        cards: Array.from({ length: reader.u32() }, () => ({
+        cards: Array.from({ length: reader.u8() }, () => ({
           from: parseInfoLocation(reader),
           to: parseInfoLocation(reader),
         })),
