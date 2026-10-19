@@ -1,12 +1,16 @@
-import type { OcgCoreModule as OcgCoreModuleJspi } from "~/lib/ocgcore.jspi.mjs";
-import type { OcgCoreModule as OcgCoreModuleSync } from "~/lib/ocgcore.sync.mjs";
 import { writeCardData, writeDuelOptions, writeNewCardInfo } from "./data";
 import { BufferReader, BufferWriter } from "./internal/buffer";
 import { readMessage } from "./messages";
 import { readField, readQuery, readQueryLocation } from "./queries";
 import { createResponse } from "./responses";
 import { OcgLocation, OcgLogType, OcgProcessResult } from "./type_core";
+import { DuelHandleSymbol } from "./type_handle";
 import { OcgMessage } from "./type_message";
+import type {
+  OcgCoreModuleBase,
+  OcgCoreModuleJspi,
+  OcgCoreModuleSync,
+} from "./type_modules";
 import { OcgResponse } from "./type_response";
 import type {
   OcgCore,
@@ -16,7 +20,6 @@ import type {
   OcgQuery,
   OcgQueryLocation,
 } from "./types";
-import { DuelHandleSymbol } from "./type_handle";
 
 export const OcgCoreInternal = Symbol.for("OcgCoreInternal");
 
@@ -38,7 +41,7 @@ export interface Initializer {
   sync?: boolean;
 }
 
-interface ModuleImports {
+export interface ModuleImports {
   instantiateWasm?: EmscriptenModule["instantiateWasm"];
   wasmMemory?: WebAssembly.Memory;
 }
@@ -78,13 +81,15 @@ export default async function createCore(
     : await createCoreJspi(init ?? {});
 }
 
+export type * from "./type_modules";
+
 export * from "./opcodes";
 
 export * from "./types";
 
 export type {
-  InternalMappedMap,
   InternalDepromisifyFunction,
+  InternalMappedMap,
 } from "./internal/utils";
 
 function allocateSetCodes(
@@ -600,7 +605,8 @@ function copyArray(
 }
 
 async function importFactoryJspi() {
-  return (await import("~/lib/ocgcore.jspi.mjs")).default;
+  return (await import("~/lib/ocgcore.jspi.mjs"))
+    .default as EmscriptenModuleFactory<OcgCoreModuleJspi>;
 }
 
 async function importWasmJspi() {
@@ -608,7 +614,8 @@ async function importWasmJspi() {
 }
 
 async function importFactorySync() {
-  return (await import("~/lib/ocgcore.sync.mjs")).default;
+  return (await import("~/lib/ocgcore.sync.mjs"))
+    .default as EmscriptenModuleFactory<OcgCoreModuleSync>;
 }
 
 async function importWasmSync() {

@@ -14,9 +14,8 @@ import type {
 } from "./type_core";
 import type { OcgDuelHandle } from "./type_handle";
 import type { OcgFieldState, OcgMessage } from "./type_message";
+import type { OcgCoreModuleJspi, OcgCoreModuleSync } from "./type_modules";
 import type { OcgResponse } from "./type_response";
-import type { OcgCoreModule as OcgCoreModuleJspi } from "~/lib/ocgcore.jspi.mjs";
-import type { OcgCoreModule as OcgCoreModuleSync } from "~/lib/ocgcore.sync.mjs";
 
 export type { OcgDuelHandle };
 
