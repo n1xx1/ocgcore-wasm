@@ -1,5 +1,5 @@
 declare module "~/lib/ocgcore.jspi.mjs" {
-  const Module: EmscriptenModuleFactory;
+  const Module: typeof import("./lib/ocgcore.jspi.mjs").default;
   export default Module;
 }
 
@@ -9,7 +9,7 @@ declare module "~/lib/ocgcore.jspi.wasm" {
 }
 
 declare module "~/lib/ocgcore.sync.mjs" {
-  const Module: EmscriptenModuleFactory;
+  const Module: typeof import("./lib/ocgcore.sync.mjs").default;
   export default Module;
 }
 

@@ -3,7 +3,11 @@
   "mainEntryPointFilePath": "<projectFolder>/dist/types/index.d.ts",
   "bundledPackages": ["~/lib/*"],
   "compiler": {
-    "tsconfigFilePath": "<projectFolder>/tsconfig.types.json"
+    "overrideTsconfig": {
+      "extends": "./tsconfig.types.json",
+      "include": ["./dist/types/**/*.d.ts"],
+      "exclude": []
+    }
   },
   "apiReport": {
     "enabled": false

@@ -1,3 +1,5 @@
+/// <reference types="emscripten" preserve="true" />
+
 import { writeCardData, writeDuelOptions, writeNewCardInfo } from "./data";
 import { BufferReader, BufferWriter } from "./internal/buffer";
 import { readMessage } from "./messages";
