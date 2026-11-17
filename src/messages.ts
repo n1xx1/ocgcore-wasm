@@ -326,16 +326,14 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
         type,
       };
     case OcgMessageType.SWAP_GRAVE_DECK:
-      let deck_size: number;
       return {
         type,
         player: reader.u8(),
-        deck_size: (deck_size = reader.u32()),
+        prev_extra_size: reader.u32(),
         returned_to_extra: (() => {
-          // TODO: check
           const ret: number[] = [];
           const bytes = reader.bytes(reader.u32());
-          for (let i = 0; i < deck_size; i++) {
+          for (let i = 0; i < bytes.length * 8; i++) {
             const value = bytes[Math.floor(i / 8)] & (1 << (i % 8));
             if (value) {
               ret.push(i);
@@ -344,15 +342,21 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
           return ret;
         })(),
       };
-    case OcgMessageType.SHUFFLE_SET_CARD:
+    case OcgMessageType.SHUFFLE_SET_CARD: {
       return {
         type,
         location: reader.u8() as OcgLocation,
-        cards: Array.from({ length: reader.u8() }, () => ({
-          from: parseInfoLocation(reader),
-          to: parseInfoLocation(reader),
-        })),
+        cards: (() => {
+          const length = reader.u8();
+          const from = Array.from({ length }, (_) => parseInfoLocation(reader));
+          const to = Array.from({ length }, (_) => parseInfoLocation(reader));
+          return Array.from({ length }, (_, i) => ({
+            from: from[i],
+            to: to[i],
+          }));
+        })(),
       };
+    }
     case OcgMessageType.REVERSE_DECK:
       return {
         type,
@@ -398,6 +402,7 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
         card: reader.u32(),
         from: parseInfoLocation(reader),
         to: parseInfoLocation(reader),
+        reason: reader.u32(),
       };
     case OcgMessageType.POS_CHANGE:
       return {
@@ -688,7 +693,7 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
         type,
         player: reader.u8(),
         count: reader.u8(),
-        available: reader.u8() as OcgAttribute,
+        available: reader.u32() as OcgAttribute,
       };
     case OcgMessageType.ANNOUNCE_CARD:
       return {
@@ -742,6 +747,7 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
         type,
         name: (() => {
           const name = reader.bytes(reader.u16());
+          reader.u8();
           return new TextDecoder().decode(name);
         })(),
       };
@@ -750,6 +756,7 @@ export function readMessage(reader: BufferReader): OcgMessage | null {
         type,
         hint: (() => {
           const hint = reader.bytes(reader.u16());
+          reader.u8();
           return new TextDecoder().decode(hint);
         })(),
       };

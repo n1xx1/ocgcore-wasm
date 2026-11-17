@@ -461,6 +461,11 @@ function createMethodsBase(
           // TODO: handle parse errors?
           continue;
         }
+        if (subReader.avail !== 0) {
+          console.warn(
+            `message ${message.type} not fully read: ${subReader.bytes(subReader.avail)}`,
+          );
+        }
         messages.push(message);
       }
 

@@ -453,8 +453,11 @@ export interface OcgMessageRefreshDeck {
 /** Deck and grave of player were swapped. */
 export interface OcgMessageSwapGraveDeck {
   type: OcgMessageType.SWAP_GRAVE_DECK;
+  /** Affected player */
   player: number;
-  deck_size: number;
+  /** Size of the ED (excluding face up cards) before the swap. */
+  prev_extra_size: number;
+  /** Indices of the graveyard cards that were returned to ED instead of deck. */
   returned_to_extra: number[];
 }
 
@@ -510,6 +513,7 @@ export interface OcgMessageMove {
   card: number;
   from: OcgLocPos;
   to: OcgLocPos;
+  reason: number;
 }
 
 export interface OcgMessagePosChange {
@@ -838,7 +842,7 @@ export interface OcgFieldPlayer {
     OcgFieldCard,
     OcgFieldCard,
     OcgFieldCard,
-    OcgFieldCard
+    OcgFieldCard,
   ];
   spells: [
     OcgFieldCard,
@@ -848,7 +852,7 @@ export interface OcgFieldPlayer {
     OcgFieldCard,
     OcgFieldCard,
     OcgFieldCard,
-    OcgFieldCard
+    OcgFieldCard,
   ];
   deck_size: number;
   hand_size: number;

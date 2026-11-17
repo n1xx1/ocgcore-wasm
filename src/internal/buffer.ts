@@ -26,7 +26,7 @@ export class BufferReader {
     }
     const b = new BufferReader(
       new DataView(this.view.buffer, this.view.byteOffset + this.off, length),
-      0
+      0,
     );
     this.off += length;
     return b;
@@ -37,8 +37,9 @@ export class BufferReader {
     }
     const bytes = this.view.buffer.slice(
       this.view.byteOffset + this.off,
-      this.view.byteOffset + this.off + length
+      this.view.byteOffset + this.off + length,
     );
+    this.off += length;
     return new Uint8Array(bytes);
   }
   u8(): number {
