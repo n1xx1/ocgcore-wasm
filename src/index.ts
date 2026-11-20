@@ -154,7 +154,7 @@ async function createCoreSync({ ...init }: Initializer): Promise<OcgCoreSync> {
   });
 
   return {
-    ...createMethodsBase(m),
+    ...createMethodsBase(m, callbacks),
     [OcgCoreInternal]: {
       module: m,
       callbacks,
@@ -286,7 +286,7 @@ async function createCoreJspi({ ...init }: Initializer): Promise<OcgCore> {
   });
 
   return {
-    ...createMethodsBase(m),
+    ...createMethodsBase(m, callbacks),
     [OcgCoreInternal]: {
       module: m,
       callbacks,
@@ -401,6 +401,7 @@ function createImportMethodsBase(
 
 function createMethodsBase(
   m: OcgCoreModuleJspi | OcgCoreModuleSync,
+  callbacks: Map<number, unknown>,
 ): Pick<
   OcgCore & OcgCoreSync,
   | "getVersion"
@@ -433,8 +434,9 @@ function createMethodsBase(
         m.stackRestore(stack);
       }
     },
-    destroyDuel({ [DuelHandleSymbol]: { handle } }) {
+    destroyDuel({ [DuelHandleSymbol]: { handle, callback } }) {
       m._ocgapiDestroyDuel(handle);
+      callbacks.delete(callback);
     },
     duelGetMessage({ [DuelHandleSymbol]: { handle } }) {
       const stack = m.stackSave();
