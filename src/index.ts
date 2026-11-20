@@ -154,7 +154,7 @@ async function createCoreSync({ ...init }: Initializer): Promise<OcgCoreSync> {
   });
 
   return {
-    ...createMethodsBase(m),
+    ...createMethodsBase(m, callbacks),
     [OcgCoreInternal]: {
       module: m,
       callbacks,
@@ -186,13 +186,17 @@ async function createCoreSync({ ...init }: Initializer): Promise<OcgCoreSync> {
         enableUnsafeLibraries: true,
       });
 
-      const res = m._ocgapiCreateDuel(duelPtr, buf);
-      if (res != 0) {
-        return null;
+      try {
+        const res = m._ocgapiCreateDuel(duelPtr, buf);
+        if (res != 0) {
+          callbacks.delete(callback);
+          return null;
+        }
+        const handle = m.getValue(duelPtr, "i32");
+        return { [DuelHandleSymbol]: { handle, callback } };
+      } finally {
+        m.stackRestore(stack);
       }
-      const handle = m.getValue(duelPtr, "i32");
-      m.stackRestore(stack);
-      return { [DuelHandleSymbol]: { handle, callback } };
     },
     duelNewCard({ [DuelHandleSymbol]: { handle } }, cardInfo) {
       const stack = m.stackSave();
@@ -286,7 +290,7 @@ async function createCoreJspi({ ...init }: Initializer): Promise<OcgCore> {
   });
 
   return {
-    ...createMethodsBase(m),
+    ...createMethodsBase(m, callbacks),
     [OcgCoreInternal]: {
       module: m,
       callbacks,
@@ -321,6 +325,7 @@ async function createCoreJspi({ ...init }: Initializer): Promise<OcgCore> {
       try {
         const res = await m._ocgapiCreateDuel(duelPtr, buf);
         if (res != 0) {
+          callbacks.delete(callback);
           return null;
         }
         const duelHandle = m.getValue(duelPtr, "i32");
@@ -401,6 +406,7 @@ function createImportMethodsBase(
 
 function createMethodsBase(
   m: OcgCoreModuleJspi | OcgCoreModuleSync,
+  callbacks: Map<number, unknown>,
 ): Pick<
   OcgCore & OcgCoreSync,
   | "getVersion"
@@ -433,8 +439,9 @@ function createMethodsBase(
         m.stackRestore(stack);
       }
     },
-    destroyDuel({ [DuelHandleSymbol]: { handle } }) {
+    destroyDuel({ [DuelHandleSymbol]: { handle, callback } }) {
       m._ocgapiDestroyDuel(handle);
+      callbacks.delete(callback);
     },
     duelGetMessage({ [DuelHandleSymbol]: { handle } }) {
       const stack = m.stackSave();
