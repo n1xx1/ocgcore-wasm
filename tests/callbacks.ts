@@ -1,5 +1,5 @@
-// Regression test: destroyDuel must remove the duel's callbacks from the core's
-// callbacks map.
+// Regression test: destroyDuel and a failed createDuel must remove the duel's
+// callbacks from the core's callbacks map.
 //
 // npx esbuild ./tests/callbacks.ts --bundle --platform=node --loader:.wasm=binary --format=esm --target=es2020 --outdir=tests/dist && node tests/dist/callbacks.js
 
@@ -16,7 +16,7 @@ const options = {
 
 async function testSync() {
   const lib = await createCore({ sync: true });
-  const { callbacks } = lib[OcgCoreInternal];
+  const { module, callbacks } = lib[OcgCoreInternal];
   const before = callbacks.size;
 
   for (let i = 0; i < 100; i++) {
@@ -31,6 +31,21 @@ async function testSync() {
     lib.destroyDuel(handle);
   }
   assert.equal(callbacks.size, before, "destroyDuel left callbacks behind");
+
+  const create = module._ocgapiCreateDuel;
+  module._ocgapiCreateDuel = () => 1;
+  try {
+    const handle = lib.createDuel({
+      ...options,
+      cardReader: () => null,
+      scriptReader: () => "",
+      errorHandler: () => {},
+    });
+    assert.equal(handle, null);
+  } finally {
+    module._ocgapiCreateDuel = create;
+  }
+  assert.equal(callbacks.size, before, "failed createDuel left callbacks");
   console.log("sync: ok");
 }
 
@@ -40,7 +55,7 @@ async function testJspi() {
     return;
   }
   const lib = await createCore();
-  const { callbacks } = lib[OcgCoreInternal];
+  const { module, callbacks } = lib[OcgCoreInternal];
   const before = callbacks.size;
 
   for (let i = 0; i < 100; i++) {
@@ -55,6 +70,21 @@ async function testJspi() {
     lib.destroyDuel(handle);
   }
   assert.equal(callbacks.size, before, "destroyDuel left callbacks behind");
+
+  const create = module._ocgapiCreateDuel;
+  module._ocgapiCreateDuel = async () => 1;
+  try {
+    const handle = await lib.createDuel({
+      ...options,
+      cardReader: async () => null,
+      scriptReader: async () => "",
+      errorHandler: () => {},
+    });
+    assert.equal(handle, null);
+  } finally {
+    module._ocgapiCreateDuel = create;
+  }
+  assert.equal(callbacks.size, before, "failed createDuel left callbacks");
   console.log("jspi: ok");
 }
 
